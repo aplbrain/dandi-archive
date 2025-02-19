@@ -27,7 +27,7 @@
         </span>
         <br><br>
         <span class="text-body-2">
-          For further assistance, please contact <a href="mailto:emberarchive@jhuapl.edu">emberarchive@jhuapl.edu</a>.
+          For further assistance, please contact <a href="mailto:help@emberarchive.org">help@emberarchive.org</a>.
         </span>
       </div>
     </v-container>
