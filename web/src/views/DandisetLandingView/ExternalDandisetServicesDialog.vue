@@ -84,7 +84,7 @@ const neurosiftURL = computed(() => {
   const dandisetVersion = metadata.version;
   const stagingParam = metadata.url!.startsWith('https://gui-dandi-sandbox.emberarchive.org/') ? '&staging=1' : '';
 
-  return `https://neurosift.app/?p=/dandiset&dandisetId=${dandisetId}&dandisetVersion=${dandisetVersion}${stagingParam}`;
+  return `https://neurosift.app/dandiset/${dandisetId}?dandisetVersion=${dandisetVersion}${stagingParam}`;
 });
 
 </script>
