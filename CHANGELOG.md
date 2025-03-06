@@ -1,3 +1,40 @@
+# v0.4.21 (Wed Mar 05 2025)
+
+#### 🐛 Bug Fix
+
+- Implement "atpath" asset endpoint [#2193](https://github.com/dandi/dandi-archive/pull/2193) ([@jjnesbitt](https://github.com/jjnesbitt))
+- Set default values for optional DandiError fields [#2192](https://github.com/dandi/dandi-archive/pull/2192) ([@jjnesbitt](https://github.com/jjnesbitt))
+
+#### Authors: 1
+
+- Jacob Nesbitt ([@jjnesbitt](https://github.com/jjnesbitt))
+
+---
+
+# v0.4.20 (Thu Feb 27 2025)
+
+#### 🐛 Bug Fix
+
+- Adjust Neurosift external URLs for v2 of Neurosift [#2189](https://github.com/dandi/dandi-archive/pull/2189) ([@magland](https://github.com/magland))
+
+#### Authors: 1
+
+- Jeremy Magland ([@magland](https://github.com/magland))
+
+---
+
+# v0.4.19 (Wed Feb 19 2025)
+
+#### 🐛 Bug Fix
+
+- Boost us back to 2025 in the footer after having it lost during merge conflict resolving [#2183](https://github.com/dandi/dandi-archive/pull/2183) ([@yarikoptic](https://github.com/yarikoptic))
+
+#### Authors: 1
+
+- Yaroslav Halchenko ([@yarikoptic](https://github.com/yarikoptic))
+
+---
+
 # v0.4.18 (Fri Feb 07 2025)
 
 #### 🐛 Bug Fix
