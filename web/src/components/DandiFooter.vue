@@ -21,7 +21,7 @@
             target="_blank"
             rel="noopener"
             href="https://docs.dandiarchive.org/about/terms/"
-          >Terms</a> 
+          >Terms</a>
           <v-icon x-small>
             mdi-open-in-new
           </v-icon> / <a
@@ -40,13 +40,15 @@
             mdi-open-in-new
           </v-icon>
           <br>
-          <!-- version
-          <a
-            class="version-link"
-            :href="githubLink"
-            target="_blank"
-            rel="noopener"
-          >{{ version }}</a> -->
+          <span v-if="version != 'unknown'">
+            version
+            <a
+              class="version-link"
+              :href="githubLink"
+              target="_blank"
+              rel="noopener"
+            >{{ version }}</a>
+          </span>
         </v-col>
         <v-col>
           Funding / In-Kind Support:<br>
