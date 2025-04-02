@@ -3,7 +3,7 @@ name: Test Integration with dandi-cli
 on:
   push:
     branches:
-      - master
+      - prod
     paths-ignore:
       - "web/**"
   pull_request:
