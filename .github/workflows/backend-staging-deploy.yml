@@ -3,7 +3,7 @@ name: Deploy backend to staging
 on:
   push:
     branches:
-      - sandbox
+      - apl-setup
     paths-ignore:
       - "web/**"
       - "CHANGELOG.md"
