@@ -203,7 +203,8 @@ class HerokuProductionConfiguration(DandiMixin, HerokuProductionBaseConfiguratio
         ALLOWED_HOSTS = []
 
     ALLOWED_HOSTS += [
-        'api-dandi.emberarchive.org',
+        'api-dandi.emberarchive.org',  # EMBER Production
+        'apl-setup--ember-dandi-archive.netlify.app/',  # EMBER Sandbox
         'api-dandi-sandbox.emberarchive.org',
         # Example from Linc-Archive
         # 'linc-staging-terraform-0b817cb1246b.herokuapp.com/',
