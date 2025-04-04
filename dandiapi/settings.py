@@ -203,9 +203,10 @@ class HerokuProductionConfiguration(DandiMixin, HerokuProductionBaseConfiguratio
         ALLOWED_HOSTS = []
 
     ALLOWED_HOSTS += [
-        'api-dandi.emberarchive.org',  # EMBER Production
-        'apl-setup--ember-dandi-archive.netlify.app/',  # EMBER Sandbox
-        'api-dandi-sandbox.emberarchive.org',
+        'api-dandi.emberarchive.org',  # EMBER Production API
+        'apl-setup--ember-dandi-archive.netlify.app/',  # EMBER Sandbox UI
+        'apl-setup--ember-dandi-archive.netlify.app',  # EMBER Sandbox UI
+        'api-dandi-sandbox.emberarchive.org',  # EMBER Sandbox API
         # Example from Linc-Archive
         # 'linc-staging-terraform-0b817cb1246b.herokuapp.com/',
         # 'api.lincbrain.org'
@@ -220,3 +221,17 @@ class HerokuProductionConfiguration(DandiMixin, HerokuProductionBaseConfiguratio
 # the API server is running in (production/local or staging).
 class HerokuStagingConfiguration(HerokuProductionConfiguration):
     OAUTH2_PROVIDER_APPLICATION_MODEL = 'api.StagingApplication'
+
+    # Explicitly declaring ALLOWED_HOSTS
+    if 'ALLOWED_HOSTS' not in globals():
+        ALLOWED_HOSTS = []
+
+    ALLOWED_HOSTS += [
+        'api-dandi.emberarchive.org',  # EMBER Production API
+        'apl-setup--ember-dandi-archive.netlify.app/',  # EMBER Sandbox UI
+        'apl-setup--ember-dandi-archive.netlify.app',  # EMBER Sandbox UI
+        'api-dandi-sandbox.emberarchive.org',  # EMBER Sandbox API
+        # Example from Linc-Archive
+        # 'linc-staging-terraform-0b817cb1246b.herokuapp.com/',
+        # 'api.lincbrain.org'
+    ]
