@@ -221,4 +221,3 @@ class HerokuProductionConfiguration(DandiMixin, HerokuProductionBaseConfiguratio
 # the API server is running in (production/local or staging).
 class HerokuStagingConfiguration(HerokuProductionConfiguration):
     OAUTH2_PROVIDER_APPLICATION_MODEL = 'api.StagingApplication'
-
