@@ -147,6 +147,11 @@ class DevelopmentConfiguration(DandiMixin, DevelopmentBaseConfiguration):
         'from dandiapi.api.mail import *',
     ]
 
+    @staticmethod
+    def mutate_configuration(config: type[ComposedConfiguration]):
+        # This allows django-debug-toolbar to run in swagger and show the last made request
+        config.DEBUG_TOOLBAR_CONFIG['UPDATE_ON_FETCH'] = True
+
 
 class TestingConfiguration(DandiMixin, TestingBaseConfiguration):
     DANDI_DANDISETS_BUCKET_NAME = 'test-dandiapi-dandisets'
@@ -198,8 +203,10 @@ class HerokuProductionConfiguration(DandiMixin, HerokuProductionBaseConfiguratio
         ALLOWED_HOSTS = []
 
     ALLOWED_HOSTS += [
-        'api-dandi.emberarchive.org',
-        'api-dandi-sandbox.emberarchive.org',
+        'api-dandi.emberarchive.org',  # EMBER Production API
+        'apl-setup--ember-dandi-archive.netlify.app/',  # EMBER Sandbox UI
+        'apl-setup--ember-dandi-archive.netlify.app',  # EMBER Sandbox UI
+        'api-dandi-sandbox.emberarchive.org',  # EMBER Sandbox API
         # Example from Linc-Archive
         # 'linc-staging-terraform-0b817cb1246b.herokuapp.com/',
         # 'api.lincbrain.org'
