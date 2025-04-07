@@ -11,7 +11,7 @@ export const { CLIENT_URL } = process.env;
 
 export const LOGIN_BUTTON_TEXT = 'Log In with GitHub';
 export const LOGOUT_BUTTON_TEXT = 'Logout';
-export const MY_DANDISETS_BTN_TEXT = 'My Dandisets';
+export const MY_DANDISETS_BTN_TEXT = 'My EMBERsets';
 
 export function uniqueId() {
   // TODO think of something cleaner

@@ -39,12 +39,12 @@
       <div class="d-block">
         <span class="text-h5">
           <v-icon>mdi-alert</v-icon>
-          Error: Dandiset does not exist
+          Error: EMBERset does not exist
         </span>
         <br><br>
         <span class="text-body-2">
-          Proceed to the <a href="/dandiset">Public Dandisets page</a>
-          or use the search bar to find a valid Dandiset.
+          Proceed to the <a href="/dandiset">Public EMBERsets page</a>
+          or use the search bar to find a valid EMBERset.
         </span>
       </div>
     </v-container>

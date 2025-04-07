@@ -1,7 +1,7 @@
 <template>
   <v-card v-page-title="'Create Dandiset'">
     <v-card-title>
-      <span class="text-h3">Register a new Dandiset</span>
+      <span class="text-h3">Register a new EMBERset</span>
     </v-card-title>
     <v-card-text class="my-3">
       <v-form>
@@ -10,7 +10,7 @@
             v-model="embargoed"
           >
             <template #label>
-              Mark Dandiset Private
+              Mark EMBERset Private
               <v-tooltip
                 right
                 max-width="25%"
@@ -30,7 +30,7 @@
                   </div>
                 </template>
                 <span>
-                  Private (or embargoed) Dandisets are hidden from public access.
+                  Private (or embargoed) EMBERsets are hidden from public access.
                 </span>
               </v-tooltip>
             </template>
@@ -40,8 +40,8 @@
           Title
         </div>
         <div>
-          Provide a title for this Dandiset. The title will appear in search
-          results and at the top of the home page for this Dandiset, so make it
+          Provide a title for this EMBERset. The title will appear in search
+          results and at the top of the home page for this EMBERset, so make it
           concise and descriptive.
         </div>
         <v-text-field
@@ -58,8 +58,8 @@
           Description
         </div>
         <div>
-          Provide a description for this Dandiset. This will appear prominently
-          under the title in the home page for this Dandiset.
+          Provide a description for this EMBERset. This will appear prominently
+          under the title in the home page for this EMBERset.
         </div>
         <v-textarea
           v-model="description"
@@ -75,13 +75,13 @@
             License
           </div>
           <div>
-            Select a license under which to share the contents of this Dandiset.
+            Select a license under which to share the contents of this EMBERset.
             You can learn more about <a
               href="https://docs.dandiarchive.org/35_data_licenses/"
               target="_blank"
               rel="noopener"
             >
-              licenses for Dandisets
+              licenses for EMBERsets
             </a>.
           </div>
           <v-select
@@ -98,7 +98,7 @@
             NIH Award Number
           </div>
           <div>
-            Provide an NIH award number for this embargoed Dandiset. Note: this
+            Provide an NIH award number for this embargoed EMBERset. Note: this
             can be changed at any time and additional award numbers can be added
             later.
           </div>
@@ -125,7 +125,7 @@
         depressed
         @click="registerDandiset"
       >
-        Register Dandiset
+        Register EMBERset
         <template #loader>
           <span>Registering...</span>
         </template>

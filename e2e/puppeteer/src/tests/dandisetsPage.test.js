@@ -10,7 +10,7 @@ import {
 } from '../util';
 
 describe('dandisets page', () => {
-  it('view "My Dandisets"', async () => {
+  it('view "My EMBERsets"', async () => {
     // register user and create a new dandiset
     const { firstName, lastName } = await registerNewUser();
     const id = uniqueId();
