@@ -163,18 +163,18 @@ const insideIFrame = computed(insideIFrameFunc);
 const navItems: NavigationItem[] = [
   {
     text: 'Public EMBERsets',
-    to: 'publicDandisets', // TOOD: 'publicEMBERsets' ?
+    to: 'publicDandisets', // TODO: 'publicEMBERsets' ?
     external: false,
   },
   {
     text: 'My EMBERsets',
-    to: 'myDandisets', // TOOD: 'myEMBERsets' ?
+    to: 'myDandisets', // TODO: 'myEMBERsets' ?
     external: false,
     if: loggedInFunc,
   },
   {
     text: 'Starred EMBERsets',
-    to: 'starredDandisets', // TOOD: 'starredEMBERsets' ?
+    to: 'starredDandisets', // TODO: 'starredEMBERsets' ?
     external: false,
     if: loggedInFunc,
   },
