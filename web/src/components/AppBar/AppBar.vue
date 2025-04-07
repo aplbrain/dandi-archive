@@ -103,7 +103,7 @@
           color="primary"
           rounded
         >
-          New Dandiset
+          New EMBERset
         </v-btn>
         <UserMenu />
       </template>
@@ -162,19 +162,19 @@ const insideIFrame = computed(insideIFrameFunc);
 
 const navItems: NavigationItem[] = [
   {
-    text: 'Public Dandisets',
-    to: 'publicDandisets',
+    text: 'Public EMBERsets',
+    to: 'publicDandisets', // TOOD: 'publicEMBERsets' ?
     external: false,
   },
   {
-    text: 'My Dandisets',
-    to: 'myDandisets',
+    text: 'My EMBERsets',
+    to: 'myDandisets', // TOOD: 'myEMBERsets' ?
     external: false,
     if: loggedInFunc,
   },
   {
-    text: 'Starred Dandisets',
-    to: 'starredDandisets',
+    text: 'Starred EMBERsets',
+    to: 'starredDandisets', // TOOD: 'starredEMBERsets' ?
     external: false,
     if: loggedInFunc,
   },

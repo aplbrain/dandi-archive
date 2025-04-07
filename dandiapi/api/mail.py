@@ -70,7 +70,7 @@ def build_removed_message(dandiset, removed_owner):
     }
     # Email sent when a user is removed as an owner from a dandiset
     return build_message(
-        subject=f'Removed from Dandiset "{dandiset.draft_version.name}"',
+        subject=f'Removed from EMBERset "{dandiset.draft_version.name}"',
         message=render_to_string('api/mail/removed_message.txt', render_context),
         to=[removed_owner.email],
     )
@@ -84,7 +84,7 @@ def build_added_message(dandiset, added_owner):
     }
     # Email sent when a user is added as an owner of a dandiset
     return build_message(
-        subject=f'Added to Dandiset "{dandiset.draft_version.name}"',
+        subject=f'Added to EMBERset "{dandiset.draft_version.name}"',
         message=render_to_string('api/mail/added_message.txt', render_context),
         to=[added_owner.email],
     )
@@ -206,7 +206,7 @@ def build_dandiset_unembargoed_message(dandiset: Dandiset):
     }
     html_message = render_to_string('api/mail/dandiset_unembargoed.html', render_context)
     return build_message(
-        subject='Your Dandiset has been unembargoed!',
+        subject='Your EMBERset has been unembargoed!',
         message=strip_tags(html_message),
         html_message=html_message,
         to=[owner.email for owner in get_dandiset_owners(dandiset)],
@@ -214,7 +214,7 @@ def build_dandiset_unembargoed_message(dandiset: Dandiset):
 
 
 def send_dandiset_unembargoed_message(dandiset: Dandiset):
-    logger.info('Sending dandisets unembargoed message to dandiset %s owners.', dandiset.identifier)
+    logger.info('Sending EMBERsets unembargoed message to dandiset %s owners.', dandiset.identifier)
     messages = [build_dandiset_unembargoed_message(dandiset)]
     with mail.get_connection() as connection:
         connection.send_messages(messages)
@@ -228,7 +228,7 @@ def build_dandiset_unembargo_failed_message(dandiset: Dandiset):
     render_context = {**BASE_RENDER_CONTEXT, 'dandiset': dandiset_context}
     html_message = render_to_string('api/mail/dandiset_unembargo_failed.html', render_context)
     return build_message(
-        subject=f'EMBER-DANDI: Unembargo failed for dandiset {dandiset.identifier}',
+        subject=f'EMBER-DANDI: Unembargo failed for EMBERset {dandiset.identifier}',
         message=strip_tags(html_message),
         html_message=html_message,
         to=[owner.email for owner in get_dandiset_owners(dandiset)],
@@ -239,7 +239,7 @@ def build_dandiset_unembargo_failed_message(dandiset: Dandiset):
 
 def send_dandiset_unembargo_failed_message(dandiset: Dandiset):
     logger.info(
-        'Sending dandiset unembargo failed message for dandiset %s to dandiset owners and devs',
+        'Sending EMBERset unembargo failed message for EMBERset %s to EMBERset owners and devs',
         dandiset.identifier,
     )
     messages = [build_dandiset_unembargo_failed_message(dandiset)]

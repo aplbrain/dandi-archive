@@ -16,7 +16,7 @@
         </v-card-title>
         <v-divider class="my-3" />
         <v-card-text>
-          This action will force publish this Dandiset, potentially
+          This action will force publish this EMBERset, potentially
           before the owners are prepared to do so.
         </v-card-text>
         <v-card-text>
@@ -70,7 +70,7 @@
               <v-col>
                 <span>
                   As an <span class="font-weight-bold">admin</span>,
-                  you may publish Dandisets without being an owner.
+                  you may publish EMBERsets without being an owner.
                 </span>
               </v-col>
             </v-row>
@@ -204,7 +204,7 @@
       </v-col>
     </v-row>
     <v-snackbar :value="!!alreadyBeingPublishedError">
-      This dandiset is already being published. Please wait for publishing to complete.
+      This EMBERset is already being published. Please wait for publishing to complete.
     </v-snackbar>
     <v-snackbar :value="!!publishedVersion">
       Publish complete.
@@ -215,7 +215,7 @@
           v-bind="attrs"
           @click="navigateToPublishedVersion"
         >
-          Go to published dandiset
+          Go to published EMBERset
         </v-btn>
       </template>
     </v-snackbar>
@@ -325,25 +325,25 @@ const publishDisabledMessage: ComputedRef<string> = computed(() => {
     return 'Only draft versions can be published.';
   }
   if (!props.userCanModifyDandiset && !user.value?.admin) {
-    return 'You do not have permission to edit this dandiset.';
+    return 'You do not have permission to edit this EMBERset.';
   }
   if (currentDandiset.value?.status === 'Pending') {
-    return 'This dandiset has not yet been validated.';
+    return 'This EMBERset has not yet been validated.';
   }
   if (currentDandiset.value?.status === 'Validating') {
-    return 'Currently validating this dandiset.';
+    return 'Currently validating this EMBERset.';
   }
   if (currentDandiset.value?.status === 'Published') {
     return 'No changes since last publish.';
   }
   if (currentDandiset.value?.dandiset.embargo_status === 'UNEMBARGOING') {
-    return 'This dandiset is being unembargoed, please wait.';
+    return 'This EMBERset is being unembargoed, please wait.';
   }
   if (publishing.value) {
-    return 'This dandiset is being published, please wait.';
+    return 'This EMBERset is being published, please wait.';
   }
   if (containsZarr.value) {
-    return 'Dandisets containing Zarr archives cannot currently be published.';
+    return 'EMBERsets containing Zarr archives cannot currently be published.';
   }
   return '';
 });
