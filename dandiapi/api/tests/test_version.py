@@ -898,17 +898,17 @@ def test_version_rest_publish_not_a_draft(api_client, user, published_version, a
     [
         (
             Version.Status.PENDING,
-            'Metadata validation is pending for this dandiset, please try again later.',
+            'Metadata validation is pending for this EMBERset, please try again later.',
             409,
         ),
-        (Version.Status.VALIDATING, 'Dandiset is currently being validated', 409),
-        (Version.Status.INVALID, 'Dandiset metadata or asset metadata is not valid', 400),
+        (Version.Status.VALIDATING, 'EMBERset is currently being validated', 409),
+        (Version.Status.INVALID, 'EMBERset metadata or asset metadata is not valid', 400),
         (
             Version.Status.PUBLISHED,
             'There have been no changes to the draft version since the last publish.',
             400,
         ),
-        (Version.Status.PUBLISHING, 'Dandiset is currently being published', 423),
+        (Version.Status.PUBLISHING, 'EMBERset is currently being published', 423),
     ],
 )
 def test_version_rest_publish_invalid(

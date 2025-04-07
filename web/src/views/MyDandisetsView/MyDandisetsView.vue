@@ -1,6 +1,6 @@
 <template>
   <DandisetsPage
-    title="My Dandisets"
+    title="My EMBERsets"
     user
   >
     <template #no-content>

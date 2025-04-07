@@ -19,7 +19,7 @@ describe('dandiset registration page', () => {
     // not succeed).
     await page.click('button.Cookie__button');
 
-    await expect(page).toClickXPath(vBtn('New Dandiset'));
+    await expect(page).toClickXPath(vBtn('New EMBERset'));
 
     await expect(page).toFillXPath(vTextField('Title'), name);
     await expect(page).toFillXPath(vTextarea('Description'), description);
@@ -30,7 +30,7 @@ describe('dandiset registration page', () => {
     await expect(page).toClickXPath(vListItem('spdx:CC0-1.0'));
     await page.waitForTimeout(500); // Form validation can *sometimes* take too long
 
-    await expect(page).toClickXPath(vBtn('Register Dandiset'));
+    await expect(page).toClickXPath(vBtn('Register EMBERset'));
     await waitForRequestsToFinish();
 
     await expect(page).toMatch('Licenses: spdx:CC0-1.0');

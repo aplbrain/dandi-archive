@@ -1,6 +1,6 @@
 <template>
   <DandisetsPage
-    title="Starred Dandisets"
+    title="Starred EMBERsets"
     starred
   >
     <template #empty>
@@ -8,7 +8,7 @@
         type="info"
         text
       >
-        You haven't starred any Dandisets yet.
+        You haven't starred any EMBERsets yet.
       </v-alert>
     </template>
   </DandisetsPage>

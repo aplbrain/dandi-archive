@@ -11,7 +11,7 @@ export const { CLIENT_URL } = process.env;
 
 export const LOGIN_BUTTON_TEXT = 'Log In with GitHub';
 export const LOGOUT_BUTTON_TEXT = 'Logout';
-export const MY_DANDISETS_BTN_TEXT = 'My Dandisets';
+export const MY_DANDISETS_BTN_TEXT = 'My EMBERsets';
 
 export function uniqueId() {
   // TODO think of something cleaner
@@ -106,7 +106,7 @@ export async function registerDandiset(name, description) {
     await cookieBanner.click();
   }
 
-  await expect(page).toClickXPath(vBtn('New Dandiset'));
+  await expect(page).toClickXPath(vBtn('New EMBERset'));
   await expect(page).toFillXPath(vTextField('Title'), name);
   await expect(page).toFillXPath(vTextarea('Description'), description);
   // eslint-disable-next-line no-undef
@@ -115,7 +115,7 @@ export async function registerDandiset(name, description) {
   await page.waitForTimeout(500); // Give dropdown time to render
   await expect(page).toClickXPath(vListItem('spdx:CC0-1.0'));
   await page.waitForTimeout(500); // Form validation can *sometimes* take too long
-  await expect(page).toClickXPath(vBtn('Register Dandiset'));
+  await expect(page).toClickXPath(vBtn('Register EMBERset'));
   await waitForRequestsToFinish();
   return page.url().split('/').pop();
 }

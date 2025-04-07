@@ -39,12 +39,12 @@
       </v-toolbar>
       <v-card-text>
         <span class="font-weight-black">
-          Dandiset link:
+          EMBERset link:
         </span>
         <CopyText
           class="pa-2"
           :text="permalink"
-          icon-hover-text="Copy Dandiset link to clipboard"
+          icon-hover-text="Copy EMBERset link to clipboard"
         />
       </v-card-text>
       <v-card-text
