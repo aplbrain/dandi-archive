@@ -109,6 +109,7 @@ class DandiMixin(ConfigMixin):
     DANDI_API_URL = values.URLValue(environ_required=True)
     DANDI_JUPYTERHUB_URL = values.URLValue(environ_required=True)
     DANDI_DEV_EMAIL = values.EmailValue(environ_required=True)
+    DANDI_ADMIN_EMAIL = values.EmailValue(environ_required=True)
 
     DANDI_VALIDATION_JOB_INTERVAL = values.IntegerValue(environ=True, default=60)
 
@@ -213,11 +214,7 @@ class HerokuProductionConfiguration(DandiMixin, HerokuProductionBaseConfiguratio
     ]
 
 
-# NOTE: The staging configuration uses a custom OAuth toolkit `Application` model
-# (`StagingApplication`) to allow for wildcards in OAuth redirect URIs (to support Netlify branch
-# deploy previews, etc). Note that both the custom `StagingApplication` and default
-# `oauth2_provider.models.Application` will have Django database models and will show up on the
-# Django admin, but only one of them will be in active use depending on the environment
-# the API server is running in (production/local or staging).
 class HerokuStagingConfiguration(HerokuProductionConfiguration):
-    OAUTH2_PROVIDER_APPLICATION_MODEL = 'api.StagingApplication'
+    # The staging configuration enables wildcards in OAuth redirect URIs in order
+    # to support Netlify deploy previews.
+    ALLOW_URI_WILDCARDS = True
