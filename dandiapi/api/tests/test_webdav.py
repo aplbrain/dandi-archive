@@ -33,7 +33,7 @@ def test_asset_atpath_root_path(api_client, user, draft_version, asset_blob):
     # Test that children=False produces an empty list at the root
     api_client.force_authenticate(user=user)
     resp = api_client.get(
-        '/api/webdav/assets/atpath',
+        '/api/webdav/assets/atpath/',
         {
             'children': False,
             'dandiset_id': draft_version.dandiset.identifier,
@@ -46,7 +46,7 @@ def test_asset_atpath_root_path(api_client, user, draft_version, asset_blob):
 
     # Test that children=True produces the assets that we know exist
     resp = api_client.get(
-        '/api/webdav/assets/atpath',
+        '/api/webdav/assets/atpath/',
         {
             'children': True,
             'dandiset_id': draft_version.dandiset.identifier,
@@ -78,7 +78,7 @@ def test_asset_atpath_asset(api_client, user, draft_version, asset_blob):
     # Path points directly to asset
     api_client.force_authenticate(user=user)
     resp = api_client.get(
-        '/api/webdav/assets/atpath',
+        '/api/webdav/assets/atpath/',
         {
             'children': False,
             'dandiset_id': draft_version.dandiset.identifier,
@@ -96,7 +96,7 @@ def test_asset_atpath_asset(api_client, user, draft_version, asset_blob):
 
     # The children param should have no effect
     second_resp = api_client.get(
-        '/api/webdav/assets/atpath',
+        '/api/webdav/assets/atpath/',
         {
             'children': True,
             'dandiset_id': draft_version.dandiset.identifier,
@@ -108,7 +108,7 @@ def test_asset_atpath_asset(api_client, user, draft_version, asset_blob):
 
     # metadata=True should add the metadata field
     resp = api_client.get(
-        '/api/webdav/assets/atpath',
+        '/api/webdav/assets/atpath/',
         {
             'metadata': True,
             'dandiset_id': draft_version.dandiset.identifier,
@@ -116,7 +116,12 @@ def test_asset_atpath_asset(api_client, user, draft_version, asset_blob):
             'path': path,
         },
     )
-    assert 'metadata' in resp.json()['results'][0]['resource']
+    res = resp.json()['results'][0]['resource']
+    assert 'metadata' in res
+
+    # Ensure the returned metadata is "populated". This is easily tested with the `path` field,
+    # as that is prohibited from being stored in the DB.
+    assert 'path' in res['metadata']
 
 
 @pytest.mark.django_db
@@ -148,7 +153,7 @@ def test_asset_atpath_folder(api_client, user, draft_version, asset_blob):
     # Assert that only the folder itself is returned if children=False
     api_client.force_authenticate(user=user)
     resp = api_client.get(
-        '/api/webdav/assets/atpath',
+        '/api/webdav/assets/atpath/',
         {
             'children': False,
             'dandiset_id': draft_version.dandiset.identifier,
@@ -161,9 +166,22 @@ def test_asset_atpath_folder(api_client, user, draft_version, asset_blob):
     assert resp.json()['results'][0]['type'] == 'folder'
     assert resp.json()['results'][0]['resource']['path'] == 'foo'
 
+    # Ensure that the response is the same if a trailing slash is included
+    api_client.force_authenticate(user=user)
+    resp_with_slash = api_client.get(
+        '/api/webdav/assets/atpath/',
+        {
+            'children': False,
+            'dandiset_id': draft_version.dandiset.identifier,
+            'version_id': draft_version.version,
+            'path': 'foo/',
+        },
+    )
+    assert resp_with_slash.json() == resp.json()
+
     # Now test that children=True includes the assets
     resp = api_client.get(
-        '/api/webdav/assets/atpath',
+        '/api/webdav/assets/atpath/',
         {
             'children': True,
             'dandiset_id': draft_version.dandiset.identifier,
@@ -176,6 +194,33 @@ def test_asset_atpath_folder(api_client, user, draft_version, asset_blob):
     assert resp.json()['results'][0]['type'] == 'folder'
     assert resp.json()['results'][1]['type'] == 'asset'
     assert resp.json()['results'][2]['type'] == 'asset'
+
+
+@pytest.mark.django_db
+def test_asset_atpath_trailing_slash(api_client, user, draft_version, asset_blob):
+    add_dandiset_owner(dandiset=draft_version.dandiset, user=user)
+    add_asset_to_version(
+        user=user,
+        version=draft_version,
+        asset_blob=asset_blob,
+        metadata={
+            'path': 'foo',
+            'schemaVersion': settings.DANDI_SCHEMA_VERSION,
+        },
+    )
+
+    # Assert that trailing slash on an asset returns 404
+    api_client.force_authenticate(user=user)
+    resp = api_client.get(
+        '/api/webdav/assets/atpath/',
+        {
+            'children': False,
+            'dandiset_id': draft_version.dandiset.identifier,
+            'version_id': draft_version.version,
+            'path': 'foo/',
+        },
+    )
+    assert resp.status_code == 404
 
 
 @pytest.mark.django_db
@@ -193,7 +238,7 @@ def test_asset_atpath_path_missing(api_client, user, draft_version, asset_blob):
 
     api_client.force_authenticate(user=user)
     resp = api_client.get(
-        '/api/webdav/assets/atpath',
+        '/api/webdav/assets/atpath/',
         {
             'children': False,
             'dandiset_id': draft_version.dandiset.identifier,
@@ -201,15 +246,14 @@ def test_asset_atpath_path_missing(api_client, user, draft_version, asset_blob):
             'path': 'foobartxt',
         },
     )
-    assert resp.status_code == 200
-    assert resp.json()['count'] == 0
+    assert resp.status_code == 404
 
 
 @pytest.mark.django_db
 def test_asset_atpath_path_incorrect_dandiset_id(api_client, user, draft_version, asset_blob):
     api_client.force_authenticate(user=user)
     resp = api_client.get(
-        '/api/webdav/assets/atpath',
+        '/api/webdav/assets/atpath/',
         {
             'children': False,
             'dandiset_id': '123456',
@@ -224,7 +268,7 @@ def test_asset_atpath_path_incorrect_dandiset_id(api_client, user, draft_version
 def test_asset_atpath_path_incorrect_version_id(api_client, user, draft_version, asset_blob):
     api_client.force_authenticate(user=user)
     resp = api_client.get(
-        '/api/webdav/assets/atpath',
+        '/api/webdav/assets/atpath/',
         {
             'children': False,
             'dandiset_id': draft_version.dandiset,
@@ -245,7 +289,7 @@ def test_asset_atpath_embargoed_access(
     user = user_factory()
     api_client.force_authenticate(user=user)
     resp = api_client.get(
-        '/api/webdav/assets/atpath',
+        '/api/webdav/assets/atpath/',
         {
             'children': False,
             'dandiset_id': draft_version.dandiset.identifier,
@@ -257,7 +301,7 @@ def test_asset_atpath_embargoed_access(
 
     add_dandiset_owner(dandiset, user)
     resp = api_client.get(
-        '/api/webdav/assets/atpath',
+        '/api/webdav/assets/atpath/',
         {
             'children': False,
             'dandiset_id': draft_version.dandiset.identifier,
@@ -274,7 +318,7 @@ def test_asset_atpath_public_access(api_client, dandiset_factory, draft_version_
     draft_version = draft_version_factory(dandiset=dandiset)
 
     resp = api_client.get(
-        '/api/webdav/assets/atpath',
+        '/api/webdav/assets/atpath/',
         {
             'children': False,
             'dandiset_id': draft_version.dandiset.identifier,

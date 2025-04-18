@@ -1,18 +1,7 @@
 <template>
   <v-footer class="text-body-2">
     <v-container>
-      <cookie-law theme="blood-orange">
-        <div slot="message">
-          <span
-            v-if="cookiesEnabled()"
-          >We use cookies to ensure you get the best experience on
-            DANDI.</span>
-          <span
-            v-else
-          >We noticed you're blocking cookies - note that certain aspects of
-            the site may not work.</span>
-        </div>
-      </cookie-law>
+      <CookieBanner />
       <v-row>
         <v-col offset="2">
           &copy; 2019 - 2025 The DANDI Team<br>
@@ -21,22 +10,25 @@
             target="_blank"
             rel="noopener"
             href="https://docs.dandiarchive.org/about/terms/"
+            class="text-primary"
           >Terms</a>
-          <v-icon x-small>
+          <v-icon size="x-small">
             mdi-open-in-new
           </v-icon> / <a
             target="_blank"
             rel="noopener"
             href="https://docs.dandiarchive.org/about/policies/"
+            class="text-primary"
           >Policies</a>
-          <v-icon x-small>
+          <v-icon size="x-small">
             mdi-open-in-new
           </v-icon> / <a
             target="_blank"
             rel="noopener"
             href="https://github.com/dandi/dandi-archive/blob/master/CODE_OF_CONDUCT.md"
+            class="text-primary"
           >Code of Conduct</a>
-          <v-icon x-small>
+          <v-icon size="x-small">
             mdi-open-in-new
           </v-icon>
           <br>
@@ -56,15 +48,17 @@
             target="_blank"
             rel="noopener"
             href="https://braininitiative.nih.gov/"
+            class="text-primary"
           >BRAIN Initiative</a>
-          <v-icon x-small>
+          <v-icon size="x-small">
             mdi-open-in-new
           </v-icon> <a
             target="_blank"
             rel="noopener"
             href="https://braininitiative.nih.gov/research/systems-neuroscience/brain-behavior-quantification-and-synchronization-program"
+            class="text-primary"
           >BBQS Program</a>
-          <v-icon x-small>
+          <v-icon size="x-small">
             mdi-open-in-new
           </v-icon>
           <br>
@@ -72,9 +66,10 @@
             target="_blank"
             rel="noopener"
             href="https://aws.amazon.com/opendata/"
+            class="text-primary"
           >AWS Open Data</a>
           <!-- TODO: Update to registry link when released for EMBER: https://registry.opendata.aws/XXX/ -->
-          <v-icon x-small>
+          <v-icon size="x-small">
             mdi-open-in-new
           </v-icon>
           <br>
@@ -82,8 +77,9 @@
             target="_blank"
             rel="noopener"
             href="https://netlify.com"
+            class="text-primary"
           >This site is powered by Netlify</a>
-          <v-icon x-small>
+          <v-icon size="x-small">
             mdi-open-in-new
           </v-icon>
           <br>
@@ -91,8 +87,9 @@
             target="_blank"
             rel="noopener"
             :href="dandiUrl"
+            class="text-primary"
           >DANDI</a>
-          <v-icon x-small>
+          <v-icon size="x-small">
             mdi-open-in-new
           </v-icon>
         </v-col>
@@ -102,8 +99,9 @@
             target="_blank"
             rel="noopener"
             href="mailto:help@emberarchive.org"
+            class="text-primary"
           >Send an email</a>
-          <v-icon x-small>
+          <v-icon size="x-small">
             mdi-open-in-new
           </v-icon>
           <br>
@@ -111,8 +109,9 @@
             target="_blank"
             rel="noopener"
             href="https://github.com/dandi/helpdesk/issues/new/choose"
+            class="text-primary"
           >File an issue</a>
-          <v-icon x-small>
+          <v-icon size="x-small">
             mdi-open-in-new
           </v-icon>
         </v-col>
@@ -121,30 +120,12 @@
   </v-footer>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-import CookieLaw from 'vue-cookie-law';
-
-import { dandiUrl, emberHomeUrl, emberGitHubUrl } from '@/utils/constants';
-import { cookiesEnabled } from '@/rest';
+<script setup lang="ts">
+import CookieBanner from './CookieBanner.vue';
+import { dandiUrl } from '@/utils/constants';
 
 const version = import.meta.env.VITE_APP_VERSION;
 const githubLink = import.meta.env.VITE_APP_GIT_REVISION ? `https://github.com/aplbrain/dandi-archive/commit/${import.meta.env.VITE_APP_GIT_REVISION}` : 'https://github.com/aplbrain/dandi-archive';
-
-export default defineComponent({
-  name: 'DandiFooter',
-  components: { CookieLaw },
-  setup() {
-    return {
-      dandiUrl,
-      emberHomeUrl,
-      emberGitHubUrl,
-      version,
-      githubLink,
-      cookiesEnabled,
-    };
-  },
-});
 </script>
 
 <style scoped>

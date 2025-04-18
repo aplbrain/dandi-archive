@@ -2,17 +2,19 @@
   <div v-if="currentDandiset && meta && stats">
     <v-card
       class="px-3"
-      color="grey lighten-5"
-      outlined
+      color="grey-lighten-5"
+      variant="outlined"
     >
       <v-row class="mx-2 my-2 mb-0">
         <v-col
-          class="d-flex align-center"
+          class="d-flex align-start justify-space-between"
         >
-          <h1 :class="`font-weight-light ${$vuetify.breakpoint.xs ? 'text-h6' : ''}`">
-            <ShareDialog />
-            {{ meta.name }}
-          </h1>
+          <div class="title-container d-flex align-center">
+            <h1 :class="`font-weight-light ${isXsDisplay ? 'text-h6' : ''}`">
+              <ShareDialog />
+              {{ meta.name }}
+            </h1>
+          </div>
           <StarButton
             :identifier="currentDandiset.dandiset.identifier"
             :initial-star-count="currentDandiset.dandiset.star_count"
@@ -21,23 +23,21 @@
           />
           <v-chip
             v-if="currentDandiset.version != 'draft'"
-            outlined
+            variant="outlined"
             class="mx-2 pl-1"
           >
-            <v-tooltip
-              top
-            >
-              <template #activator="{ on, attrs }">
+            <v-tooltip location="top">
+              <template #activator="{ props }">
                 <v-btn
                   v-if="currentDandiset !== null"
                   icon
-                  small
-                  v-bind="attrs"
-                  v-on="on"
+                  size="small"
+
+                  v-bind="props"
                   @click="copy('DOI')"
                 >
                   <v-icon
-                    small
+                    size="small"
                   >
                     mdi-content-copy
                   </v-icon>
@@ -57,26 +57,26 @@
         </v-col>
       </v-row>
       <v-row class="mx-1">
-        <v-col :cols="$vuetify.breakpoint.xs ? 12 : 3">
+        <v-col :cols="isXsDisplay ? 12 : 3">
           <v-chip
             class="text-wrap py-1 pl-1"
             style="text-align: center;"
-            outlined
+            variant="outlined"
           >
             <v-tooltip
-              top
+              location="top"
             >
-              <template #activator="{ on, attrs }">
+              <template #activator="{ props }">
                 <v-btn
                   v-if="currentDandiset !== null"
                   icon
-                  small
-                  v-bind="attrs"
-                  v-on="on"
+                  size="small"
+                  variant="plain"
+                  v-bind="props"
                   @click="copy('dandiID')"
                 >
                   <v-icon
-                    small
+                    size="small"
                   >
                     mdi-content-copy
                   </v-icon>
@@ -102,9 +102,9 @@
             </span>
           </v-chip>
         </v-col>
-        <v-col :cols="$vuetify.breakpoint.xs ? 12 : 3">
+        <v-col :cols="isXsDisplay ? 12 : 3">
           <span>
-            <v-icon class="grey--text text--lighten-1">mdi-account</v-icon>
+            <v-icon class="text-grey-lighten-1">mdi-account</v-icon>
             <template
               v-if="!currentDandiset.contact_person"
             >
@@ -115,15 +115,15 @@
             </template>
           </span>
         </v-col>
-        <v-col :cols="$vuetify.breakpoint.xs ? 12 : 3">
+        <v-col :cols="isXsDisplay ? 12 : 3">
           <span>
-            <v-icon class="grey--text text--lighten-1">mdi-file</v-icon>
+            <v-icon class="text-grey-lighten-1">mdi-file</v-icon>
             File Count <strong>{{ stats.asset_count }}</strong>
           </span>
         </v-col>
-        <v-col :cols="$vuetify.breakpoint.xs ? 12 : 3">
+        <v-col :cols="isXsDisplay ? 12 : 3">
           <span>
-            <v-icon class="grey--text text--lighten-1">mdi-server</v-icon>
+            <v-icon class="text-grey-lighten-1">mdi-server</v-icon>
             Size <strong>{{ transformFilesize(stats.size) }}</strong>
           </span>
         </v-col>
@@ -131,21 +131,21 @@
       <v-row
         class="mx-1"
       >
-        <v-col :cols="$vuetify.breakpoint.xs ? 12 : 3">
+        <v-col :cols="isXsDisplay ? 12 : 3">
           <span>
-            <v-icon class="grey--text text--lighten-1">mdi-calendar-range</v-icon>
+            <v-icon class="text-grey-lighten-1">mdi-calendar-range</v-icon>
             Created <strong>{{ formatDate(currentDandiset.created) }}</strong>
           </span>
         </v-col>
-        <v-col :cols="$vuetify.breakpoint.xs ? 12 : 3">
+        <v-col :cols="isXsDisplay ? 12 : 3">
           <span>
-            <v-icon class="grey--text text--lighten-1">mdi-history</v-icon>
+            <v-icon class="text-grey-lighten-1">mdi-history</v-icon>
             Last update <strong>{{ formatDate(currentDandiset.modified) }}</strong>
           </span>
         </v-col>
-        <v-col :cols="$vuetify.breakpoint.xs ? 12 : 3">
+        <v-col :cols="isXsDisplay ? 12 : 3">
           <span v-if="meta && meta.license">
-            <v-icon class="grey--text text--lighten-1">mdi-gavel</v-icon>
+            <v-icon class="text-grey-lighten-1">mdi-gavel</v-icon>
             Licenses:
             <strong v-if="!meta.license.length">(none)</strong>
             <span
@@ -157,9 +157,9 @@
             </span>
           </span>
         </v-col>
-        <v-col :cols="$vuetify.breakpoint.xs ? 12 : 3">
+        <v-col :cols="isXsDisplay ? 12 : 3">
           <span v-if="accessInformation && accessInformation.length">
-            <v-icon class="grey--text text--lighten-1">mdi-account-question</v-icon>
+            <v-icon class="text-grey-lighten-1">mdi-account-question</v-icon>
             Access Information:
             <span
               v-for="(item, i) in accessInformation"
@@ -193,7 +193,7 @@
         >
           <v-card
             v-if="(meta.keywords && meta.keywords.length) || (meta.license && meta.license.length)"
-            outlined
+            variant="outlined"
             class="mb-4"
           >
             <v-card-text
@@ -204,7 +204,7 @@
               <v-chip
                 v-for="(keyword, i) in meta.keywords"
                 :key="i"
-                small
+                size="small"
                 style="margin: 5px;"
               >
                 {{ keyword }}
@@ -218,7 +218,7 @@
               <v-chip
                 v-for="(item, i) in subjectMatter"
                 :key="i"
-                small
+                size="small"
                 style="margin: 5px;"
               >
                 {{ item.name }}
@@ -262,18 +262,22 @@
   </div>
 </template>
 
-<script lang="ts">
-import type { ComputedRef } from 'vue';
+<script setup lang="ts">
 import {
-  defineComponent, computed, ref,
+  computed,
+  ref,
+  watchEffect,
+  type ComputedRef,
 } from 'vue';
 
-import filesize from 'filesize';
+import { filesize } from 'filesize';
 import { marked } from 'marked';
 import moment from 'moment';
 import DOMPurify from 'dompurify';
+import { useDisplay } from 'vuetify';
 
 import { useDandisetStore } from '@/stores/dandiset';
+import { getDoiMetadata } from '@/utils/doi';
 import type { AccessInformation, DandisetStats, SubjectMatterOfTheDataset } from '@/types';
 
 import AccessInformationTab from '@/components/DLP/AccessInformationTab.vue';
@@ -320,103 +324,83 @@ const tabs = [
   },
 ];
 
-export default defineComponent({
-  name: 'DandisetMain',
-  components: {
-    ShareDialog,
-    AccessInformationTab,
-    AssetSummaryTab,
-    ContributorsTab,
-    OverviewTab,
-    RelatedResourcesTab,
-    SubjectMatterTab,
-    StarButton,
+defineProps({
+  schema: {
+    type: Object,
+    required: true,
   },
-  props: {
-    schema: {
-      type: Object,
-      required: true,
-    },
-  },
-  setup() {
-    const store = useDandisetStore();
+});
 
-    const currentDandiset = computed(() => store.dandiset);
+const store = useDandisetStore();
+const display = useDisplay();
 
-    const transformFilesize = (size: number) => filesize(size, { round: 1, base: 10, standard: 'iec' });
+const currentDandiset = computed(() => store.dandiset);
+const isXsDisplay = computed(() => display.xs.value);
 
-    const stats: ComputedRef<DandisetStats|null> = computed(() => {
-      if (!currentDandiset.value) {
-        return null;
-      }
-      const { asset_count, size } = currentDandiset.value;
-      return { asset_count, size };
-    });
+const transformFilesize = (size: number) => filesize(size, { round: 1, base: 10, standard: 'iec' });
 
-    // whether or not the "see more" button has been pressed to reveal
-    // the full description
-    const showFullDescription = ref(false);
-    const description: ComputedRef<string> = computed(() => {
-      if (!currentDandiset.value) {
-        return '';
-      }
-      const fullDescription = currentDandiset.value.metadata?.description;
-      if (!fullDescription) {
-        return '';
-      }
-      if (fullDescription.length <= MAX_DESCRIPTION_LENGTH) {
-        return fullDescription;
-      }
-      if (showFullDescription.value) {
-        return currentDandiset.value.metadata?.description || '';
-      }
-      let shortenedDescription = fullDescription.substring(0, MAX_DESCRIPTION_LENGTH);
-      shortenedDescription = `${shortenedDescription.substring(0, shortenedDescription.lastIndexOf(' '))}...`;
-      return shortenedDescription;
-    });
-    const htmlDescription: ComputedRef<string> = computed(
-      () => DOMPurify.sanitize(marked.parse(description.value)),
-    );
-    const meta = computed(() => currentDandiset.value?.metadata);
+const stats: ComputedRef<DandisetStats|null> = computed(() => {
+  if (!currentDandiset.value) {
+    return null;
+  }
+  const { asset_count, size } = currentDandiset.value;
+  return { asset_count, size };
+});
 
-    const accessInformation: ComputedRef<AccessInformation|undefined> = computed(
-      () => meta.value?.access,
-    );
-    const subjectMatter: ComputedRef<SubjectMatterOfTheDataset|undefined> = computed(
-      () => meta.value?.about,
-    );
+// whether or not the "see more" button has been pressed to reveal
+// the full description
+const showFullDescription = ref(false);
+const description: ComputedRef<string> = computed(() => {
+  if (!currentDandiset.value) {
+    return '';
+  }
+  const fullDescription = currentDandiset.value.metadata?.description;
+  if (!fullDescription) {
+    return '';
+  }
+  if (fullDescription.length <= MAX_DESCRIPTION_LENGTH) {
+    return fullDescription;
+  }
+  if (showFullDescription.value) {
+    return currentDandiset.value.metadata?.description || '';
+  }
+  let shortenedDescription = fullDescription.substring(0, MAX_DESCRIPTION_LENGTH);
+  shortenedDescription = `${shortenedDescription.substring(0, shortenedDescription.lastIndexOf(' '))}...`;
+  return shortenedDescription;
+});
+const htmlDescription: ComputedRef<string> = computed(
+  () => DOMPurify.sanitize(marked.parse(description.value) as string),
+);
+const meta = computed(() => currentDandiset.value?.metadata);
 
-    const currentTab = ref(0);
+const accessInformation: ComputedRef<AccessInformation|undefined> = computed(
+  () => meta.value?.access,
+);
+const subjectMatter: ComputedRef<SubjectMatterOfTheDataset|undefined> = computed(
+  () => meta.value?.about,
+);
 
-    function formatDate(date: string): string {
-      return moment(date).format('LL');
-    }
-    function copy(value:string) {
-      if (!meta.value) {
-        throw new Error('metadata is undefined!');
-      }
-      const version = meta.value?.version === 'draft' ? meta.value?.identifier as string : meta.value?.id as string;
-      navigator.clipboard.writeText(value === 'dandiID' ? version : `https://doi.org/${meta.value?.doi}`);
-    }
+const currentTab = ref(0);
 
-    return {
-      currentDandiset,
-      formatDate,
-      stats,
-      transformFilesize,
-      description,
-      htmlDescription,
-      showFullDescription,
-      MAX_DESCRIPTION_LENGTH,
+function formatDate(date: string): string {
+  return moment(date).format('LL');
+}
+function copy(value:string) {
+  if (!meta.value) {
+    throw new Error('metadata is undefined!');
+  }
+  const version = meta.value?.version === 'draft' ? meta.value?.identifier as string : meta.value?.id as string;
+  navigator.clipboard.writeText(value === 'dandiID' ? version : `https://doi.org/${meta.value?.doi}`);
+}
 
-      accessInformation,
-      subjectMatter,
-      copy,
-
-      currentTab,
-      tabs,
-      meta,
-    };
-  },
+watchEffect(async () => {
+  // Inject datacite metadata into the page
+  if (meta.value?.doi) {
+    const metadataText = await getDoiMetadata(meta.value.doi as string);
+    const script = document.createElement('script');
+    script.setAttribute('type', 'application/ld+json');
+    script.textContent = metadataText;
+    document.head.appendChild(script);
+  }
 });
 </script>

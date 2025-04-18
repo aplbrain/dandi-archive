@@ -1,40 +1,55 @@
-import Vue from 'vue';
-import Vuetify from 'vuetify/lib/framework';
+/**
+ * plugins/vuetify.ts
+ *
+ * Framework documentation: https://vuetifyjs.com`
+ */
 
-import colors from 'vuetify/lib/util/colors';
+// Styles
+import '@mdi/font/css/materialdesignicons.css'
+import 'vuetify/styles'
+import colors from 'vuetify/util/colors';
 
-Vue.use(Vuetify);
+// Composables
+import { createVuetify } from 'vuetify'
 
-export default new Vuetify({
+const DandiLightTheme = {
+  dark: false,
+  colors: {
+    primary: colors.red.darken4,
+    secondary: colors.orange.darken2,
+    accent: colors.yellow.accent3,
+    error: colors.red.base,
+    info: colors.yellow.darken3,
+    dropzone: colors.grey.lighten3,
+    highlight: colors.yellow.lighten4,
+  }
+};
+
+const DandiDarkTheme = {
+  dark: true,
+  colors: {
+    primary: colors.red.lighten2,
+    secondary: colors.orange.darken4,
+    accent: colors.yellow.accent3,
+    dropzone: colors.grey.darken2,
+    highlight: colors.grey.darken2,
+  }
+};
+
+// https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
+export default createVuetify({
   // Use Girder web components theme
   // https://github.com/girder/girder_web_components/blob/master/src/utils/vuetifyConfig.js
   theme: {
-    dark: false,
-    options: {
-      customProperties: true,
-    },
+    defaultTheme: 'DandiLightTheme',
     themes: {
-      light: {
-        primary: colors.red.darken4,
-        secondary: colors.orange.darken2,
-        accent: colors.yellow.accent3,
-        error: colors.red.base,
-        info: colors.yellow.darken3,
-        dropzone: colors.grey.lighten3,
-        highlight: colors.yellow.lighten4,
-      },
-      dark: {
-        primary: colors.red.lighten2,
-        secondary: colors.orange.darken4,
-        accent: colors.yellow.accent3,
-        dropzone: colors.grey.darken2,
-        highlight: colors.grey.darken2,
-      },
+      DandiLightTheme,
+      DandiDarkTheme,
     },
   },
   icons: {
-    iconfont: 'mdi',
-    values: {
+    defaultSet: 'mdi',
+    aliases: {
       alert: 'mdi-alert-circle',
       bitbucket: 'mdi-bitbucket',
       box_com: 'mdi-package',

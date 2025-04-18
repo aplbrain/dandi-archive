@@ -1,6 +1,7 @@
-import Vue from 'vue';
-import { createPinia, PiniaVuePlugin } from 'pinia';
+import { createPinia } from 'pinia';
+import { createSentryPiniaPlugin } from '@sentry/vue';
 
-Vue.use(PiniaVuePlugin);
+const pinia = createPinia();
+pinia.use(createSentryPiniaPlugin());
 
-export default createPinia();
+export default pinia;

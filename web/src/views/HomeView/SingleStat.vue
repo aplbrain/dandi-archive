@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-row
-      class="text-h3 font-weight-thin text-center white--text"
+      class="text-h3 font-weight-thin text-center text-white"
       no-gutters
     >
       <v-col
@@ -12,7 +12,7 @@
       </v-col>
     </v-row>
     <v-row
-      class="text-h6 font-weight-light text-center secondary--text text--lighten-1"
+      class="text-h6 font-weight-light text-center text-secondary"
       no-gutters
     >
       <v-col
@@ -22,7 +22,7 @@
         <a
           v-if="href"
           :href="href"
-          class="secondary--text text--lighten-1"
+          class="text-secondary"
         >
           {{ name }}</a>
         <span v-else>
@@ -30,13 +30,13 @@
         </span>
         <v-tooltip
           v-if="description"
-          right
+          location="right"
         >
-          <template #activator="{ on }">
+          <template #activator="{ props }">
             <v-icon
               color="grey"
               size="medium"
-              v-on="on"
+              v-bind="props"
             >
               mdi-help-circle
             </v-icon>
