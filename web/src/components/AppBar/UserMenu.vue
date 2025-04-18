@@ -8,7 +8,7 @@
         icon
         v-bind="props"
       >
-        <v-avatar color="secondary lighten-2">
+        <v-avatar color="secondary-lighten-2">
           <span class="text-primary">
             {{ userInitials }}
           </span>

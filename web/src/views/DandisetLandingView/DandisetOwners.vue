@@ -60,7 +60,7 @@
                   id="manage"
                   variant="flat"
                   :disabled="manageOwnersDisabled"
-                  color="secondary lighten-1"
+                  color="secondary-lighten-1"
                   class="justify-start"
                   block
                   v-bind="dialogProps"

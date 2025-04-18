@@ -41,10 +41,13 @@
         </template>
       </v-list>
     </v-menu>
-    <router-link to="/" class="d-flex align-center text-decoration-none">
+    <router-link
+      to="/"
+      class="d-flex align-center text-decoration-none"
+    >
       <v-img
         alt="EMBER logo"
-        contain
+        cover
         height="40px"
         width="30px"
         :src="logo"
