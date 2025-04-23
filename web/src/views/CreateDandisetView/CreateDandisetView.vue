@@ -12,18 +12,17 @@
             <template #label>
               Mark Dandiset Private
               <v-tooltip
-                right
+                location="right"
                 max-width="25%"
               >
-                <template #activator="{ on, attrs }">
+                <template #activator="{ props }">
                   <div
-                    v-bind="attrs"
                     style="cursor: help"
-                    v-on="on"
+                    v-bind="props"
                   >
                     <small class="ml-3 d-flex align-center">
                       (What is this?)
-                      <v-icon small>
+                      <v-icon size="small">
                         mdi-information
                       </v-icon>
                     </small>
@@ -49,10 +48,26 @@
           label="Title"
           :counter="nameMaxLength"
           required
-          outlined
-          dense
+          variant="outlined"
+          density="compact"
           class="my-4"
         />
+        <v-alert
+          v-if="showTestWarning"
+          type="warning"
+          variant="tonal"
+          class="my-2"
+        >
+          <span>
+            If this is a test dandiset and does not contain actual neuroscience data,
+            please consider using the sandbox instance instead. See documentation
+            <a
+              :href="sandboxDocsUrl"
+              target="_blank"
+            >here</a>
+            for how to use the the sandbox instance.
+          </span>
+        </v-alert>
 
         <div class="text-h4">
           Description
@@ -66,8 +81,8 @@
           label="Description"
           :counter="descriptionMaxLength"
           required
-          outlined
-          dense
+          variant="outlined"
+          density="compact"
           class="my-4"
         />
         <div v-if="!embargoed">
@@ -89,8 +104,8 @@
             :items="dandiLicenses"
             label="License"
             class="my-4"
-            outlined
-            dense
+            variant="outlined"
+            density="compact"
           />
         </div>
         <div v-else>
@@ -107,8 +122,8 @@
             label="Award number"
             :counter="120"
             :required="embargoed"
-            outlined
-            dense
+            variant="outlined"
+            density="compact"
             class="my-4"
             :rules="awardNumberRules"
           />
@@ -122,7 +137,7 @@
         type="submit"
         color="primary"
         :disabled="saveDisabled"
-        depressed
+        variant="flat"
         @click="registerDandiset"
       >
         Register Dandiset
@@ -136,10 +151,11 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router/composables';
+import { useRouter } from 'vue-router';
 import type { ComputedRef } from 'vue';
 import { dandiRest, loggedIn } from '@/rest';
 import { useDandisetStore } from '@/stores/dandiset';
+import { sandboxDocsUrl } from '@/utils/constants';
 
 import type { IdentifierForAnAward, LicenseType, License } from '@/types';
 
@@ -180,6 +196,9 @@ const descriptionMaxLength: ComputedRef<number> = computed(
 const dandiLicenses: ComputedRef<LicenseType[]> = computed(
   () => store.schema.$defs.LicenseType.enum,
 );
+
+// Try to guess if the Dandiset is a test Dandiset based on the name, and show a warning if so.
+const showTestWarning = computed(() => name.value.toLowerCase().includes('test'));
 
 if (!loggedIn()) {
   router.push({ name: 'home' });

@@ -2,9 +2,11 @@ const dandiUrl = 'https://dandiarchive.org';
 const emberHomeUrl = 'https://emberarchive.org';
 const emberAboutUrl = 'https://emberarchive.org/about';
 const emberGitHubUrl = 'https://github.com/aplbrain/dandi-archive';
-const dandiDocumentationUrl = 'https://emberarchive.org/documentation'; // TODO: Link aplbrain/dandi-docs deployment instead when ready
+const dandiDocumentationUrl = 'https://emberarchive.org/documentation';
+// const dandiAboutUrl = 'https://about.dandiarchive.org/';
 const dandiHelpUrl = 'https://github.com/dandi/helpdesk/issues/new/choose';
 const dandihubUrl = 'https://hub.dandiarchive.org/';
+const sandboxDocsUrl = `${dandiDocumentationUrl}/getting-started/creating-account/`;
 
 const draftVersion = 'draft';
 
@@ -61,6 +63,7 @@ export {
   emberGitHubUrl,
   dandiDocumentationUrl,
   dandihubUrl,
+  sandboxDocsUrl,
   draftVersion,
   dandiHelpUrl,
   VALIDATION_ICONS,
