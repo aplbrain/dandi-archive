@@ -64,7 +64,8 @@ NEW_USER_QUESTIONS = QUESTIONS
 COLLECT_USER_NAME_QUESTIONS = QUESTIONS[:2]
 
 
-@require_http_methods(['GET', 'POST'])
+# @require_http_methods(['GET', 'POST'])
+@require_http_methods(['GET'])
 def authorize_view(request: HttpRequest) -> HttpResponse:
     """Override authorization endpoint to handle user questionnaire."""
     user: User = request.user
