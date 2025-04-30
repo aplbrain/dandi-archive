@@ -63,6 +63,7 @@ NEW_USER_QUESTIONS = QUESTIONS
 # questions for existing users who have no first/last name
 COLLECT_USER_NAME_QUESTIONS = QUESTIONS[:2]
 
+
 # @require_http_methods(['GET'])
 @require_http_methods(['GET', 'POST'])
 def authorize_view(request: HttpRequest) -> HttpResponse:
