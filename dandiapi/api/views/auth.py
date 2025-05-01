@@ -64,7 +64,8 @@ NEW_USER_QUESTIONS = QUESTIONS
 COLLECT_USER_NAME_QUESTIONS = QUESTIONS[:2]
 
 
-@require_http_methods(['GET'])
+# @require_http_methods(['GET'])
+@require_http_methods(['GET', 'POST'])
 def authorize_view(request: HttpRequest) -> HttpResponse:
     """Override authorization endpoint to handle user questionnaire."""
     user: User = request.user
@@ -128,8 +129,9 @@ def user_questionnaire_form_view(request: HttpRequest) -> HttpResponse:
             not questionnaire_already_filled_out
             and user_metadata.status == UserMetadata.Status.INCOMPLETE
         ):
-            should_auto_approve: bool = user.email.endswith('.edu') or user.email.endswith(
-                '@alleninstitute.org'
+            should_auto_approve: bool = any(
+                user.email.endswith(suffix)
+                for suffix in ['.edu', '@alleninstitute.org', '@nih.gov', '@janelia.hhmi.org']
             )
 
             # auto-approve users with edu emails, otherwise require manual approval

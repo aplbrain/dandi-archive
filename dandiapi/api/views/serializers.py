@@ -223,6 +223,10 @@ class DandisetQueryParameterSerializer(serializers.Serializer):
         help_text='Whether to filter the result to only dandisets'
         ' that have been starred by the current user.',
     )
+    search = serializers.CharField(
+        required=False,
+        help_text='Search terms to filter the results.',
+    )
 
 
 class DandisetSearchQueryParameterSerializer(DandisetQueryParameterSerializer):
@@ -264,9 +268,7 @@ class DandisetSearchQueryParameterSerializer(DandisetQueryParameterSerializer):
         # The queryset can't be evaluated at compile time, so we evaluate it here
         # in the __init__ method
         self.fields['species'].choices = list(
-            AssetSearch.objects.values_list(
-                'asset_metadata__wasAttributedTo__0__species__name', flat=True
-            ).distinct()
+            AssetSearch.objects.exclude(species='').values_list('species', flat=True).distinct()
         )
 
     def validate(self, data: OrderedDict[str, Any]) -> OrderedDict[str, Any]:
@@ -300,7 +302,7 @@ class DandisetSearchQueryParameterSerializer(DandisetQueryParameterSerializer):
             query_filters['genotype'] |= Q(asset_metadata__wasAttributedTo__0__genotype=genotype)
 
         for species in self.validated_data.get('species', []):
-            query_filters['species'] |= Q(asset_metadata__wasAttributedTo__0__species__name=species)
+            query_filters['species'] |= Q(species=species)
 
         for measurement_technique in self.validated_data.get('measurement_technique', []):
             query_filters['measurement_technique'] |= Q(
