@@ -2,7 +2,8 @@ const dandiUrl = 'https://dandiarchive.org';
 const emberHomeUrl = 'https://emberarchive.org';
 const emberAboutUrl = 'https://emberarchive.org/about';
 const emberGitHubUrl = 'https://github.com/aplbrain/dandi-archive';
-const dandiDocumentationUrl = 'https://emberarchive.org/documentation';
+const emberDocumentationUrl = 'https://emberarchive.org/documentation';
+const dandiDocumentationUrl = 'https://docs.dandiarchive.org/documentation';
 // const dandiAboutUrl = 'https://about.dandiarchive.org/';
 const dandiHelpUrl = 'https://github.com/dandi/helpdesk/issues/new/choose';
 const dandihubUrl = 'https://hub.dandiarchive.org/';
@@ -61,6 +62,7 @@ export {
   emberHomeUrl,
   emberAboutUrl,
   emberGitHubUrl,
+  emberDocumentationUrl,
   dandiDocumentationUrl,
   dandihubUrl,
   sandboxDocsUrl,
