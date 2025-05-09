@@ -1,8 +1,15 @@
 name: Deploy backend to production
 
 on:
-  release:
-    types: [released]
+  push:
+      branches:
+        - prod
+      paths-ignore:
+        - "web/**"
+        - "CHANGELOG.md"
+  # TODO: revert back; only for testing!
+  # release:
+  #   types: [released]
 
 concurrency:
   # If this workflow is already running, cancel it to avoid a scenario
@@ -12,30 +19,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  reset-release-branch:
-    name: Update release branch
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # fetch history for all branches and tags
-          token: ${{ secrets.GH_TOKEN }} # use PAT with permissions to push to master
-          ref: release
+  # reset-release-branch:
+  #   name: Update release branch
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0 # fetch history for all branches and tags
+  #         token: ${{ secrets.GH_TOKEN }} # use PAT with permissions to push to master
+  #         ref: release
 
-      - name: Perform reset
-        run: |
-          git reset --hard ${{ github.ref }}
-          git push --force origin release
+  #     - name: Perform reset
+  #       run: |
+  #         git reset --hard ${{ github.ref }}
+  #         git push --force origin release
 
   production-deploy:
     name: Deploy to Heroku
     runs-on: ubuntu-22.04
-    needs: reset-release-branch
+    #needs: reset-release-branch
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # fetch history for all branches and tags
-          ref: release
+          #ref: release
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -54,7 +61,7 @@ jobs:
           python -m build --sdist
 
       - name: Create Heroku Build
-        run: heroku builds:create -a dandi-api --source-tar dist/*.tar.gz
+        run: heroku builds:create -a ember-dandi-api --source-tar dist/*.tar.gz
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY  }}
           HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL  }}

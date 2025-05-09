@@ -12,7 +12,7 @@
       </v-col>
     </v-row>
     <v-row
-      class="text-h6 font-weight-light text-center text-light-blue-lighten-1"
+      class="text-h6 font-weight-light text-center text-secondary"
       no-gutters
     >
       <v-col
@@ -22,6 +22,7 @@
         <a
           v-if="href"
           :href="href"
+          class="text-secondary"
         >
           {{ name }}</a>
         <span v-else>

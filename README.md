@@ -1,6 +1,10 @@
-# DANDI Archive
+# EMBER-DANDI Archive
 
 ![](https://about.dandiarchive.org/assets/dandi_logo.svg)
+
+## EMBER: Ecosystem for Multi-modal Brain-behavior Experimentation and Research
+
+[EMBER](https://emberarchive.org) is the BRAIN Initiative data archive for multi-modal neurophysical and behavioral data, supporting the Brain Behavior Quantification and Synchronization (BBQS) Program.
 
 ## DANDI: Distributed Archives for Neurophysiology Data Integration
 
@@ -13,7 +17,7 @@ collaboration within and across labs, as well as the entry point for research.
 
 ## Structure
 
-The dandi-archive repository contains a Django-based [backend](dandiapi/) to run the DANDI REST API, and a
+The ember-dandi-archive repository contains a Django-based [backend](dandiapi/) to run the DANDI REST API, and a
 Vue-based [frontend](web/) to provide a user interface to the archive.
 
 ## Resources
@@ -29,3 +33,4 @@ see the [DANDI Docs](https://docs.dandiarchive.org).
 * To understand how to hack on the archive codebase:
   - Django backend: [`DEVELOPMENT.md`](DEVELOPMENT.md)
   - Vue frontend: [`web/README.md`](web/README.md)
+

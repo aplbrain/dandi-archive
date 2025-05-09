@@ -44,7 +44,7 @@
       </div>
       <v-chip-group
         :model-value="sortOption"
-        selected-class="white text-light-blue bg-white"
+        selected-class="white text-primary bg-white"
         dark
         mandatory
         style="min-width: 25%"

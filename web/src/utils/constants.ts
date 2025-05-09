@@ -1,6 +1,9 @@
 const dandiUrl = 'https://dandiarchive.org';
-const dandiAboutUrl = 'https://about.dandiarchive.org/';
-const dandiDocumentationUrl = 'https://docs.dandiarchive.org';
+const emberHomeUrl = 'https://emberarchive.org';
+const emberAboutUrl = 'https://emberarchive.org/about';
+const emberGitHubUrl = 'https://github.com/aplbrain/dandi-archive';
+const dandiDocumentationUrl = 'https://emberarchive.org/documentation';
+// const dandiAboutUrl = 'https://about.dandiarchive.org/';
 const dandiHelpUrl = 'https://github.com/dandi/helpdesk/issues/new/choose';
 const dandihubUrl = 'https://hub.dandiarchive.org/';
 const sandboxDocsUrl = `${dandiDocumentationUrl}/getting-started/creating-account/`;
@@ -55,7 +58,9 @@ const DANDISETS_PER_PAGE = 8;
 
 export {
   dandiUrl,
-  dandiAboutUrl,
+  emberHomeUrl,
+  emberAboutUrl,
+  emberGitHubUrl,
   dandiDocumentationUrl,
   dandihubUrl,
   sandboxDocsUrl,

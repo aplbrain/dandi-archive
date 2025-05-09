@@ -51,7 +51,7 @@ function setCookie() {
       <span v-if="cookiesEnabled">We use cookies to ensure you get the best experience on DANDI.</span>
       <span v-else>We noticed you're blocking cookies - note that certain aspects of the site may not work.</span>
       <v-btn
-        class="bg-error"
+        class="bg-grey-darken-3"
         elevation="0"
         @click="setCookie"
       >

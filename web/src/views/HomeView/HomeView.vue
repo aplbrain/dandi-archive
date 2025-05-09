@@ -21,14 +21,14 @@
             align="center"
           >
             <v-col class="splash-text my-12">
-              <div class="text-h2 font-weight-thin text-center text-light-blue-darken-1">
-                The DANDI Archive
+              <div class="text-h2 font-weight-thin text-center text-primary">
+                The EMBER-DANDI Archive
               </div>
               <div class="text-h6 font-weight-light text-center">
-                The BRAIN Initiative archive for publishing and sharing
+                An instance of DANDI, the BRAIN Initiative archive for publishing and sharing
                 neurophysiology data including electrophysiology,
                 optophysiology, and behavioral time-series, and images from
-                immunostaining experiments.
+                immunostaining experiments, to support the NIH BBQS Program.
               </div>
             </v-col>
           </v-row>
@@ -50,7 +50,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
 import StatsBar from '@/views/HomeView/StatsBar.vue';
 import DandisetSearchField from '@/components/DandisetSearchField.vue';
-import logo from '@/assets/logo.svg';
+import logo from '@/assets/ember-logo.png';
 
 const display = useDisplay();
 const isSmAndUpDisplay = computed(() => display.smAndUp.value);

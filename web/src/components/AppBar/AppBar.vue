@@ -41,13 +41,19 @@
         </template>
       </v-list>
     </v-menu>
-    <router-link to="/">
+    <router-link
+      to="/"
+      class="d-flex align-center text-decoration-none"
+    >
       <v-img
-        alt="DANDI logo"
-        :width="100"
+        alt="EMBER logo"
+        cover
+        height="40px"
+        width="30px"
         :src="logo"
         class="mr-3"
       />
+      <span class="flex-grow-1 font-weight-bold mr-3 text-primary">EMBER-DANDI</span>
     </router-link>
     <v-toolbar-items v-if="!isMobile">
       <template v-for="navItem in navItems">
@@ -134,10 +140,10 @@ import {
   user,
 } from '@/rest';
 import {
-  dandiAboutUrl, dandiDocumentationUrl, dandiHelpUrl, dandihubUrl,
+  emberAboutUrl, dandiDocumentationUrl,
 } from '@/utils/constants';
 import UserMenu from '@/components/AppBar/UserMenu.vue';
-import logo from '@/assets/logo.svg';
+import logo from '@/assets/ember-logo.png';
 
 interface NavigationItem {
   text: string,
@@ -173,7 +179,7 @@ const navItems: NavigationItem[] = [
   },
   {
     text: 'About',
-    to: dandiAboutUrl,
+    to: emberAboutUrl,
     external: true,
   },
   {
@@ -181,16 +187,16 @@ const navItems: NavigationItem[] = [
     to: dandiDocumentationUrl,
     external: true,
   },
-  {
-    text: 'Help',
-    to: dandiHelpUrl,
-    external: true,
-  },
-  {
-    text: 'DandiHub',
-    to: dandihubUrl,
-    external: true,
-  },
+  // {
+  //   text: 'Help',
+  //   to: dandiHelpUrl,
+  //   external: true,
+  // },
+  // {
+  //   text: 'DandiHub',
+  //   to: dandihubUrl,
+  //   external: true,
+  // },
 ];
 
 function login() {
