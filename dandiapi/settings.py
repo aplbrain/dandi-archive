@@ -86,6 +86,8 @@ class DandiMixin(ConfigMixin):
             os.environ['DANDI_ALLOW_LOCALHOST_URLS'] = 'True'
 
     DANDI_DANDISETS_BUCKET_NAME = values.Value(environ_required=True)
+    # TODO: add embargo bucket name constant
+    # DANDI_DANDISETS_EMBARGO_BUCKET_NAME = values.Value(environ_required=True)
     DANDI_DANDISETS_BUCKET_PREFIX = values.Value(default='', environ=True)
     DANDI_DANDISETS_LOG_BUCKET_NAME = values.Value(environ_required=True)
     DANDI_DANDISETS_EMBARGO_LOG_BUCKET_NAME = values.Value(environ_required=True)
@@ -156,6 +158,8 @@ class DevelopmentConfiguration(DandiMixin, DevelopmentBaseConfiguration):
 
 class TestingConfiguration(DandiMixin, TestingBaseConfiguration):
     DANDI_DANDISETS_BUCKET_NAME = 'test-dandiapi-dandisets'
+    # TODO: add embargo bucket name constant
+    # DANDI_DANDISETS_EMBARGO_BUCKET_NAME = 'test-embargo-dandiapi-dandisets'
     DANDI_DANDISETS_BUCKET_PREFIX = 'test-prefix/'
     DANDI_DANDISETS_LOG_BUCKET_NAME = 'test-dandiapi-dandisets-logs'
     DANDI_DANDISETS_EMBARGO_LOG_BUCKET_NAME = 'test-embargo-dandiapi-dandisets-logs'

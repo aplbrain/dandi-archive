@@ -97,6 +97,7 @@ def base_s3_storage_factory(bucket_name: str) -> S3Storage:
 
 
 def s3_storage_factory():
+    # TODO: Add bucket_name parameter OR new function for embargo bucket
     return base_s3_storage_factory(settings.DANDI_DANDISETS_BUCKET_NAME)
 
 
@@ -105,6 +106,7 @@ def base_minio_storage_factory(bucket_name: str) -> MinioStorage:
 
 
 def minio_storage_factory() -> MinioStorage:
+    # TODO: Add bucket_name parameter OR new function for embargo bucket
     return base_minio_storage_factory(settings.DANDI_DANDISETS_BUCKET_NAME)
 
 
