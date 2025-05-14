@@ -44,8 +44,11 @@ def s3_log_file(s3_log_bucket, asset_blob):
     s3.delete_object(Bucket=s3_log_bucket, Key=log_file_name)
 
 
+# TODO: add s3_log_bucket back in as a parameter
+# def test_processing_s3_log_files(s3_log_bucket, s3_log_file, asset_blob):
 @pytest.mark.django_db
 def test_processing_s3_log_files(s3_log_file, asset_blob):
+    # TODO: s3_log_bucket
     collect_s3_log_records_task()
     asset_blob.refresh_from_db()
 
@@ -53,12 +56,16 @@ def test_processing_s3_log_files(s3_log_file, asset_blob):
     assert asset_blob.download_count == 1
 
 
+# TODO: add s3_log_bucket back in as a parameter
+# def test_processing_s3_log_files_idempotent(s3_log_bucket, s3_log_file, asset_blob):
 @pytest.mark.django_db
 def test_processing_s3_log_files_idempotent(s3_log_file, asset_blob):
     # this tests that the outer task which collects the log files to process is
     # idempotent, in other words, it uses StartAfter correctly.
+    # TODO: s3_log_bucket
     collect_s3_log_records_task()
     # run the task again, it should skip the existing log record
+    # TODO: s3_log_bucket
     collect_s3_log_records_task()
     asset_blob.refresh_from_db()
 
@@ -66,12 +73,16 @@ def test_processing_s3_log_files_idempotent(s3_log_file, asset_blob):
     assert asset_blob.download_count == 1
 
 
+# TODO: add s3_log_bucket back in as a parameter
+# def test_processing_s3_log_file_task_idempotent(s3_log_bucket, s3_log_file, asset_blob):
 @pytest.mark.django_db
 def test_processing_s3_log_file_task_idempotent(s3_log_file, asset_blob):
     # this tests that the inner task which processes a single log file is
     # idempotent, utilizing the unique constraint on ProcessedS3Log correctly.
+    # TODO: s3_log_bucket
     process_s3_log_file_task(s3_log_file)
     # run the task again, it should ignore the new log
+    # TODO: s3_log_bucket
     process_s3_log_file_task(s3_log_file)
     asset_blob.refresh_from_db()
 

@@ -26,26 +26,38 @@ logger = get_task_logger(__name__)
 LogBucket = str
 
 
+# TODO: Revert function def & use bucket var
+# def _bucket_objects_after(bucket: str, after: str | None) -> Generator[dict, None, None]:
 def _bucket_objects_after(after: str | None) -> Generator[dict, None, None]:
+    # TODO: bucket
     s3 = get_boto_client(get_storage())
     kwargs = {}
     if after:
         kwargs['StartAfter'] = after
 
     paginator = s3.get_paginator('list_objects_v2')
+    # TODO: bucket
+    # for page in paginator.paginate(Bucket=bucket, **kwargs):
     for page in paginator.paginate(Bucket=settings.DANDI_DANDISETS_LOG_BUCKET_NAME, **kwargs):
         yield from page.get('Contents', [])
 
-
+# TODO: Revert function def & use bucket var
+# def collect_s3_log_records_task(bucket: LogBucket) -> None:
 @shared_task(queue='s3-log-processing', soft_time_limit=60, time_limit=80)
 def collect_s3_log_records_task() -> None:
     """Dispatch a task per S3 log file to process for download counts."""
+    # TODO: bucket
     after = ProcessedS3Log.objects.aggregate(last_log=Max('name'))['last_log']
 
+    # TODO: bucket
+    # for s3_log_object in _bucket_objects_after(bucket, after):
+    #     process_s3_log_file_task.delay(bucket, s3_log_object['Key'])
     for s3_log_object in _bucket_objects_after(after):
         process_s3_log_file_task.delay(s3_log_object['Key'])
 
 
+# TODO: Revert function def ?
+# def process_s3_log_file_task(bucket: LogBucket, s3_log_key: str) -> None:
 @shared_task(queue='s3-log-processing', soft_time_limit=120, time_limit=140)
 def process_s3_log_file_task(s3_log_key: str) -> None:
     """
