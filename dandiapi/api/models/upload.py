@@ -20,6 +20,7 @@ class Upload(models.Model):  # noqa: DJ008
 
     dandiset = models.ForeignKey(Dandiset, related_name='uploads', on_delete=models.CASCADE)
 
+    # TODO: storage and upload_to will be dependent on bucket
     blob = models.FileField(blank=True, storage=get_storage, upload_to=get_storage_prefix)
     embargoed = models.BooleanField(default=False)
 
@@ -45,6 +46,7 @@ class Upload(models.Model):  # noqa: DJ008
     def object_key(upload_id):
         upload_id = str(upload_id)
         return (
+            # TODO: determine which bucket
             f'{settings.DANDI_DANDISETS_BUCKET_PREFIX}'
             f'blobs/{upload_id[0:3]}/{upload_id[3:6]}/{upload_id}'
         )

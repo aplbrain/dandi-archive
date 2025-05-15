@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 @transaction.atomic()
 def unembargo_dandiset(ds: Dandiset, user: User):
     """Unembargo a dandiset by copying all embargoed asset blobs to the public bucket."""
+    # TODO: Move embargoed dandiset to public bucket
     logger.info('Unembargoing Dandiset %s', ds.identifier)
     logger.info('\t%s assets', ds.draft_version.assets.count())
 
