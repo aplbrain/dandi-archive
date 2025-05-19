@@ -86,6 +86,16 @@
           - <a
             target="_blank"
             rel="noopener"
+            href="https://sentry.io/"
+            class="text-primary"
+          >Sentry</a>
+          <v-icon size="x-small">
+            mdi-open-in-new
+          </v-icon>
+          <br>
+          - <a
+            target="_blank"
+            rel="noopener"
             :href="dandiUrl"
             class="text-primary"
           >DANDI</a>
