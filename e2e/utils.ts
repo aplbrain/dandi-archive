@@ -26,7 +26,7 @@ async function registerNewUser(page: Page) {
   await page.getByPlaceholder("Password").first().fill(password);
   await page.getByPlaceholder("Password (again)").click();
   await page.getByPlaceholder("Password (again)").fill(password);
-  await page.getByRole("button", { name: "Sign Up " }).click();
+  await page.getByRole("button", { name: "Sign Up" }).click();
   await page.getByLabel("First Name").click({ force: true });
   await page.getByLabel("First Name").fill(firstname);
   await page.getByLabel("Last Name").click({ force: true });
