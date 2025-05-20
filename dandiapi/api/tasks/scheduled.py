@@ -158,6 +158,7 @@ def register_scheduled_tasks(sender: Celery, **kwargs):
     sender.add_periodic_task(timedelta(minutes=10), refresh_materialized_view_search.s())
 
     # Process new S3 logs every hour
+    # TODO: pass in bucket name to collect_s3_log_records_task
     sender.add_periodic_task(timedelta(hours=1), collect_s3_log_records_task.s())
 
     # Run garbage collection once a day

@@ -13,6 +13,12 @@ class ProcessedS3Log(models.Model):
         ],
     )
 
+    # TODO: we need a variable to tell us where this s3 log file lives
+    # if only 2 buckets (public, embargo), we can still use a boolean
+    #   (currently this is historically_embargoed)
+    #   do we want to change the name or leave it?
+    # else, we could use an enum to distinguish between 3+ buckets
+
     # Represents if this s3 log file was embargoed prior to the embargo re-design.
     # If this field is True, the log file lives in the S3 bucket pointed to by the
     # DANDI_DANDISETS_EMBARGO_LOG_BUCKET_NAME setting.

@@ -34,6 +34,7 @@ class ZarrArchiveStatus(models.TextChoices):
 class ZarrArchive(TimeStampedModel):
     UUID_REGEX = r'[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}'
     INGEST_ERROR_MSG = 'Zarr archive is currently ingesting or has already ingested'
+    # TODO: pass in bucket name (?)
     storage = get_storage()
 
     class Meta:
