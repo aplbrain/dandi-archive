@@ -60,7 +60,9 @@ class AssetBlob(TimeStampedModel):
     SHA256_REGEX = r'[0-9a-f]{64}'
     ETAG_REGEX = r'[0-9a-f]{32}(-[1-9][0-9]*)?'
 
+    # TODO: do we need an indicator of embargo vs. private?
     embargoed = models.BooleanField(default=False)
+    # TODO: storage and upload_to will be dependent on bucket
     blob = models.FileField(blank=True, storage=get_storage, upload_to=get_storage_prefix)
     blob_id = models.UUIDField(unique=True)
     sha256 = models.CharField(  # noqa: DJ001
