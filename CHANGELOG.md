@@ -1,3 +1,113 @@
+# v0.11.1 (Thu Jun 05 2025)
+
+#### 🏎 Performance
+
+- fix: update robots.txt rules to disallow specific asset API endpoints for Googlebot [#2401](https://github.com/dandi/dandi-archive/pull/2401) ([@bendichter](https://github.com/bendichter))
+- Including trailing slash on assets frontend call to prevent redundancy [#2402](https://github.com/dandi/dandi-archive/pull/2402) (aaronkanzer@dhcp-10-29-186-193.dyn.MIT.EDU [@aaronkanzer](https://github.com/aaronkanzer))
+
+#### 🏠 Internal
+
+- Prune web/ from sdist of dandiarchive/ and thus when uploading to heroku [#2403](https://github.com/dandi/dandi-archive/pull/2403) ([@yarikoptic](https://github.com/yarikoptic))
+
+#### 📝 Documentation
+
+- Add staging rename design doc [#2229](https://github.com/dandi/dandi-archive/pull/2229) ([@waxlamp](https://github.com/waxlamp))
+- Design document for the Zenodo like DOI per dandiset [#2012](https://github.com/dandi/dandi-archive/pull/2012) ([@yarikoptic](https://github.com/yarikoptic) [@asmacdo](https://github.com/asmacdo))
+- Give explicit instructions on where to get code and check/set port for django DB [#2400](https://github.com/dandi/dandi-archive/pull/2400) ([@yarikoptic](https://github.com/yarikoptic))
+
+#### Authors: 6
+
+- [@aaronkanzer](https://github.com/aaronkanzer)
+- Aaron Kanzer (aaronkanzer@dhcp-10-29-186-193.dyn.MIT.EDU)
+- Austin Macdonald ([@asmacdo](https://github.com/asmacdo))
+- Ben Dichter ([@bendichter](https://github.com/bendichter))
+- Roni Choudhury ([@waxlamp](https://github.com/waxlamp))
+- Yaroslav Halchenko ([@yarikoptic](https://github.com/yarikoptic))
+
+---
+
+# v0.11.0 (Wed Jun 04 2025)
+
+:tada: This release contains work from a new contributor! :tada:
+
+Thank you, Nicole Stock Tregoning ([@NEStock](https://github.com/NEStock)), for all your work!
+
+#### 🚀 Enhancement
+
+- Bump dandischema to 0.11.1 in API dependencies; bring back "yarn migrate" command to update typings for frontend/schema [#2383](https://github.com/dandi/dandi-archive/pull/2383) (aaronkanzer@Aarons-MacBook-Pro-2.local [@yarikoptic](https://github.com/yarikoptic) [@aaronkanzer](https://github.com/aaronkanzer))
+
+#### 🐛 Bug Fix
+
+- fix: update backend (API) robots.txt to allow Googlebot access to dandiset metadata [#2397](https://github.com/dandi/dandi-archive/pull/2397) ([@bendichter](https://github.com/bendichter) [@yarikoptic](https://github.com/yarikoptic))
+- fix: update pytest version constraints for compat with factoryboy ([@bendichter](https://github.com/bendichter))
+- Fix broken/out-of-date docs links [#2371](https://github.com/dandi/dandi-archive/pull/2371) ([@NEStock](https://github.com/NEStock))
+- Fix formatting of approved user message template [#2373](https://github.com/dandi/dandi-archive/pull/2373) ([@kabilar](https://github.com/kabilar))
+
+#### 🧪 Tests
+
+- Fix Frontend CI Failing: remove " " from the Sign In/Up button names [#2389](https://github.com/dandi/dandi-archive/pull/2389) ([@NEStock](https://github.com/NEStock))
+
+#### Authors: 6
+
+- [@aaronkanzer](https://github.com/aaronkanzer)
+- Aaron Kanzer (aaronkanzer@Aarons-MacBook-Pro-2.local)
+- Ben Dichter ([@bendichter](https://github.com/bendichter))
+- Kabilar Gunalan ([@kabilar](https://github.com/kabilar))
+- Nicole Stock Tregoning ([@NEStock](https://github.com/NEStock))
+- Yaroslav Halchenko ([@yarikoptic](https://github.com/yarikoptic))
+
+---
+
+# v0.10.0 (Wed Apr 30 2025)
+
+#### 🚀 Enhancement
+
+- Remove margin around DandisetList [#2366](https://github.com/dandi/dandi-archive/pull/2366) ([@naglepuff](https://github.com/naglepuff))
+
+#### Authors: 1
+
+- Michael Nagler ([@naglepuff](https://github.com/naglepuff))
+
+---
+
+# v0.9.0 (Wed Apr 30 2025)
+
+#### 🚀 Enhancement
+
+- Fix display of dandisets with many owners [#2272](https://github.com/dandi/dandi-archive/pull/2272) ([@bendichter](https://github.com/bendichter) [@jjnesbitt](https://github.com/jjnesbitt))
+- Update sorting controls for Dandisets page [#2358](https://github.com/dandi/dandi-archive/pull/2358) ([@naglepuff](https://github.com/naglepuff))
+- Auto-allow people with `@nih.gov` and `@janelia.hhmi.org` email addresses [#2340](https://github.com/dandi/dandi-archive/pull/2340) ([@kabilar](https://github.com/kabilar) [@waxlamp](https://github.com/waxlamp))
+
+#### 🐛 Bug Fix
+
+- Check to see if cookies are enabled for banner message [#2359](https://github.com/dandi/dandi-archive/pull/2359) ([@naglepuff](https://github.com/naglepuff))
+- Revert "Convert StagingApplication to a proxy model" [#2357](https://github.com/dandi/dandi-archive/pull/2357) ([@jjnesbitt](https://github.com/jjnesbitt))
+- Convert StagingApplication to a proxy model [#2339](https://github.com/dandi/dandi-archive/pull/2339) ([@jjnesbitt](https://github.com/jjnesbitt))
+
+#### 🏠 Internal
+
+- Make eslint fail on warning [#2360](https://github.com/dandi/dandi-archive/pull/2360) ([@mvandenburgh](https://github.com/mvandenburgh))
+
+#### 📝 Documentation
+
+- Remove import_dandisets command from docs [#2351](https://github.com/dandi/dandi-archive/pull/2351) ([@asmacdo](https://github.com/asmacdo))
+
+#### 🧪 Tests
+
+- Parametrize e2e tests in CI to run in both prod/dev modes [#2361](https://github.com/dandi/dandi-archive/pull/2361) ([@mvandenburgh](https://github.com/mvandenburgh))
+
+#### Authors: 7
+
+- Austin Macdonald ([@asmacdo](https://github.com/asmacdo))
+- Ben Dichter ([@bendichter](https://github.com/bendichter))
+- Jacob Nesbitt ([@jjnesbitt](https://github.com/jjnesbitt))
+- Kabilar Gunalan ([@kabilar](https://github.com/kabilar))
+- Michael Nagler ([@naglepuff](https://github.com/naglepuff))
+- Mike VanDenburgh ([@mvandenburgh](https://github.com/mvandenburgh))
+- Roni Choudhury ([@waxlamp](https://github.com/waxlamp))
+
+---
+
 # v0.8.1 (Mon Apr 21 2025)
 
 #### 🏠 Internal
