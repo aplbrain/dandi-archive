@@ -4,8 +4,9 @@ APL has decided to create a private bucket to house private datasets and dataset
 
 We will add two new variables to the DANDI system.
 * AllowPrivateDandiSets = (default to False)
-* EnbalePrivateEmbargoedData = (default to False)  This requires that AllowPrivateDandiSets be True.
+* EnablePrivateEmbargoedData = (default to False)  This requires that AllowPrivateDandiSets be True.
 
+We will create a new bucket in dandi-infrastructure to 
 
 A diagram of the unembargo procedure (pertaining to just the objects) is shown below
 
