@@ -1,6 +1,10 @@
 # Design private and embargoed data into a private bucket.  
 
+APL has decided to create a private bucket to house private datasets and datasets that are currently embargoed.  Our plan is to leave the current embargoed system in place allow the option of using a different embargo method that houses the embargoed data in a private bucket until it becomes public. 
 
+We will add two new variables to the DANDI system.
+* AllowPrivateDandiSets = (default to False)
+* EnbalePrivateEmbargoedData = (default to False)  This requires that AllowPrivateDandiSets be True.
 
 
 A diagram of the unembargo procedure (pertaining to just the objects) is shown below
