@@ -9,7 +9,7 @@
           <a
             target="_blank"
             rel="noopener"
-            href="https://docs.dandiarchive.org/about/terms/"
+            :href="`${dandiDocumentationUrl}/about/terms/`"
             class="text-primary"
           >Terms</a>
           <v-icon size="x-small">
@@ -17,7 +17,7 @@
           </v-icon> / <a
             target="_blank"
             rel="noopener"
-            href="https://docs.dandiarchive.org/about/policies/"
+            :href="`${dandiDocumentationUrl}/about/policies/`"
             class="text-primary"
           >Policies</a>
           <v-icon size="x-small">
@@ -86,6 +86,16 @@
           - <a
             target="_blank"
             rel="noopener"
+            href="https://sentry.io/"
+            class="text-primary"
+          >Sentry</a>
+          <v-icon size="x-small">
+            mdi-open-in-new
+          </v-icon>
+          <br>
+          - <a
+            target="_blank"
+            rel="noopener"
             :href="dandiUrl"
             class="text-primary"
           >DANDI</a>
@@ -122,7 +132,7 @@
 
 <script setup lang="ts">
 import CookieBanner from './CookieBanner.vue';
-import { dandiUrl } from '@/utils/constants';
+import { dandiUrl, dandiDocumentationUrl } from '@/utils/constants';
 
 const version = import.meta.env.VITE_APP_VERSION;
 const githubLink = import.meta.env.VITE_APP_GIT_REVISION ? `https://github.com/aplbrain/dandi-archive/commit/${import.meta.env.VITE_APP_GIT_REVISION}` : 'https://github.com/aplbrain/dandi-archive';
