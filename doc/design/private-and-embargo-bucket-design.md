@@ -29,9 +29,10 @@ In order to store class II data, EMBER-DANDI will need the ability to have perma
 
 1. We will create a new bucket (in dandi-infrastructure) for private data, as well as a corresponding log bucket.
 
-1. We will add `EmbargoStatus.PRIVATE` as an enum value (in dandi-archive)
-   * This value will indicate a permanently private dandiset
-   * Current definition of `EmbargoStatus` class: https://github.com/dandi/dandi-archive/blob/2ac48ebd7ad32607d155da4916ce3aa8d0a4d562/dandiapi/api/models/dandiset.py#L13
+1. We will add new boolean variable `private` to ? models (in dandi-archive)
+   * A value of `True` will indicate a permanently private dandiset
+   * We still need to figure out which model(s) this variable will be added to
+   * Also to consider: How this variable interacts with the `EmbargoStatus` [class](https://github.com/dandi/dandi-archive/blob/2ac48ebd7ad32607d155da4916ce3aa8d0a4d562/dandiapi/api/models/dandiset.py#L13)
 
 1. Use S3 Batch operation for copying data over and AWS Lambda function(s) for monitoring and handling errors
 
@@ -65,3 +66,17 @@ sequenceDiagram
         Client ->> S3: Data is now publicly accessible
     end
 ```
+
+### Scenarios for new variables
+
+| AllowPrivateDandisets | UsePrivateBucketForEmbargoedData | Private Data? | Private Bucket? | Embargoed Data Stored in... |
+| ---- | ---- | ---- | ---- | ---- |
+| False | False | No | No | Open Data |
+| True | False | Yes | Yes | Open Data |
+| True | True | Yes | Yes | Private |
+| False | True | N/A | N/A | N/A - invalid state |
+
+
+
+
+
