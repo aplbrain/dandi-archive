@@ -22,9 +22,9 @@ In order to store class II data, EMBER-DANDI will need the ability to have perma
 ## Design
 
 1. We will add two new variables to the DANDI system. (set in dandi-infrastructure)
-   * AllowPrivateDandisets = (default to `False`)
+   * ALLOW_PRIVATE = (default to `False`)
      * A value of `True` will enable the private S3 bucket and the ability to set data as private
-   * UsePrivateBucketForEmbargoedData = (default to False)  This requires that AllowPrivateDandiSets be True.
+   * USE_PRIVATE_BUCKET_FOR_EMBARGOED = (default to False)  This requires that AllowPrivateDandiSets be True.
      * A value of `True` will store embargoed data in the private S3 bucket
 
 1. We will create a new bucket (in dandi-infrastructure) for private data, as well as a corresponding log bucket.
@@ -69,7 +69,7 @@ sequenceDiagram
 
 ### Scenarios for new variables
 
-| AllowPrivateDandisets | UsePrivateBucketForEmbargoedData | Private Data? | Private Bucket? | Embargoed Data Stored in... |
+| ALLOW_PRIVATE | USE_PRIVATE_BUCKET_FOR_EMBARGOED | Private Data? | Private Bucket? | Embargoed Data Stored in... |
 | ---- | ---- | ---- | ---- | ---- |
 | False | False | No | No | Open Data |
 | True | False | Yes | Yes | Open Data |
