@@ -86,11 +86,11 @@ class DandiMixin(ConfigMixin):
             os.environ['DANDI_ALLOW_LOCALHOST_URLS'] = 'True'
 
     DANDI_DANDISETS_BUCKET_NAME = values.Value(environ_required=True)
-    # TODO: add embargo bucket name constant
-    # DANDI_DANDISETS_EMBARGO_BUCKET_NAME = values.Value(environ_required=True)
     DANDI_DANDISETS_BUCKET_PREFIX = values.Value(default='', environ=True)
+    DANDI_DANDISETS_PRIVATE_BUCKET_NAME = values.Value(environ_required=True)
     DANDI_DANDISETS_LOG_BUCKET_NAME = values.Value(environ_required=True)
     DANDI_DANDISETS_EMBARGO_LOG_BUCKET_NAME = values.Value(environ_required=True)
+    DANDI_DANDISETS_PRIVATE_LOG_BUCKET_NAME = values.Value(environ_required=True)
     DANDI_LOG_LEVEL = values.Value(default='INFO', environ=True)
     DANDI_ZARR_PREFIX_NAME = values.Value(default='zarr', environ=True)
 
@@ -112,6 +112,8 @@ class DandiMixin(ConfigMixin):
     DANDI_JUPYTERHUB_URL = values.URLValue(environ_required=True)
     DANDI_DEV_EMAIL = values.EmailValue(environ_required=True)
     DANDI_ADMIN_EMAIL = values.EmailValue(environ_required=True)
+    ALLOW_PRIVATE = values.BooleanValue(environ=True, default=False)
+    USE_PRIVATE_BUCKET_FOR_EMBARGOED = values.BooleanValue(environ=True, default=False)
 
     DANDI_VALIDATION_JOB_INTERVAL = values.IntegerValue(environ=True, default=60)
 
@@ -158,11 +160,11 @@ class DevelopmentConfiguration(DandiMixin, DevelopmentBaseConfiguration):
 
 class TestingConfiguration(DandiMixin, TestingBaseConfiguration):
     DANDI_DANDISETS_BUCKET_NAME = 'test-dandiapi-dandisets'
-    # TODO: add embargo bucket name constant
-    # DANDI_DANDISETS_EMBARGO_BUCKET_NAME = 'test-embargo-dandiapi-dandisets'
     DANDI_DANDISETS_BUCKET_PREFIX = 'test-prefix/'
+    DANDI_DANDISETS_PRIVATE_BUCKET_NAME = 'test-private-dandiapi-dandisets'
     DANDI_DANDISETS_LOG_BUCKET_NAME = 'test-dandiapi-dandisets-logs'
     DANDI_DANDISETS_EMBARGO_LOG_BUCKET_NAME = 'test-embargo-dandiapi-dandisets-logs'
+    DANDI_DANDISETS_PRIVATE_LOG_BUCKET_NAME = 'test-private-dandiapi-dandisets-logs'
     DANDI_ZARR_PREFIX_NAME = 'test-zarr'
     DANDI_JUPYTERHUB_URL = 'https://hub.dandiarchive.org/'
 
