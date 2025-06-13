@@ -41,6 +41,7 @@ def _bucket_objects_after(after: str | None) -> Generator[dict, None, None]:
     for page in paginator.paginate(Bucket=settings.DANDI_DANDISETS_LOG_BUCKET_NAME, **kwargs):
         yield from page.get('Contents', [])
 
+
 # TODO: Revert function def & use bucket var
 # def collect_s3_log_records_task(bucket: LogBucket) -> None:
 @shared_task(queue='s3-log-processing', soft_time_limit=60, time_limit=80)
