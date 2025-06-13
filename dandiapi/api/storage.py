@@ -369,6 +369,10 @@ def get_storage_params(storage: Storage):
 
 
 def get_storage() -> Storage:
+    # TODO: add parameter or split into function per bucket name
+    # if embargoed:
+    #     return create_s3_storage(settings.DANDI_DANDISETS_EMBARGO_BUCKET_NAME)
+    # else:
     return create_s3_storage(settings.DANDI_DANDISETS_BUCKET_NAME)
 
 
