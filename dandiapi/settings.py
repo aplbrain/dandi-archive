@@ -88,9 +88,9 @@ class DandiMixin(ConfigMixin):
     DANDI_DANDISETS_BUCKET_NAME = values.Value(environ_required=True)
     DANDI_DANDISETS_BUCKET_PREFIX = values.Value(default='', environ=True)
     DANDI_DANDISETS_PRIVATE_BUCKET_NAME = values.Value(default='', environ=True)
-    DANDI_DANDISETS_LOG_BUCKET_NAME = values.Value(default='', environ=True)
+    DANDI_DANDISETS_LOG_BUCKET_NAME = values.Value(environ_required=True)
     DANDI_DANDISETS_EMBARGO_LOG_BUCKET_NAME = values.Value(environ_required=True)
-    DANDI_DANDISETS_PRIVATE_LOG_BUCKET_NAME = values.Value(environ_required=True)
+    DANDI_DANDISETS_PRIVATE_LOG_BUCKET_NAME = values.Value(default='', environ=True)
     DANDI_LOG_LEVEL = values.Value(default='INFO', environ=True)
     DANDI_ZARR_PREFIX_NAME = values.Value(default='zarr', environ=True)
 
