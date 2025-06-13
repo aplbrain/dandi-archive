@@ -13,11 +13,25 @@ class ProcessedS3Log(models.Model):
         ],
     )
 
-    # TODO: we need a variable to tell us where this s3 log file lives
-    # if only 2 buckets (public, embargo), we can still use a boolean
-    #   (currently this is historically_embargoed)
-    #   do we want to change the name or leave it?
-    # else, we could use an enum to distinguish between 3+ buckets
+    # TODO: We need another variable to tell us where this s3 log file lives
+    # We will have 2 "active" buckets - private and open
+    # However, DANDI will still have log files in the old embargoed log bucket
+
+    # type of data -> Which bucket log file is located in
+    # if private data -> log in Private bucket
+    # if embargoed data ->
+    #       * If (DANDI only) historically_embargoed -> log in Embargoed bucket
+    #       if USE_PRIVATE = T -> log in Private bucket
+    #       if USE_PRIVATE = F -> log in Open bucket
+    # if open data ->
+    #       if previously embargoed -> ?? does it matter
+    #       else -> log in Open bucket
+
+    # IDEA:
+    # private = models.BooleanField(default=False)
+    # if private -> private log bucket
+    # if not private && historically_embargoed -> embargoed log bucket
+    # if not private && not historically_embargoed -> open bucket
 
     # Represents if this s3 log file was embargoed prior to the embargo re-design.
     # If this field is True, the log file lives in the S3 bucket pointed to by the
