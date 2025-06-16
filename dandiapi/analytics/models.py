@@ -13,16 +13,14 @@ class ProcessedS3Log(models.Model):
         ],
     )
 
-    # Reprents if this s3 log file is private (including embargoed) or public.
+    # Represents if this s3 log file is private (including embargoed) or public.
     # If private is True, the log file lives in the S3 bucket pointed to by
     # DANDI_DANDISETS_PRIVATE_LOG_BUCKET_NAME.
     # If private is False...
-    #   and historically_embargoed is False, the log file
-    #   lives in the S3 bucket pointed to by
-    #   DANDI_DANDISETS_LOG_BUCKET_NAME.
-    #   and historically_embargoed is True, the log file
-    #   lives in the S3 bucket pointed to by
-    #   DANDI_DANDISETS_EMBARGO_LOG_BUCKET_NAME.
+    #   & historically_embargoed is False, the log file lives in the S3
+    #   bucket pointed to by DANDI_DANDISETS_LOG_BUCKET_NAME.
+    #   & historically_embargoed is True, the log file lives in the S3
+    #   bucket pointed to by DANDI_DANDISETS_EMBARGO_LOG_BUCKET_NAME.
     private = models.BooleanField(default=False)
 
     # Represents if this s3 log file was embargoed prior to the embargo re-design.
