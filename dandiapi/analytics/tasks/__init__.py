@@ -15,7 +15,7 @@ from s3logparse import s3logparse
 
 from dandiapi.analytics.models import ProcessedS3Log
 from dandiapi.api.models.asset import AssetBlob
-from dandiapi.api.storage import get_boto_client, get_storage
+from dandiapi.api.storage import get_boto_client, get_private_storage, get_storage
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -24,56 +24,66 @@ logger = get_task_logger(__name__)
 
 # should be one of the DANDI_DANDISETS_*_LOG_BUCKET_NAME settings
 LogBucket = str
+# Log buckets actively used in the system
+ACTIVE_LOG_BUCKETS = {
+    settings.DANDI_DANDISETS_LOG_BUCKET_NAME,
+    settings.DANDI_DANDISETS_PRIVATE_LOG_BUCKET_NAME,
+}
 
 
-# TODO: Revert function def & use bucket var
-# def _bucket_objects_after(bucket: str, after: str | None) -> Generator[dict, None, None]:
-def _bucket_objects_after(after: str | None) -> Generator[dict, None, None]:
-    # TODO: bucket
-    s3 = get_boto_client(get_storage())
+def _bucket_objects_after(bucket: str, after: str | None) -> Generator[dict, None, None]:
+    # Check that bucket name is valid
+    if bucket not in ACTIVE_LOG_BUCKETS:
+        raise ValueError(f'Non-log bucket: {bucket}')
+    private = bucket == settings.DANDI_DANDISETS_PRIVATE_LOG_BUCKET_NAME
+
+    s3 = get_boto_client(get_storage() if not private else get_private_storage())
+
     kwargs = {}
     if after:
         kwargs['StartAfter'] = after
 
     paginator = s3.get_paginator('list_objects_v2')
-    # TODO: bucket
-    # for page in paginator.paginate(Bucket=bucket, **kwargs):
-    for page in paginator.paginate(Bucket=settings.DANDI_DANDISETS_LOG_BUCKET_NAME, **kwargs):
+    for page in paginator.paginate(Bucket=bucket, **kwargs):
         yield from page.get('Contents', [])
 
 
-# TODO: Revert function def & use bucket var
-# def collect_s3_log_records_task(bucket: LogBucket) -> None:
 @shared_task(queue='s3-log-processing', soft_time_limit=60, time_limit=80)
-def collect_s3_log_records_task() -> None:
+def collect_s3_log_records_task(bucket: LogBucket) -> None:
     """Dispatch a task per S3 log file to process for download counts."""
-    # TODO: bucket
-    after = ProcessedS3Log.objects.aggregate(last_log=Max('name'))['last_log']
+    # Check that bucket name is valid
+    if bucket not in ACTIVE_LOG_BUCKETS:
+        raise RuntimeError
+    private = bucket == settings.DANDI_DANDISETS_PRIVATE_LOG_BUCKET_NAME
 
-    # TODO: bucket
-    # for s3_log_object in _bucket_objects_after(bucket, after):
-    #     process_s3_log_file_task.delay(bucket, s3_log_object['Key'])
-    for s3_log_object in _bucket_objects_after(after):
-        process_s3_log_file_task.delay(s3_log_object['Key'])
+    after = ProcessedS3Log.objects.filter(private=private).aggregate(last_log=Max('name'))[
+        'last_log'
+    ]
+
+    for s3_log_object in _bucket_objects_after(bucket, after):
+        process_s3_log_file_task.delay(bucket, s3_log_object['Key'])
 
 
-# TODO: Revert function def ?
-# def process_s3_log_file_task(bucket: LogBucket, s3_log_key: str) -> None:
 @shared_task(queue='s3-log-processing', soft_time_limit=120, time_limit=140)
-def process_s3_log_file_task(s3_log_key: str) -> None:
+def process_s3_log_file_task(bucket: LogBucket, s3_log_key: str) -> None:
     """
     Process a single S3 log file for download counts.
 
     Creates a ProcessedS3Log entry and updates the download counts for the relevant
     asset blobs. Prevents duplicate processing with a unique constraint on the ProcessedS3Log name.
     """
+    # Check that bucket name is valid
+    if bucket not in ACTIVE_LOG_BUCKETS:
+        raise RuntimeError
+    private = bucket == settings.DANDI_DANDISETS_PRIVATE_LOG_BUCKET_NAME
+
     # short circuit if the log file has already been processed. note that this doesn't guarantee
     # exactly once processing, that's what the unique constraint on ProcessedS3Log is for.
-    if ProcessedS3Log.objects.filter(name=s3_log_key.split('/')[-1]).exists():
+    if ProcessedS3Log.objects.filter(name=s3_log_key.split('/')[-1], private=private).exists():
         return
 
-    s3 = get_boto_client(get_storage())
-    data = s3.get_object(Bucket=settings.DANDI_DANDISETS_LOG_BUCKET_NAME, Key=s3_log_key)
+    s3 = get_boto_client(get_storage() if not private else get_private_storage())
+    data = s3.get_object(Bucket=bucket, Key=s3_log_key)
     download_counts = Counter()
 
     for log_entry in s3logparse.parse_log_lines(
@@ -84,14 +94,14 @@ def process_s3_log_file_task(s3_log_key: str) -> None:
 
     with transaction.atomic():
         try:
-            log = ProcessedS3Log(name=s3_log_key.split('/')[-1])
+            log = ProcessedS3Log(name=s3_log_key.split('/')[-1], private=private)
             # disable constraint validation checking so duplicate errors can be detected and
             # ignored. the rest of the full_clean errors should still be raised.
             log.full_clean(validate_constraints=False)
             log.save()
         except IntegrityError as e:
             if '_unique_name' in str(e):
-                logger.info('Already processed log file %s', s3_log_key)
+                logger.info('Already processed log file %s, private=%s', s3_log_key, private)
             return
 
         # we need to store all of the fully hydrated blob objects in memory in order to use
