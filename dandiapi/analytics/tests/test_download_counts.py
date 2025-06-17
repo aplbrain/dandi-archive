@@ -15,6 +15,7 @@ from dandiapi.api.storage import (
 
 @pytest.fixture
 def s3_log_bucket():
+    # This file is testing the processing of s3 logs, so we believe we only need to test 1 bucket
     return create_s3_storage(settings.DANDI_DANDISETS_LOG_BUCKET_NAME).bucket_name
 
 
