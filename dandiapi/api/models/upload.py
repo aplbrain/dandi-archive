@@ -7,7 +7,10 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django_extensions.db.models import CreationDateTimeField
 
-from dandiapi.api.storage import get_storage, get_storage_prefix
+from dandiapi.api.storage import (
+    get_storage_by_private_flag,
+    get_storage_prefiex_by_private_flag,
+)
 
 from .asset import AssetBlob
 from .dandiset import Dandiset
@@ -20,10 +23,15 @@ class Upload(models.Model):  # noqa: DJ008
 
     dandiset = models.ForeignKey(Dandiset, related_name='uploads', on_delete=models.CASCADE)
 
-    # TODO: storage and upload_to will be dependent on bucket
-    blob = models.FileField(blank=True, storage=get_storage, upload_to=get_storage_prefix)
+    # TODO: (Future) Add private
+    # private = models.BooleanField(default=False)
     embargoed = models.BooleanField(default=False)
 
+    blob = models.FileField(
+        blank=True,
+        storage=get_storage_by_private_flag,
+        upload_to=get_storage_prefiex_by_private_flag,
+    )
     # This is the key used to generate the object key, and the primary identifier for the upload.
     upload_id = models.UUIDField(unique=True, default=uuid4, db_index=True)
     etag = models.CharField(  # noqa: DJ001
@@ -41,6 +49,11 @@ class Upload(models.Model):  # noqa: DJ008
     class Meta:
         ordering = ['created']
         indexes = [models.Index(fields=['etag'])]
+
+    @property
+    def stored_in_private(self) -> bool:
+        return self.embargoed and settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED
+        # TODO: (Future) or private
 
     @staticmethod
     def object_key(upload_id):

@@ -17,7 +17,10 @@ from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
 
 from dandiapi.api.models.metadata import PublishableMetadataMixin
-from dandiapi.api.storage import get_storage, get_storage_prefix
+from dandiapi.api.storage import (
+    get_storage_by_private_flag,
+    get_storage_prefiex_by_private_flag,
+)
 
 from .version import Version
 
@@ -60,10 +63,15 @@ class AssetBlob(TimeStampedModel):
     SHA256_REGEX = r'[0-9a-f]{64}'
     ETAG_REGEX = r'[0-9a-f]{32}(-[1-9][0-9]*)?'
 
-    # TODO: do we need an indicator of embargo vs. private?
+    # TODO: (Future) Add private
+    # private = models.BooleanField(default=False)
     embargoed = models.BooleanField(default=False)
-    # TODO: storage and upload_to will be dependent on bucket
-    blob = models.FileField(blank=True, storage=get_storage, upload_to=get_storage_prefix)
+
+    blob = models.FileField(
+        blank=True,
+        storage=get_storage_by_private_flag,
+        upload_to=get_storage_prefiex_by_private_flag,
+    )
     blob_id = models.UUIDField(unique=True)
     sha256 = models.CharField(  # noqa: DJ001
         null=True,
@@ -84,6 +92,11 @@ class AssetBlob(TimeStampedModel):
                 fields=['etag', 'size'],
             )
         ]
+
+    @property
+    def stored_in_private(self) -> bool:
+        return self.embargoed and settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED
+        # TODO: (Future) or private
 
     @property
     def references(self) -> int:
