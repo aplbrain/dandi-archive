@@ -17,7 +17,11 @@ from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
 
 from dandiapi.api.models.metadata import PublishableMetadataMixin
-from dandiapi.api.storage import get_storage, get_storage_prefix
+from dandiapi.api.storage import (
+    get_private_storage,
+    get_storage,
+    get_storage_prefix,
+)
 
 from .version import Version
 
@@ -60,10 +64,8 @@ class AssetBlob(TimeStampedModel):
     SHA256_REGEX = r'[0-9a-f]{64}'
     ETAG_REGEX = r'[0-9a-f]{32}(-[1-9][0-9]*)?'
 
-    # TODO: do we need an indicator of embargo vs. private?
     embargoed = models.BooleanField(default=False)
-    # TODO: storage and upload_to will be dependent on bucket
-    blob = models.FileField(blank=True, storage=get_storage, upload_to=get_storage_prefix)
+
     blob_id = models.UUIDField(unique=True)
     sha256 = models.CharField(  # noqa: DJ001
         null=True,
@@ -77,13 +79,8 @@ class AssetBlob(TimeStampedModel):
     download_count = models.PositiveBigIntegerField(default=0)
 
     class Meta:
+        abstract = True
         indexes = [HashIndex(fields=['etag'])]
-        constraints = [
-            models.UniqueConstraint(
-                name='unique-etag-size',
-                fields=['etag', 'size'],
-            )
-        ]
 
     @property
     def references(self) -> int:
@@ -107,13 +104,56 @@ class AssetBlob(TimeStampedModel):
         return self.blob.name
 
 
+class PublicAssetBlob(AssetBlob):
+    blob = models.FileField(
+        blank=True,
+        storage=get_storage,
+        upload_to=get_storage_prefix,
+    )
+
+    class Meta(AssetBlob.Meta):
+        constraints = [
+            models.UniqueConstraint(
+                name='unique-etag-size',
+                fields=['etag', 'size'],
+            )
+        ]
+
+
+class PrivateAssetBlob(AssetBlob):
+    blob = models.FileField(
+        blank=True,
+        storage=get_private_storage,
+        upload_to=get_storage_prefix,
+    )
+
+    class Meta(AssetBlob.Meta):
+        constraints = [
+            models.UniqueConstraint(
+                name='unique-private-etag-size',
+                fields=['etag', 'size'],
+            )
+        ]
+
+
 class Asset(PublishableMetadataMixin, TimeStampedModel):
     UUID_REGEX = r'[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}'
 
     asset_id = models.UUIDField(unique=True, default=uuid.uuid4)
     path = models.CharField(max_length=512, validators=[validate_asset_path], db_collation='C')
-    blob = models.ForeignKey(
-        AssetBlob, related_name='assets', on_delete=models.CASCADE, null=True, blank=True
+    public_blob = models.ForeignKey(
+        PublicAssetBlob,
+        related_name='assets',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    private_blob = models.ForeignKey(
+        PrivateAssetBlob,
+        related_name='assets',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
     zarr = models.ForeignKey(
         'zarr.ZarrArchive', related_name='assets', on_delete=models.CASCADE, null=True, blank=True
@@ -144,11 +184,15 @@ class Asset(PublishableMetadataMixin, TimeStampedModel):
         ]
         constraints = [
             models.CheckConstraint(
-                name='blob-xor-zarr',
-                check=(
-                    Q(blob__isnull=True, zarr__isnull=False)
-                    | Q(blob__isnull=False, zarr__isnull=True)
-                ),
+                # name='blob-xor-zarr',
+                # check=(
+                #     Q(blob__isnull=True, zarr__isnull=False)
+                #     | Q(blob__isnull=False, zarr__isnull=True)
+                # ),
+                name='public-blob-xor-private-blob-xor-zarr',
+                check=Q(public_blob__isnull=True, private_blob__isnull=True, zarr__isnull=False)
+                | Q(public_blob__isnull=True, private_blob__isnull=False, zarr__isnull=True)
+                | Q(public_blob__isnull=False, private_blob__isnull=True, zarr__isnull=True),
             ),
             models.CheckConstraint(
                 name='asset_metadata_has_schema_version',
@@ -170,12 +214,26 @@ class Asset(PublishableMetadataMixin, TimeStampedModel):
         ]
 
     @property
+    def blob(self):
+        if self.is_blob:
+            if not self.is_private:
+                return self.public_blob
+            return self.private_blob
+        return None
+
+    @property
     def is_blob(self):
-        return self.blob is not None
+        # return self.blob is not None
+        return self.public_blob is not None or self.private_blob is not None
 
     @property
     def is_zarr(self):
         return self.zarr is not None
+
+    @property
+    def is_private(self):
+        return self.private_blob is not None
+        # TODO: private zarr??
 
     @property
     def is_embargoed(self) -> bool:

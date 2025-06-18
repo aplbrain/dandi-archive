@@ -27,6 +27,7 @@ from dandiapi.api.models import (
     UserMetadata,
     Version,
 )
+from dandiapi.api.models.asset import PrivateAssetBlob, PublicAssetBlob
 from dandiapi.api.views.users import social_account_to_dict
 from dandiapi.zarr.tasks import ingest_dandiset_zarrs
 
@@ -185,7 +186,8 @@ class VersionAdmin(admin.ModelAdmin):
         return obj.number_of_assets
 
 
-@admin.register(AssetBlob)
+@admin.register(PublicAssetBlob)
+@admin.register(PrivateAssetBlob)
 class AssetBlobAdmin(admin.ModelAdmin):
     search_fields = ['blob']
     list_display = ['id', 'blob_id', 'blob', 'references', 'size', 'sha256', 'modified', 'created']
@@ -201,11 +203,14 @@ class AssetBlobInline(LimitedTabularInline):
 
 @admin.register(Asset)
 class AssetAdmin(admin.ModelAdmin):
-    autocomplete_fields = ['blob', 'zarr', 'versions']
+    # autocomplete_fields = ['blob', 'zarr', 'versions']
+    autocomplete_fields = ['public_blob', 'private_blob', 'zarr', 'versions']
     fields = [
         'asset_id',
         'path',
-        'blob',
+        # 'blob',
+        'public_blob',
+        'private_blob',
         'zarr',
         'metadata',
         'versions',
@@ -217,7 +222,9 @@ class AssetAdmin(admin.ModelAdmin):
         'id',
         'asset_id',
         'path',
-        'blob',
+        # 'blob',
+        'public_blob',
+        'private_blob',
         'zarr',
         'status',
         'size',

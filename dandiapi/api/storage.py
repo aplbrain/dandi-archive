@@ -378,7 +378,3 @@ def get_storage_prefix(instance: Any, filename: str) -> str:
 
 def get_private_storage() -> Storage:
     return create_s3_storage(settings.DANDI_DANDISETS_PRIVATE_BUCKET_NAME)
-
-
-def get_private_storage_prefix(instance: Any, filename: str) -> str:
-    return f'{settings.DANDI_DANDISETS_PRIVATE_BUCKET_PREFIX}{filename}'
