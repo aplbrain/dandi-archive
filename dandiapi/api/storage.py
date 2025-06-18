@@ -22,8 +22,6 @@ from storages.backends.s3 import S3Storage
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-    from dandiapi.api.types import HasStoredInPrivateFlag
-
 
 class ChecksumCalculatorFile:
     """File-like object that calculates the checksum of everything written to it."""
@@ -380,15 +378,3 @@ def get_storage_prefix(instance: Any, filename: str) -> str:
 
 def get_private_storage() -> Storage:
     return create_s3_storage(settings.DANDI_DANDISETS_PRIVATE_BUCKET_NAME)
-
-
-def get_private_storage_prefix(instance: Any, filename: str) -> str:
-    return f'{settings.DANDI_DANDISETS_PRIVATE_BUCKET_PREFIX}{filename}'
-
-
-def get_storage_prefix_by_private_flag(instance: HasStoredInPrivateFlag, filename: str) -> str:
-    return (
-        get_storage_prefix(instance, filename)
-        if not instance.stored_in_private
-        else get_private_storage_prefix(instance, filename)
-    )

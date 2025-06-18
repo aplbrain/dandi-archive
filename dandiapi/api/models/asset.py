@@ -64,15 +64,8 @@ class AssetBlob(TimeStampedModel):
     SHA256_REGEX = r'[0-9a-f]{64}'
     ETAG_REGEX = r'[0-9a-f]{32}(-[1-9][0-9]*)?'
 
-    # TODO: (Future) Add private
-    private = models.BooleanField(default=False)
     embargoed = models.BooleanField(default=False)
 
-    blob = models.FileField(
-        blank=True,
-        storage=get_storage if not private else get_private_storage,
-        upload_to=get_storage_prefix,
-    )
     blob_id = models.UUIDField(unique=True)
     sha256 = models.CharField(  # noqa: DJ001
         null=True,
@@ -86,14 +79,8 @@ class AssetBlob(TimeStampedModel):
     download_count = models.PositiveBigIntegerField(default=0)
 
     class Meta:
-        # abstract = True
+        abstract = True
         indexes = [HashIndex(fields=['etag'])]
-        constraints = [
-            models.UniqueConstraint(
-                name='unique-etag-size',
-                fields=['etag', 'size'],
-            )
-        ]
 
     @property
     def references(self) -> int:
@@ -116,34 +103,37 @@ class AssetBlob(TimeStampedModel):
     def __str__(self) -> str:
         return self.blob.name
 
-    # def save(self, *args, **kwargs):
-    #     """Overide save to implement dynamic storage bucket."""
-    #     if self.blob and hasattr(self.blob.file, 'read') and not self.pk:
-    #         file_data = self.blob.file.read()
-    #         file_name = self.blob.name
 
-    #         # Save the file manually using the correct storage bucket
-    #         storage = get_storage() if not self.stored_in_private else get_private_storage()
-    #         self.blob.name = storage.save(file_name, ContentFile(file_data))
+class PublicAssetBlob(AssetBlob):
+    blob = models.FileField(
+        blank=True,
+        storage=get_storage,
+        upload_to=get_storage_prefix,
+    )
 
-    #     super().save(*args, **kwargs)
+    class Meta(AssetBlob.Meta):
+        constraints = [
+            models.UniqueConstraint(
+                name='unique-etag-size',
+                fields=['etag', 'size'],
+            )
+        ]
 
 
-# class PrivateAssetBlob(AssetBlob):
+class PrivateAssetBlob(AssetBlob):
+    blob = models.FileField(
+        blank=True,
+        storage=get_private_storage,
+        upload_to=get_storage_prefix,
+    )
 
-#     blob = models.FileField(
-#         blank=True,
-#         storage=get_private_storage,
-#         upload_to=get_storage_prefix_by_private_flag,
-#     )
-
-# class PublicAssetBlob(AssetBlob):
-
-#     blob = models.FileField(
-#         blank=True,
-#         storage=get_storage,
-#         upload_to=get_storage_prefix_by_private_flag,
-#     )
+    class Meta(AssetBlob.Meta):
+        constraints = [
+            models.UniqueConstraint(
+                name='unique-private-etag-size',
+                fields=['etag', 'size'],
+            )
+        ]
 
 
 class Asset(PublishableMetadataMixin, TimeStampedModel):
@@ -151,8 +141,19 @@ class Asset(PublishableMetadataMixin, TimeStampedModel):
 
     asset_id = models.UUIDField(unique=True, default=uuid.uuid4)
     path = models.CharField(max_length=512, validators=[validate_asset_path], db_collation='C')
-    blob = models.ForeignKey(
-        AssetBlob, related_name='assets', on_delete=models.CASCADE, null=True, blank=True
+    public_blob = models.ForeignKey(
+        PublicAssetBlob,
+        related_name='assets',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    private_blob = models.ForeignKey(
+        PrivateAssetBlob,
+        related_name='assets',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
     zarr = models.ForeignKey(
         'zarr.ZarrArchive', related_name='assets', on_delete=models.CASCADE, null=True, blank=True
@@ -183,11 +184,15 @@ class Asset(PublishableMetadataMixin, TimeStampedModel):
         ]
         constraints = [
             models.CheckConstraint(
-                name='blob-xor-zarr',
-                check=(
-                    Q(blob__isnull=True, zarr__isnull=False)
-                    | Q(blob__isnull=False, zarr__isnull=True)
-                ),
+                # name='blob-xor-zarr',
+                # check=(
+                #     Q(blob__isnull=True, zarr__isnull=False)
+                #     | Q(blob__isnull=False, zarr__isnull=True)
+                # ),
+                name='public-blob-xor-private-blob-xor-zarr',
+                check=Q(public_blob__isnull=True, private_blob__isnull=True, zarr__isnull=False)
+                | Q(public_blob__isnull=True, private_blob__isnull=False, zarr__isnull=True)
+                | Q(public_blob__isnull=False, private_blob__isnull=True, zarr__isnull=True),
             ),
             models.CheckConstraint(
                 name='asset_metadata_has_schema_version',
@@ -209,12 +214,26 @@ class Asset(PublishableMetadataMixin, TimeStampedModel):
         ]
 
     @property
+    def blob(self):
+        if self.is_blob:
+            if not self.is_private:
+                return self.public_blob
+            return self.private_blob
+        return None
+
+    @property
     def is_blob(self):
-        return self.blob is not None
+        # return self.blob is not None
+        return self.public_blob is not None or self.private_blob is not None
 
     @property
     def is_zarr(self):
         return self.zarr is not None
+
+    @property
+    def is_private(self):
+        return self.private_blob is not None
+        # TODO: private zarr??
 
     @property
     def is_embargoed(self) -> bool:
