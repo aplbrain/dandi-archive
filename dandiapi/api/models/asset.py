@@ -18,8 +18,9 @@ from django_extensions.db.models import TimeStampedModel
 
 from dandiapi.api.models.metadata import PublishableMetadataMixin
 from dandiapi.api.storage import (
-    get_storage_by_private_flag,
-    get_storage_prefiex_by_private_flag,
+    get_private_storage,
+    get_storage,
+    get_storage_prefix,
 )
 
 from .version import Version
@@ -64,13 +65,13 @@ class AssetBlob(TimeStampedModel):
     ETAG_REGEX = r'[0-9a-f]{32}(-[1-9][0-9]*)?'
 
     # TODO: (Future) Add private
-    # private = models.BooleanField(default=False)
+    private = models.BooleanField(default=False)
     embargoed = models.BooleanField(default=False)
 
     blob = models.FileField(
         blank=True,
-        storage=get_storage_by_private_flag,
-        upload_to=get_storage_prefiex_by_private_flag,
+        storage=get_storage if not private else get_private_storage,
+        upload_to=get_storage_prefix,
     )
     blob_id = models.UUIDField(unique=True)
     sha256 = models.CharField(  # noqa: DJ001
@@ -85,6 +86,7 @@ class AssetBlob(TimeStampedModel):
     download_count = models.PositiveBigIntegerField(default=0)
 
     class Meta:
+        # abstract = True
         indexes = [HashIndex(fields=['etag'])]
         constraints = [
             models.UniqueConstraint(
@@ -92,11 +94,6 @@ class AssetBlob(TimeStampedModel):
                 fields=['etag', 'size'],
             )
         ]
-
-    @property
-    def stored_in_private(self) -> bool:
-        return self.embargoed and settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED
-        # TODO: (Future) or private
 
     @property
     def references(self) -> int:
@@ -118,6 +115,35 @@ class AssetBlob(TimeStampedModel):
 
     def __str__(self) -> str:
         return self.blob.name
+
+    # def save(self, *args, **kwargs):
+    #     """Overide save to implement dynamic storage bucket."""
+    #     if self.blob and hasattr(self.blob.file, 'read') and not self.pk:
+    #         file_data = self.blob.file.read()
+    #         file_name = self.blob.name
+
+    #         # Save the file manually using the correct storage bucket
+    #         storage = get_storage() if not self.stored_in_private else get_private_storage()
+    #         self.blob.name = storage.save(file_name, ContentFile(file_data))
+
+    #     super().save(*args, **kwargs)
+
+
+# class PrivateAssetBlob(AssetBlob):
+
+#     blob = models.FileField(
+#         blank=True,
+#         storage=get_private_storage,
+#         upload_to=get_storage_prefix_by_private_flag,
+#     )
+
+# class PublicAssetBlob(AssetBlob):
+
+#     blob = models.FileField(
+#         blank=True,
+#         storage=get_storage,
+#         upload_to=get_storage_prefix_by_private_flag,
+#     )
 
 
 class Asset(PublishableMetadataMixin, TimeStampedModel):

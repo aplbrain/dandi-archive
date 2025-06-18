@@ -386,11 +386,7 @@ def get_private_storage_prefix(instance: Any, filename: str) -> str:
     return f'{settings.DANDI_DANDISETS_PRIVATE_BUCKET_PREFIX}{filename}'
 
 
-def get_storage_by_private_flag(instance: HasStoredInPrivateFlag) -> Storage:
-    return get_storage() if not instance.stored_in_private else get_private_storage()
-
-
-def get_storage_prefiex_by_private_flag(instance: HasStoredInPrivateFlag, filename: str) -> str:
+def get_storage_prefix_by_private_flag(instance: HasStoredInPrivateFlag, filename: str) -> str:
     return (
         get_storage_prefix(instance, filename)
         if not instance.stored_in_private

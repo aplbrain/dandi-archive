@@ -8,8 +8,8 @@ from django.db import models
 from django_extensions.db.models import CreationDateTimeField
 
 from dandiapi.api.storage import (
-    get_storage_by_private_flag,
-    get_storage_prefiex_by_private_flag,
+    get_storage,
+    get_storage_prefix,
 )
 
 from .asset import AssetBlob
@@ -29,8 +29,8 @@ class Upload(models.Model):  # noqa: DJ008
 
     blob = models.FileField(
         blank=True,
-        storage=get_storage_by_private_flag,
-        upload_to=get_storage_prefiex_by_private_flag,
+        storage=get_storage,
+        upload_to=get_storage_prefix,
     )
     # This is the key used to generate the object key, and the primary identifier for the upload.
     upload_id = models.UUIDField(unique=True, default=uuid4, db_index=True)
