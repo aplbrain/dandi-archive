@@ -363,6 +363,27 @@ class AssetDownloadQueryParameterSerializer(serializers.Serializer):
     content_disposition = serializers.ChoiceField(['attachment', 'inline'], default='attachment')
 
 
+class PrivateSlugRelatedField(serializers.SlugRelatedField):
+    """
+    A Field for cleanly serializing private model fields.
+
+    Private fields are paired with their public equivalents, like "public_blob" and
+    "private_blob". There are DB constraints in place to ensure
+    that only one field is defined at a time. When serializing one of those pairs, we would like to
+    conceal the fact that the field might be private by silently using the private model field
+    in place of the normal field if it is defined.
+    """
+
+    def get_attribute(self, instance: Asset):
+        attr = super().get_attribute(instance)
+        if attr is None:
+            # The normal field was not defined on the model, try the private_ variant instead
+            private_source = self.source.replace('public', 'private')
+            # Alt. if blob vs private_blob... f'private_{self.source}'
+            attr = getattr(instance, private_source, None)
+        return attr
+
+
 class AssetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asset
@@ -378,7 +399,7 @@ class AssetSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['created']
 
-    blob = serializers.SlugRelatedField(slug_field='blob_id', read_only=True)
+    blob = PrivateSlugRelatedField(slug_field='blob_id', read_only=True)
     zarr = serializers.SlugRelatedField(slug_field='zarr_id', read_only=True)
     metadata = serializers.JSONField(source='full_metadata')
 

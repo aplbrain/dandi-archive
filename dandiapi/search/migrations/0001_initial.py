@@ -4,11 +4,11 @@ from __future__ import annotations
 from django.contrib.postgres.operations import TrigramExtension
 from django.db import migrations, models
 
-from dandiapi.api.models.asset import Asset, AssetBlob
+from dandiapi.api.models.asset import Asset, PublicAssetBlob
 from dandiapi.api.models.version import Version
 
 ASSET_TABLE = Asset._meta.db_table
-ASSET_BLOB_TABLE = AssetBlob._meta.db_table
+ASSET_BLOB_TABLE = PublicAssetBlob._meta.db_table
 VERSION_TABLE = Version._meta.db_table
 VERSION_ASSET_TABLE = Asset.versions.through._meta.db_table
 
@@ -20,7 +20,7 @@ CREATE MATERIALIZED VIEW asset_search AS
         {ASSET_TABLE}.metadata AS asset_metadata,
         {ASSET_BLOB_TABLE}.size AS asset_size
     FROM {ASSET_TABLE}
-    JOIN {ASSET_BLOB_TABLE} ON {ASSET_BLOB_TABLE}.id = {ASSET_TABLE}.blob_id
+    JOIN {ASSET_BLOB_TABLE} ON {ASSET_BLOB_TABLE}.id = {ASSET_TABLE}.public_blob_id
     JOIN {VERSION_ASSET_TABLE} ON {ASSET_TABLE}.id = {VERSION_ASSET_TABLE}.asset_id
     JOIN {VERSION_TABLE} ON {VERSION_ASSET_TABLE}.version_id = {VERSION_TABLE}.id;
 

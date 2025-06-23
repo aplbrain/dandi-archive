@@ -92,8 +92,8 @@ class AssetViewSet(DetailSerializerMixin, GenericViewSet):
         if asset_id is None:
             return
 
-        asset = get_object_or_404(Asset.objects.select_related('blob', 'zarr'), asset_id=asset_id)
-        if not asset.is_embargoed:
+        asset = get_object_or_404(Asset.objects.select_related('blob' 'zarr'), asset_id=asset_id)
+        if not asset.is_embargoed and not asset.is_private:
             return
 
         # Clients must be authenticated to access it

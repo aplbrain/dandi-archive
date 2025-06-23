@@ -18,16 +18,17 @@ from guardian.admin import GuardedModelAdmin
 
 from dandiapi.api.models import (
     Asset,
-    AssetBlob,
     AuditRecord,
     Dandiset,
     DandisetStar,
     GarbageCollectionEvent,
+    PrivateAssetBlob,
+    PublicAssetBlob,
     Upload,
     UserMetadata,
     Version,
 )
-from dandiapi.api.models.asset import PrivateAssetBlob, PublicAssetBlob
+from dandiapi.api.models.upload import PublicUpload
 from dandiapi.api.views.users import social_account_to_dict
 from dandiapi.zarr.tasks import ingest_dandiset_zarrs
 
@@ -198,7 +199,7 @@ class AssetBlobAdmin(admin.ModelAdmin):
 
 
 class AssetBlobInline(LimitedTabularInline):
-    model = AssetBlob
+    model = PublicAssetBlob #AssetBlob TODO ?
 
 
 @admin.register(Asset)
@@ -235,7 +236,7 @@ class AssetAdmin(admin.ModelAdmin):
     list_select_related = ['zarr', 'blob']
 
 
-@admin.register(Upload)
+@admin.register(PublicUpload)
 class UploadAdmin(admin.ModelAdmin):
     list_display = ['id', 'upload_id', 'blob', 'etag', 'upload_id', 'size', 'created']
     list_display_links = ['id', 'upload_id']
