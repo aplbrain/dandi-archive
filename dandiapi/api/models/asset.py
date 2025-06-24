@@ -184,11 +184,6 @@ class Asset(PublishableMetadataMixin, TimeStampedModel):
         ]
         constraints = [
             models.CheckConstraint(
-                # name='blob-xor-zarr',
-                # check=(
-                #     Q(blob__isnull=True, zarr__isnull=False)
-                #     | Q(blob__isnull=False, zarr__isnull=True)
-                # ),
                 name='public-blob-xor-private-blob-xor-zarr',
                 check=Q(public_blob__isnull=True, private_blob__isnull=True, zarr__isnull=False)
                 | Q(public_blob__isnull=True, private_blob__isnull=False, zarr__isnull=True)
@@ -237,7 +232,6 @@ class Asset(PublishableMetadataMixin, TimeStampedModel):
 
     @property
     def is_blob(self):
-        # return self.blob is not None
         return self.public_blob is not None or self.private_blob is not None
 
     @property
