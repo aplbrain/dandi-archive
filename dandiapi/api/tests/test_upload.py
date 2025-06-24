@@ -6,7 +6,7 @@ from django.core.files.base import ContentFile
 import pytest
 import requests
 
-from dandiapi.api.models import Dandiset, PublicAssetBlob, PublicUpload, Upload
+from dandiapi.api.models import Dandiset, PublicAssetBlob, PublicUpload
 from dandiapi.api.services.permissions.dandiset import add_dandiset_owner
 
 from .fuzzy import HTTP_URL_RE, UUID_RE, Re

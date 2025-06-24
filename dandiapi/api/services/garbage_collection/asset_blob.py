@@ -49,9 +49,10 @@ def get_private_queryset() -> QuerySet[PrivateAssetBlob]:
 
 
 def _garbage_collect(
-    qs: QuerySet[AssetBlob], BlobModel: type[PublicAssetBlob | PrivateAssetBlob]  # noqa: N803
+    qs: QuerySet[AssetBlob],
+    BlobModel: type[PublicAssetBlob | PrivateAssetBlob],  # noqa: N803
 ) -> int:
-    from . import GARBAGE_COLLECTION_EVENT_CHUNK_SIZE  # noqa: PLC0415
+    from . import GARBAGE_COLLECTION_EVENT_CHUNK_SIZE
 
     if not qs.exists():
         return 0

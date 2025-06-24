@@ -16,7 +16,7 @@ from dandiapi.api.manifests import (
     write_dandiset_jsonld,
     write_dandiset_yaml,
 )
-from dandiapi.api.models import Asset, AssetBlob, Version
+from dandiapi.api.models import Asset, Version
 from dandiapi.api.models.asset import PrivateAssetBlob, PublicAssetBlob
 from dandiapi.api.models.dandiset import Dandiset
 
@@ -61,6 +61,7 @@ def calculate_sha256(blob_id: str | UUID) -> None:
         PublicAssetBlob.objects.filter(blob_id=blob_id).update(sha256=sha256)
     else:
         PrivateAssetBlob.objects.filter(blob_id=blob_id).update(sha256=sha256)
+
 
 @shared_task(soft_time_limit=180)
 def write_manifest_files(version_id: int) -> None:

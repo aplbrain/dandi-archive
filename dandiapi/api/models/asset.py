@@ -233,8 +233,7 @@ class Asset(PublishableMetadataMixin, TimeStampedModel):
             self.public_blob = None
             self.private_blob = None
         else:
-            raise ValueError("Unsupported type")
-
+            raise ValueError('Unsupported type')
 
     @property
     def is_blob(self):

@@ -185,12 +185,18 @@ class EmbargoedAssetBlobFactory(AssetBlobFactory):
     embargoed = True
 
 
+class PublicAssetBlobFactory(AssetBlobFactory):
+    # Added to fix error about public_asset_blob__blob_id fixture not existing
+    class Meta:
+        model = PublicAssetBlob
+
+
 class DraftAssetFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Asset
 
     path = factory.Faker('file_path', absolute=False, extension='nwb')
-    public_blob = factory.SubFactory(AssetBlobFactory)
+    public_blob = factory.SubFactory(PublicAssetBlobFactory)
 
     @factory.lazy_attribute
     def metadata(self):

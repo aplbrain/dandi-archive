@@ -17,6 +17,7 @@ from dandiapi.api.tests.factories import (
     DraftVersionFactory,
     EmbargoedAssetBlobFactory,
     EmbargoedUploadFactory,
+    PublicAssetBlobFactory,
     PublishedAssetFactory,
     PublishedVersionFactory,
     SocialAccountFactory,
@@ -34,6 +35,7 @@ if TYPE_CHECKING:
 register(PublishedAssetFactory, _name='published_asset')
 register(DraftAssetFactory, _name='draft_asset')
 register(AssetBlobFactory, _name='asset_blob')
+register(PublicAssetBlobFactory)
 register(EmbargoedAssetBlobFactory, _name='embargoed_asset_blob')
 register(DandisetFactory)
 register(EmbargoedUploadFactory)

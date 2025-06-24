@@ -72,7 +72,7 @@ def _collection_jsonld_path(version: Version) -> str:
 
 @contextmanager
 def _streaming_file_upload(path: str) -> Generator[IO[bytes], None, None]:
-    # TODO: Change function defintion to allow for bucket differentiation? (public vs private)
+    # TODO: Change function definition to allow for bucket differentiation? (public vs private)
     # def _streaming_file_upload(path: str, storage: Storage) -> Generator[IO[bytes], None, None]:
     with tempfile.NamedTemporaryFile(mode='r+b') as outfile:
         yield outfile

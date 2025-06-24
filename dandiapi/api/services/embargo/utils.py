@@ -10,7 +10,7 @@ from django.db.models import Q
 from more_itertools import chunked
 
 from dandiapi.api.models.asset import Asset
-from dandiapi.api.storage import get_boto_client
+from dandiapi.api.storage import get_boto_client, get_private_storage
 from dandiapi.zarr.models import zarr_s3_path
 
 from .exceptions import AssetTagRemovalError
@@ -81,10 +81,15 @@ def _delete_zarr_object_tags(client: S3Client, zarr: str):
 
 def remove_dandiset_embargo_tags(dandiset: Dandiset):
     client = get_boto_client(config=Config(max_pool_connections=100))
+    private_client = get_boto_client(
+        storage=get_private_storage(), config=Config(max_pool_connections=100)
+    )
     embargoed_assets = (
         Asset.objects.filter(versions__dandiset=dandiset)
         # zarrs have no embargoed flag themselves and so are all included
-        .filter(Q(public_blob__embargoed=True) | Q(private_blob__embargoed=True) | Q(zarr__isnull=False))
+        .filter(
+            Q(public_blob__embargoed=True) | Q(private_blob__embargoed=True) | Q(zarr__isnull=False)
+        )
         .values_list('public_blob__blob', 'private_blob__blob', 'zarr__zarr_id')
         .iterator(chunk_size=TAG_REMOVAL_CHUNK_SIZE)
     )
@@ -94,9 +99,13 @@ def remove_dandiset_embargo_tags(dandiset: Dandiset):
     for chunk in chunks:
         futures = []
         with ThreadPoolExecutor(max_workers=100) as e:
-            for blob, zarr in chunk:
-                if blob is not None:
-                    futures.append(e.submit(_delete_object_tags, client=client, blob=blob))
+            for public_blob, private_blob, zarr in chunk:
+                if public_blob is not None:
+                    futures.append(e.submit(_delete_object_tags, client=client, blob=public_blob))
+                if private_blob is not None:
+                    futures.append(
+                        e.submit(_delete_object_tags, client=private_client, blob=private_blob)
+                    )
                 if zarr is not None:
                     futures.append(e.submit(_delete_zarr_object_tags, client=client, zarr=zarr))
 

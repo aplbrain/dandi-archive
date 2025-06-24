@@ -36,7 +36,7 @@ def test_asset_no_blob_zarr(draft_asset_factory):
     with pytest.raises(IntegrityError) as excinfo:
         asset.save()
 
-    assert 'blob-xor-zarr' in str(excinfo.value)
+    assert 'public-blob-xor-private-blob-xor-zarr' in str(excinfo.value)
 
 
 @pytest.mark.django_db
@@ -46,7 +46,7 @@ def test_asset_blob_and_zarr(draft_asset, zarr_archive):
     with pytest.raises(IntegrityError) as excinfo:
         draft_asset.save()
 
-    assert 'blob-xor-zarr' in str(excinfo.value)
+    assert 'public-blob-xor-private-blob-xor-zarr' in str(excinfo.value)
 
 
 @pytest.mark.django_db

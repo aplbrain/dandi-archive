@@ -87,7 +87,7 @@ class DashboardView(DashboardMixin, TemplateView):
         )
 
     def _uploads(self):
-        return PublicUpload.objects.annotate() # TODO: ? .union(PrivateUpload.objects.all())
+        return PublicUpload.objects.annotate()  # TODO: ? .union(PrivateUpload.objects.all())
 
     def _users(self):
         return (

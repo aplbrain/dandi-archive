@@ -113,16 +113,16 @@ def test_garbage_collection_event_records(asset_blob_factory, upload_factory, mo
 
     # Make sure the GarbageCollectionEvent records are created
     assert GarbageCollectionEvent.objects.count() == 2
-    assert GarbageCollectionEvent.objects.filter(type=AssetBlob.__name__).count() == 1
-    assert GarbageCollectionEvent.objects.filter(type=Upload.__name__).count() == 1
+    assert GarbageCollectionEvent.objects.filter(type=PublicAssetBlob.__name__).count() == 1
+    assert GarbageCollectionEvent.objects.filter(type=PublicUpload.__name__).count() == 1
 
     assert GarbageCollectionEventRecord.objects.count() == asset_blob_count + upload_count
     assert (
-        GarbageCollectionEventRecord.objects.filter(event__type=AssetBlob.__name__).count()
+        GarbageCollectionEventRecord.objects.filter(event__type=PublicAssetBlob.__name__).count()
         == asset_blob_count
     )
     assert (
-        GarbageCollectionEventRecord.objects.filter(event__type=Upload.__name__).count()
+        GarbageCollectionEventRecord.objects.filter(event__type=PublicUpload.__name__).count()
         == upload_count
     )
 

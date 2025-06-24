@@ -47,7 +47,7 @@ def get_private_queryset() -> QuerySet[PrivateUpload]:
 
 
 def _garbage_collect(qs: QuerySet[Upload], UploadModel: type[PublicUpload | PrivateUpload]):  # noqa: N803
-    from . import GARBAGE_COLLECTION_EVENT_CHUNK_SIZE  # noqa: PLC0415
+    from . import GARBAGE_COLLECTION_EVENT_CHUNK_SIZE
 
     if not qs.exists():
         return 0
