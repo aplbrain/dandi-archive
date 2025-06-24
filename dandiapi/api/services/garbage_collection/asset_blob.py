@@ -11,11 +11,13 @@ from django.db import transaction
 from django.utils import timezone
 from more_itertools import chunked
 
+from dandiapi import settings
 from dandiapi.api.models import (
     AssetBlob,
     GarbageCollectionEvent,
     GarbageCollectionEventRecord,
 )
+from dandiapi.api.models.asset import PrivateAssetBlob, PublicAssetBlob
 
 if TYPE_CHECKING:
     from django.db.models import QuerySet
@@ -27,16 +29,29 @@ ASSET_BLOB_EXPIRATION_TIME = timedelta(days=7)
 
 def get_queryset() -> QuerySet[AssetBlob]:
     """Get the queryset of AssetBlobs that are eligible for garbage collection."""
-    return AssetBlob.objects.filter(
+    return get_public_queryset().union(get_private_queryset())
+
+
+def get_public_queryset() -> QuerySet[PublicAssetBlob]:
+    """Get the queryset of PublicAssetBlobs that are eligible for garbage collection."""
+    return PublicAssetBlob.objects.filter(
         assets__isnull=True,
         created__lt=timezone.now() - ASSET_BLOB_EXPIRATION_TIME,
     )
 
 
-def garbage_collect() -> int:
-    from . import GARBAGE_COLLECTION_EVENT_CHUNK_SIZE
+def get_private_queryset() -> QuerySet[PrivateAssetBlob]:
+    """Get the queryset of PrivateAssetBlobs that are eligible for garbage collection."""
+    return PrivateAssetBlob.objects.filter(
+        assets__isnull=True,
+        created__lt=timezone.now() - ASSET_BLOB_EXPIRATION_TIME,
+    )
 
-    qs = get_queryset()
+
+def _garbage_collect(
+    qs: QuerySet[AssetBlob], BlobModel: type[PublicAssetBlob | PrivateAssetBlob]  # noqa: N803
+) -> int:
+    from . import GARBAGE_COLLECTION_EVENT_CHUNK_SIZE  # noqa: PLC0415
 
     if not qs.exists():
         return 0
@@ -45,7 +60,7 @@ def garbage_collect() -> int:
     futures: list[Future] = []
 
     with transaction.atomic(), ThreadPoolExecutor() as executor:
-        event = GarbageCollectionEvent.objects.create(type=AssetBlob.__name__)
+        event = GarbageCollectionEvent.objects.create(type=BlobModel.__name__)
         for asset_blobs_chunk in chunked(qs.iterator(), GARBAGE_COLLECTION_EVENT_CHUNK_SIZE):
             GarbageCollectionEventRecord.objects.bulk_create(
                 GarbageCollectionEventRecord(
@@ -62,10 +77,21 @@ def garbage_collect() -> int:
                 )
             )
 
-            deleted_records += AssetBlob.objects.filter(
+            deleted_records += BlobModel.objects.filter(
                 pk__in=[a.pk for a in asset_blobs_chunk],
             ).delete()[0]
 
         wait(futures)
+
+    return deleted_records
+
+
+def garbage_collect() -> int:
+    public_qs = get_public_queryset()
+    deleted_records = _garbage_collect(public_qs, PublicAssetBlob)
+
+    if settings.ALLOW_PRIVATE:
+        private_qs = get_private_queryset()
+        deleted_records += _garbage_collect(private_qs, PrivateAssetBlob)
 
     return deleted_records

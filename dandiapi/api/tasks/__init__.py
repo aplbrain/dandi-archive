@@ -30,7 +30,10 @@ logger = get_task_logger(__name__)
 def remove_asset_blob_embargoed_tag_task(blob_id: str) -> None:
     from dandiapi.api.services.embargo import remove_asset_blob_embargoed_tag
 
-    asset_blob = AssetBlob.objects.get(blob_id=blob_id)
+    try:
+        asset_blob = PublicAssetBlob.objects.get(blob_id=blob_id)
+    except PublicAssetBlob.DoesNotExist:
+        asset_blob = PrivateAssetBlob.objects.get(blob_id=blob_id)
     remove_asset_blob_embargoed_tag(asset_blob)
 
 
@@ -44,17 +47,20 @@ def remove_asset_blob_embargoed_tag_task(blob_id: str) -> None:
 def calculate_sha256(blob_id: str | UUID) -> None:
     try:
         asset_blob = PublicAssetBlob.objects.get(blob_id=blob_id)
+        private = False
         logger.info('Found PublicAssetBlob %s', blob_id)
     except PublicAssetBlob.DoesNotExist:
         asset_blob = PrivateAssetBlob.objects.get(blob_id=blob_id)
+        private = True
         logger.info('Found PrivateAssetBlob %s', blob_id)
     logger.info('Calculating sha256 checksum for asset blob %s', blob_id)
     sha256 = asset_blob.blob.storage.sha256_checksum(asset_blob.blob.name)
 
     # TODO: Run dandi-cli validation
-
-    AssetBlob.objects.filter(blob_id=blob_id).update(sha256=sha256)
-
+    if not private:
+        PublicAssetBlob.objects.filter(blob_id=blob_id).update(sha256=sha256)
+    else:
+        PrivateAssetBlob.objects.filter(blob_id=blob_id).update(sha256=sha256)
 
 @shared_task(soft_time_limit=180)
 def write_manifest_files(version_id: int) -> None:

@@ -84,8 +84,8 @@ def remove_dandiset_embargo_tags(dandiset: Dandiset):
     embargoed_assets = (
         Asset.objects.filter(versions__dandiset=dandiset)
         # zarrs have no embargoed flag themselves and so are all included
-        .filter(Q(blob__embargoed=True) | Q(zarr__isnull=False))
-        .values_list('blob__blob', 'zarr__zarr_id')
+        .filter(Q(public_blob__embargoed=True) | Q(private_blob__embargoed=True) | Q(zarr__isnull=False))
+        .values_list('public_blob__blob', 'private_blob__blob', 'zarr__zarr_id')
         .iterator(chunk_size=TAG_REMOVAL_CHUNK_SIZE)
     )
 

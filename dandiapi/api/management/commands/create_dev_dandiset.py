@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 import djclick as click
 
-from dandiapi.api.models import AssetBlob
+from dandiapi.api.models import PublicAssetBlob
 from dandiapi.api.services.asset import add_asset_to_version
 from dandiapi.api.services.dandiset import create_dandiset
 from dandiapi.api.services.metadata import validate_asset_metadata, validate_version_metadata
@@ -57,9 +57,9 @@ def create_dev_dandiset(*, name: str, email: str, num_extra_owners: int):
     uploaded_file = SimpleUploadedFile(name='foo/bar.txt', content=b'A' * 20)
     etag = '76d36e98f312e98ff908c8c82c8dd623-0'
     try:
-        asset_blob = AssetBlob.objects.get(etag=etag)
-    except AssetBlob.DoesNotExist:
-        asset_blob = AssetBlob(
+        asset_blob = PublicAssetBlob.objects.get(etag=etag)
+    except PublicAssetBlob.DoesNotExist:
+        asset_blob = PublicAssetBlob(
             blob_id=uuid4(),
             blob=uploaded_file,
             etag=etag,

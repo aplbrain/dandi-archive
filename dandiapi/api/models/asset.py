@@ -221,6 +221,21 @@ class Asset(PublishableMetadataMixin, TimeStampedModel):
             return self.private_blob
         return None
 
+    @blob.setter
+    def blob(self, value):
+        if isinstance(value, PublicAssetBlob):
+            self.public_blob = value
+            self.private_blob = None
+        elif isinstance(value, PrivateAssetBlob):
+            self.public_blob = None
+            self.private_blob = value
+        elif value is None:
+            self.public_blob = None
+            self.private_blob = None
+        else:
+            raise ValueError("Unsupported type")
+
+
     @property
     def is_blob(self):
         # return self.blob is not None
@@ -358,5 +373,5 @@ class Asset(PublishableMetadataMixin, TimeStampedModel):
             .distinct()
             .aggregate(size=models.Sum('size'))['size']
             or 0
-            for cls in (AssetBlob, ZarrArchive)
+            for cls in (PublicAssetBlob, PrivateAssetBlob, ZarrArchive)
         )

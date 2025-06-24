@@ -8,6 +8,9 @@ from dandiapi.api.models import (
     AssetBlob,
     GarbageCollectionEvent,
     GarbageCollectionEventRecord,
+    PrivateAssetBlob,
+    PublicAssetBlob,
+    PublicUpload,
     Upload,
 )
 from dandiapi.api.services import garbage_collection
@@ -27,8 +30,8 @@ def test_garbage_collect_uploads(upload_factory):
 
     assert garbage_collection.upload.garbage_collect() == 1
 
-    assert Upload.objects.filter(id=non_expired_upload.id).exists()
-    assert not Upload.objects.filter(id=expired_upload.id).exists()
+    assert PublicUpload.objects.filter(id=non_expired_upload.id).exists()
+    assert not PublicUpload.objects.filter(id=expired_upload.id).exists()
 
 
 @pytest.mark.django_db
@@ -57,10 +60,10 @@ def test_garbage_collect_asset_blobs(asset_factory, asset_blob_factory):
 
     # Only Case 1 should be garbage collected
     assert garbage_collection.asset_blob.garbage_collect() == 1
-    assert not AssetBlob.objects.filter(id=orphaned_expired_asset_blob.id).exists()
-    assert AssetBlob.objects.filter(id=orphaned_non_expired_asset_blob.id).exists()
-    assert AssetBlob.objects.filter(id=non_orphaned_expired_asset_blob.id).exists()
-    assert AssetBlob.objects.filter(id=non_orphaned_non_expired_asset_blob.id).exists()
+    assert not PublicAssetBlob.objects.filter(id=orphaned_expired_asset_blob.id).exists()
+    assert PublicAssetBlob.objects.filter(id=orphaned_non_expired_asset_blob.id).exists()
+    assert PublicAssetBlob.objects.filter(id=non_orphaned_expired_asset_blob.id).exists()
+    assert PublicAssetBlob.objects.filter(id=non_orphaned_non_expired_asset_blob.id).exists()
 
 
 @pytest.mark.django_db
@@ -90,11 +93,13 @@ def test_garbage_collection_event_records(asset_blob_factory, upload_factory, mo
 
     # Make sure the garbage collected DB records are deleted
     assert all(
-        not AssetBlob.objects.filter(id=asset_blob.id).exists()
+        not PublicAssetBlob.objects.filter(id=asset_blob.id).exists()
+        and not PrivateAssetBlob.objects.filter(id=asset_blob.id).exists()
         for asset_blob in garbage_collected_asset_blobs
     )
     assert all(
-        not Upload.objects.filter(id=upload.id).exists() for upload in garbage_collected_uploads
+        not PublicUpload.objects.filter(id=upload.id).exists()
+        for upload in garbage_collected_uploads
     )
 
     # Make sure the garbage collected asset blob and upload objects are deleted from S3

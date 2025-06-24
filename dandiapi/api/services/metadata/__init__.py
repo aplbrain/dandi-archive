@@ -92,7 +92,7 @@ def version_aggregate_assets_summary(version: Version) -> None:
     assets_summary = aggregate_assets_summary(
         asset.full_metadata
         for asset in version.assets.filter(status=Asset.Status.VALID)
-        .select_related('blob', 'zarr', 'zarr__dandiset')
+        .select_related('public_blob', 'private_blob', 'zarr', 'zarr__dandiset')
         .iterator()
     )
 

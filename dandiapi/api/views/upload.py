@@ -14,9 +14,14 @@ from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from s3_file_field._multipart import TransferredPart, TransferredParts
 
-from dandiapi.api.models import AssetBlob, Dandiset, Upload
-from dandiapi.api.models.asset import PrivateAssetBlob, PublicAssetBlob
-from dandiapi.api.models.upload import PrivateUpload, PublicUpload
+from dandiapi import settings
+from dandiapi.api.models import (
+    Dandiset,
+    PrivateAssetBlob,
+    PrivateUpload,
+    PublicAssetBlob,
+    PublicUpload,
+)
 from dandiapi.api.permissions import IsApproved
 from dandiapi.api.services.embargo.exceptions import DandisetUnembargoInProgressError
 from dandiapi.api.services.exceptions import NotAllowedError
@@ -155,17 +160,42 @@ def upload_initialize_view(request: Request) -> HttpResponseBase:
         dandiset,
     )
 
-    asset_blobs = AssetBlob.objects.filter(etag=etag)
+    asset_blobs = PublicAssetBlob.objects.filter(etag=etag)
     if asset_blobs.exists():
         return Response(
             'Blob already exists.',
             status=status.HTTP_409_CONFLICT,
             headers={'Location': asset_blobs.first().blob_id},
         )
+    if (
+        dandiset.embargo_status != Dandiset.EmbargoStatus.OPEN
+        and settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED
+    ):
+        # Blob is embargoed and stored in the private bucket
+        private_asset_blobs = PrivateAssetBlob.objects.filter(etag=etag)
+        if private_asset_blobs.exists():
+            return Response(
+                'Blob already exists.',
+                status=status.HTTP_409_CONFLICT,
+                headers={'Location': private_asset_blobs.first().blob_id},
+            )
 
     logger.info('Blob with ETag %s does not yet exist', etag)
 
-    upload, initialization = Upload.initialize_multipart_upload(etag, content_size, dandiset)
+    if dandiset.embargo_status == Dandiset.EmbargoStatus.OPEN or (
+        dandiset.embargo_status == Dandiset.EmbargoStatus.EMBARGOED
+        and not settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED
+    ):
+        # Dandiset is stored in the Public Bucket
+        upload, initialization = PublicUpload.initialize_multipart_upload(
+            etag, content_size, dandiset
+        )
+    else:
+        # Dandiset is stored in the Private Bucket
+        upload, initialization = PrivateUpload.initialize_multipart_upload(
+            etag, content_size, dandiset
+        )
+
     logger.info('Upload of ETag %s initialized', etag)
     upload.save()
     logger.info('Upload of ETag %s saved', etag)
@@ -195,7 +225,10 @@ def upload_complete_view(request: Request, upload_id: str) -> HttpResponseBase:
     request_serializer.is_valid(raise_exception=True)
     parts: list[TransferredPart] = request_serializer.save()
 
-    upload: Upload = get_object_or_404(Upload, upload_id=upload_id)
+    try:
+        upload = get_object_or_404(PublicUpload, upload_id=upload_id)
+    except PublicUpload.DoesNotExist:
+        upload = get_object_or_404(PrivateUpload, upload_id=upload_id)
     if upload.embargoed and not is_dandiset_owner(upload.dandiset, request.user):
         raise Http404 from None
 

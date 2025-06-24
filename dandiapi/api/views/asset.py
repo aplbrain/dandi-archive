@@ -92,7 +92,9 @@ class AssetViewSet(DetailSerializerMixin, GenericViewSet):
         if asset_id is None:
             return
 
-        asset = get_object_or_404(Asset.objects.select_related('blob' 'zarr'), asset_id=asset_id)
+        asset = get_object_or_404(
+            Asset.objects.select_related('public_blob', 'private_blob', 'zarr'), asset_id=asset_id
+        )
         if not asset.is_embargoed and not asset.is_private:
             return
 
@@ -469,7 +471,9 @@ class NestedAssetViewSet(NestedViewSetMixin, AssetViewSet, ReadOnlyModelViewSet)
         # Now we can retrieve the actual fully joined rows using the limited number of assets we're
         # going to return
         queryset = self.filter_queryset(
-            Asset.objects.filter(id__in=page_of_asset_ids).select_related('blob', 'zarr')
+            Asset.objects.filter(id__in=page_of_asset_ids).select_related(
+                'public_blob', 'private_blob', 'zarr'
+            )
         )
 
         # Must apply this to the main queryset, since it affects the data returned

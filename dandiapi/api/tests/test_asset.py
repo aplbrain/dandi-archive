@@ -11,7 +11,7 @@ import pytest
 import requests
 
 from dandiapi.api.asset_paths import add_asset_paths, extract_paths
-from dandiapi.api.models import Asset, AssetBlob, Version
+from dandiapi.api.models import Asset, PublicAssetBlob, Version
 from dandiapi.api.models.asset_paths import AssetPath
 from dandiapi.api.models.dandiset import Dandiset
 from dandiapi.api.services.asset import add_asset_to_version
@@ -496,14 +496,14 @@ def test_asset_rest_retrieve_embargoed_admin(
     storage,
     monkeypatch,
 ):
-    monkeypatch.setattr(AssetBlob.blob.field, 'storage', storage)
+    monkeypatch.setattr(PublicAssetBlob.blob.field, 'storage', storage)
 
     api_client.force_authenticate(user=admin_user)
     version = draft_version_factory(dandiset__embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
     ds = version.dandiset
 
     # Create an extra asset so that there are multiple assets to filter down
-    asset = draft_asset_factory(blob__embargoed=True)
+    asset = draft_asset_factory(public_blob__embargoed=True)
     version.assets.add(asset)
 
     # Asset View
@@ -526,14 +526,14 @@ def test_asset_rest_download_embargoed_admin(
     storage,
     monkeypatch,
 ):
-    monkeypatch.setattr(AssetBlob.blob.field, 'storage', storage)
+    monkeypatch.setattr(PublicAssetBlob.blob.field, 'storage', storage)
 
     api_client.force_authenticate(user=admin_user)
     version = draft_version_factory(dandiset__embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
     ds = version.dandiset
 
     # Create an extra asset so that there are multiple assets to filter down
-    asset = draft_asset_factory(blob__embargoed=True)
+    asset = draft_asset_factory(public_blob__embargoed=True)
     version.assets.add(asset)
 
     # Asset View
@@ -1620,7 +1620,7 @@ def test_asset_rest_delete_published_version(api_client, user, published_version
 @pytest.mark.django_db
 def test_asset_download(api_client, storage, version, asset):
     # Pretend like AssetBlob was defined with the given storage
-    AssetBlob.blob.field.storage = storage
+    PublicAssetBlob.blob.field.storage = storage
 
     version.assets.add(asset)
 
@@ -1655,7 +1655,7 @@ def test_asset_download_embargo(
     monkeypatch,
 ):
     # Pretend like AssetBlob was defined with the given storage
-    monkeypatch.setattr(AssetBlob.blob.field, 'storage', storage)
+    monkeypatch.setattr(PublicAssetBlob.blob.field, 'storage', storage)
 
     # Set draft version as embargoed
     version = draft_version_factory(
@@ -1704,7 +1704,7 @@ def test_asset_download_zarr(api_client, version, asset_factory, zarr_archive):
 @pytest.mark.django_db
 def test_asset_direct_download(api_client, storage, version, asset):
     # Pretend like AssetBlob was defined with the given storage
-    AssetBlob.blob.field.storage = storage
+    PublicAssetBlob.blob.field.storage = storage
 
     version.assets.add(asset)
 
@@ -1736,7 +1736,7 @@ def test_asset_direct_download_zarr(api_client, version, asset_factory, zarr_arc
 @pytest.mark.django_db
 def test_asset_direct_download_head(api_client, storage, version, asset):
     # Pretend like AssetBlob was defined with the given storage
-    AssetBlob.blob.field.storage = storage
+    PublicAssetBlob.blob.field.storage = storage
 
     version.assets.add(asset)
 

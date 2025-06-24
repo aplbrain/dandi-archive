@@ -6,7 +6,7 @@ from django.core.files.base import ContentFile
 import pytest
 import requests
 
-from dandiapi.api.models import AssetBlob, Dandiset, Upload
+from dandiapi.api.models import Dandiset, PublicAssetBlob, PublicUpload, Upload
 from dandiapi.api.services.permissions.dandiset import add_dandiset_owner
 
 from .fuzzy import HTTP_URL_RE, UUID_RE, Re
@@ -102,7 +102,7 @@ def test_upload_initialize(api_client, user, dandiset_factory, embargoed):
     # 604800 seconds = 1 week
     assert 'X-Amz-Expires=604800' in upload_url
 
-    upload = Upload.objects.get(upload_id=resp.data['upload_id'])
+    upload = PublicUpload.objects.get(upload_id=resp.data['upload_id'])
     assert upload.embargoed == embargoed
 
     upload_id = str(upload.upload_id)
@@ -145,7 +145,7 @@ def test_upload_initialize_existing_asset_blob(api_client, user, dandiset, asset
     assert resp.status_code == 409
     assert resp.data == 'Blob already exists.'
     assert resp.get('Location') == str(asset_blob.blob_id)
-    assert not Upload.objects.all().exists()
+    assert not PublicUpload.objects.all().exists()
 
 
 @pytest.mark.django_db
@@ -164,7 +164,7 @@ def test_upload_initialize_not_an_owner(api_client, user, dandiset):
         format='json',
     )
     assert resp.status_code == 403
-    assert not Upload.objects.all().exists()
+    assert not PublicUpload.objects.all().exists()
 
 
 @pytest.mark.django_db
@@ -186,7 +186,7 @@ def test_upload_initialize_embargo_not_an_owner(api_client, user, dandiset_facto
     )
     assert resp.status_code == 404
     assert resp.json() == {'detail': 'Not found.'}
-    assert not Upload.objects.all().exists()
+    assert not PublicUpload.objects.all().exists()
 
 
 @pytest.mark.django_db
@@ -210,7 +210,7 @@ def test_upload_initialize_embargo_existing_asset_blob(
     assert resp.status_code == 409
     assert resp.data == 'Blob already exists.'
     assert resp.get('Location') == str(asset_blob.blob_id)
-    assert not Upload.objects.all().exists()
+    assert not PublicUpload.objects.all().exists()
 
 
 @pytest.mark.django_db
@@ -235,7 +235,7 @@ def test_upload_initialize_embargo_existing_embargoed_asset_blob(
     assert resp.status_code == 409
     assert resp.data == 'Blob already exists.'
     assert resp.get('Location') == str(embargoed_asset_blob.blob_id)
-    assert not Upload.objects.all().exists()
+    assert not PublicUpload.objects.all().exists()
 
 
 @pytest.mark.django_db
@@ -369,8 +369,8 @@ def test_upload_initialize_and_complete(api_client, user, dandiset, content_size
     assert completion_response.status_code == 200
 
     # Verify object was uploaded
-    upload = Upload.objects.get(upload_id=upload_id)
-    assert AssetBlob.blob.field.storage.exists(upload.blob.name)
+    upload = PublicUpload.objects.get(upload_id=upload_id)
+    assert PublicAssetBlob.blob.field.storage.exists(upload.blob.name)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -379,8 +379,8 @@ def test_upload_initialize_and_complete_embargo(
     storage, api_client, user, dandiset_factory, content_size, monkeypatch
 ):
     # Pretend like the blobs were defined with the given storage
-    monkeypatch.setattr(Upload.blob.field, 'storage', storage)
-    monkeypatch.setattr(AssetBlob.blob.field, 'storage', storage)
+    monkeypatch.setattr(PublicUpload.blob.field, 'storage', storage)
+    monkeypatch.setattr(PublicAssetBlob.blob.field, 'storage', storage)
 
     api_client.force_authenticate(user=user)
     dandiset = dandiset_factory(embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
@@ -425,8 +425,8 @@ def test_upload_initialize_and_complete_embargo(
     assert completion_response.status_code == 200
 
     # Verify object was uploaded
-    upload = Upload.objects.get(upload_id=upload_id)
-    assert AssetBlob.blob.field.storage.exists(upload.blob.name)
+    upload = PublicUpload.objects.get(upload_id=upload_id)
+    assert PublicAssetBlob.blob.field.storage.exists(upload.blob.name)
     assert upload.blob.name.startswith('test-prefix/blobs/')
 
 
@@ -444,11 +444,11 @@ def test_upload_validate(api_client, user, upload):
     }
 
     # Verify that a new AssetBlob was created
-    asset_blob = AssetBlob.objects.get(blob_id=upload.upload_id)
+    asset_blob = PublicAssetBlob.objects.get(blob_id=upload.upload_id)
     assert asset_blob.blob.name == upload.blob.name
 
     # Verify that the Upload was deleted
-    assert not Upload.objects.all().exists()
+    assert not PublicUpload.objects.all().exists()
 
 
 @pytest.mark.django_db(transaction=True)
@@ -468,11 +468,11 @@ def test_upload_validate_embargo(api_client, user, dandiset_factory, embargoed_u
     }
 
     # Verify that a new embargoed AssetBlob was created
-    embargoed_asset_blob = AssetBlob.objects.get(blob_id=embargoed_upload.upload_id)
+    embargoed_asset_blob = PublicAssetBlob.objects.get(blob_id=embargoed_upload.upload_id)
     assert embargoed_asset_blob.blob.name == embargoed_upload.blob.name
 
     # Verify that the Upload was deleted
-    assert not Upload.objects.all().exists()
+    assert not PublicUpload.objects.all().exists()
 
 
 @pytest.mark.django_db(transaction=True)
@@ -485,8 +485,8 @@ def test_upload_validate_upload_missing(api_client, user, upload):
     assert resp.status_code == 400
     assert resp.data == ['Object does not exist.']
 
-    assert not AssetBlob.objects.all().exists()
-    assert Upload.objects.all().exists()
+    assert not PublicAssetBlob.objects.all().exists()
+    assert PublicUpload.objects.all().exists()
 
 
 @pytest.mark.django_db(transaction=True)
@@ -500,8 +500,8 @@ def test_upload_validate_wrong_size(api_client, user, upload):
     assert resp.status_code == 400
     assert resp.data == [f'Size {upload.size} does not match actual size {len(wrong_content)}.']
 
-    assert not AssetBlob.objects.all().exists()
-    assert Upload.objects.all().exists()
+    assert not PublicAssetBlob.objects.all().exists()
+    assert PublicUpload.objects.all().exists()
 
 
 @pytest.mark.django_db(transaction=True)
@@ -516,8 +516,8 @@ def test_upload_validate_wrong_etag(api_client, user, upload):
     assert resp.status_code == 400
     assert resp.data == [f'ETag {upload.etag} does not match actual ETag {actual_etag}.']
 
-    assert not AssetBlob.objects.all().exists()
-    assert Upload.objects.all().exists()
+    assert not PublicAssetBlob.objects.all().exists()
+    assert PublicUpload.objects.all().exists()
 
 
 @pytest.mark.django_db(transaction=True)
@@ -529,8 +529,8 @@ def test_upload_validate_existing_assetblob(api_client, user, upload, asset_blob
     resp = api_client.post(f'/api/uploads/{upload.upload_id}/validate/')
     assert resp.status_code == 409
 
-    assert AssetBlob.objects.all().count() == 1
-    assert not Upload.objects.all().exists()
+    assert PublicAssetBlob.objects.all().count() == 1
+    assert not PublicUpload.objects.all().exists()
 
 
 @pytest.mark.django_db(transaction=True)
@@ -548,7 +548,7 @@ def test_upload_validate_embargo_existing_assetblob(
     resp = api_client.post(f'/api/uploads/{embargoed_upload.upload_id}/validate/')
     assert resp.status_code == 409
 
-    assert AssetBlob.objects.all().count() == 1
+    assert PublicAssetBlob.objects.all().count() == 1
 
 
 @pytest.mark.django_db(transaction=True)
@@ -567,4 +567,4 @@ def test_upload_validate_embargo_existing_embargoed_assetblob(
     resp = api_client.post(f'/api/uploads/{embargoed_upload.upload_id}/validate/')
     assert resp.status_code == 409
 
-    assert AssetBlob.objects.all().count() == 1
+    assert PublicAssetBlob.objects.all().count() == 1

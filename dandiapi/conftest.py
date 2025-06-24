@@ -43,7 +43,7 @@ register(DraftVersionFactory, _name='draft_version')
 # the fixture `version` will always be a draft
 register(UserFactory)
 register(SocialAccountFactory)
-register(UploadFactory)
+register(UploadFactory, _name='upload')
 
 # zarr app
 register(ZarrArchiveFactory)

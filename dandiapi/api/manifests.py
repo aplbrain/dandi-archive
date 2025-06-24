@@ -10,7 +10,7 @@ from django.core.files.base import File
 from rest_framework.renderers import JSONRenderer
 import yaml
 
-from dandiapi.api.models import Asset, AssetBlob, Version
+from dandiapi.api.models import Asset, PublicAssetBlob, Version
 from dandiapi.api.storage import create_s3_storage
 
 if TYPE_CHECKING:
@@ -31,6 +31,7 @@ def _s3_url(path: str) -> str:
 
 
 def _manifests_path(version: Version) -> str:
+    # TODO: Which bucket
     return (
         f'{settings.DANDI_DANDISETS_BUCKET_PREFIX}'
         f'dandisets/{version.dandiset.identifier}/{version.version}'
@@ -71,12 +72,14 @@ def _collection_jsonld_path(version: Version) -> str:
 
 @contextmanager
 def _streaming_file_upload(path: str) -> Generator[IO[bytes], None, None]:
+    # TODO: Change function defintion to allow for bucket differentiation? (public vs private)
+    # def _streaming_file_upload(path: str, storage: Storage) -> Generator[IO[bytes], None, None]:
     with tempfile.NamedTemporaryFile(mode='r+b') as outfile:
         yield outfile
         outfile.seek(0)
 
         # Piggyback on the AssetBlob storage since we want to store manifests in the same bucket
-        storage = AssetBlob.blob.field.storage
+        storage = PublicAssetBlob.blob.field.storage
         storage._save(path, File(outfile))  # noqa: SLF001
 
 
@@ -101,7 +104,9 @@ def write_assets_jsonld(version: Version) -> None:
     # Use full metadata when writing externally
     assets_metadata = (
         asset.full_metadata
-        for asset in version.assets.select_related('blob', 'zarr', 'zarr__dandiset').iterator()
+        for asset in version.assets.select_related(
+            'public_blob', 'private_blob', 'zarr', 'zarr__dandiset'
+        ).iterator()
     )
     with _streaming_file_upload(_assets_jsonld_path(version)) as stream:
         stream.write(b'[')
@@ -127,7 +132,9 @@ def write_assets_yaml(version: Version) -> None:
             # Use full metadata when writing externally
             (
                 asset.full_metadata
-                for asset in version.assets.select_related('blob', 'zarr', 'zarr__dandiset')
+                for asset in version.assets.select_related(
+                    'public_blob', 'private_blob', 'zarr', 'zarr__dandiset'
+                )
                 .order_by('created')
                 .iterator()
             ),

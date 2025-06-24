@@ -5,9 +5,10 @@ from typing import TYPE_CHECKING
 
 from django.db import transaction
 
+from dandiapi import settings
 from dandiapi.api.mail import send_dandiset_unembargoed_message
 from dandiapi.api.models import AssetBlob, Dandiset, Version
-from dandiapi.api.models.asset import Asset
+from dandiapi.api.models.asset import Asset, PublicAssetBlob
 from dandiapi.api.services import audit
 from dandiapi.api.services.asset.exceptions import DandisetOwnerRequiredError
 from dandiapi.api.services.embargo.utils import _delete_object_tags, remove_dandiset_embargo_tags
@@ -53,9 +54,16 @@ def unembargo_dandiset(ds: Dandiset, user: User):
     updated_assets = Asset.objects.filter(versions__dandiset=ds).update(status=Asset.Status.PENDING)
     # Update embargoed flag on asset blobs
     # Zarrs have no such property as it is derived from the dandiset
-    updated_blobs = AssetBlob.objects.filter(embargoed=True, assets__versions__dandiset=ds).update(
-        embargoed=False
-    )
+    if not settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED:
+        updated_blobs = PublicAssetBlob.objects.filter(
+            embargoed=True, assets__versions__dandiset=ds
+        ).update(embargoed=False)
+    else:
+        # TODO: (1) Move to Open Data Bucket, (2) Convert to PublicAssetBlob
+        # updated_blobs = PrivateAssetBlob.objects.filter(
+        #     embargoed=True, assets__versions__dandiset=ds
+        # ).get()
+        pass
     logger.info('Set %s assets to PENDING', updated_assets)
     logger.info('Updated %s asset blobs', updated_blobs)
 
