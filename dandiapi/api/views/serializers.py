@@ -8,7 +8,7 @@ from django.db.models.query_utils import Q
 from drf_yasg.utils import swagger_serializer_method
 from rest_framework import serializers
 
-from dandiapi.api.models import Asset, AssetBlob, AssetPath, Dandiset, Upload, Version
+from dandiapi.api.models import Asset, AssetPath, Dandiset, PublicAssetBlob, PublicUpload, Version
 from dandiapi.search.models import AssetSearch
 
 if TYPE_CHECKING:
@@ -333,7 +333,7 @@ class VersionDetailSerializer(VersionSerializer):
 
 class DandisetUploadSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Upload
+        model = PublicUpload
         exclude = [
             'dandiset',
             'embargoed',
@@ -344,7 +344,7 @@ class DandisetUploadSerializer(serializers.ModelSerializer):
 
 class AssetBlobSerializer(serializers.ModelSerializer):
     class Meta:
-        model = AssetBlob
+        model = PublicAssetBlob
         fields = [
             'blob_id',
             'etag',

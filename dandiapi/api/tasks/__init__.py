@@ -17,6 +17,7 @@ from dandiapi.api.manifests import (
     write_dandiset_yaml,
 )
 from dandiapi.api.models import Asset, AssetBlob, Version
+from dandiapi.api.models.asset import PrivateAssetBlob, PublicAssetBlob
 from dandiapi.api.models.dandiset import Dandiset
 
 if TYPE_CHECKING:
@@ -41,7 +42,12 @@ def remove_asset_blob_embargoed_tag_task(blob_id: str) -> None:
     max_retries=3,
 )
 def calculate_sha256(blob_id: str | UUID) -> None:
-    asset_blob = AssetBlob.objects.get(blob_id=blob_id)
+    try:
+        asset_blob = PublicAssetBlob.objects.get(blob_id=blob_id)
+        logger.info('Found PublicAssetBlob %s', blob_id)
+    except PublicAssetBlob.DoesNotExist:
+        asset_blob = PrivateAssetBlob.objects.get(blob_id=blob_id)
+        logger.info('Found PrivateAssetBlob %s', blob_id)
     logger.info('Calculating sha256 checksum for asset blob %s', blob_id)
     sha256 = asset_blob.blob.storage.sha256_checksum(asset_blob.blob.name)
 

@@ -14,8 +14,9 @@ import faker
 
 from dandiapi.api.models import (
     Asset,
-    AssetBlob,
     Dandiset,
+    PublicAssetBlob,
+    PublicUpload,
     Upload,
     UserMetadata,
     Version,
@@ -148,7 +149,7 @@ class PublishedVersionFactory(BaseVersionFactory):
 
 class AssetBlobFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = AssetBlob
+        model = PublicAssetBlob
 
     blob_id = factory.Faker('uuid4')
     size = 100
@@ -179,7 +180,7 @@ class AssetBlobFactory(factory.django.DjangoModelFactory):
 
 class EmbargoedAssetBlobFactory(AssetBlobFactory):
     class Meta:
-        model = AssetBlob
+        model = PublicAssetBlob
 
     embargoed = True
 
@@ -189,7 +190,7 @@ class DraftAssetFactory(factory.django.DjangoModelFactory):
         model = Asset
 
     path = factory.Faker('file_path', absolute=False, extension='nwb')
-    blob = factory.SubFactory(AssetBlobFactory)
+    public_blob = factory.SubFactory(AssetBlobFactory)
 
     @factory.lazy_attribute
     def metadata(self):
@@ -219,7 +220,7 @@ class PublishedAssetFactory(DraftAssetFactory):
 
 class UploadFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Upload
+        model = PublicUpload
 
     upload_id = factory.Faker('uuid4')
     multipart_upload_id = factory.Faker('uuid4')
@@ -240,6 +241,6 @@ class UploadFactory(factory.django.DjangoModelFactory):
 
 class EmbargoedUploadFactory(UploadFactory):
     class Meta:
-        model = Upload
+        model = PublicUpload
 
     embargoed = True

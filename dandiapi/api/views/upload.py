@@ -15,6 +15,8 @@ from rest_framework.response import Response
 from s3_file_field._multipart import TransferredPart, TransferredParts
 
 from dandiapi.api.models import AssetBlob, Dandiset, Upload
+from dandiapi.api.models.asset import PrivateAssetBlob, PublicAssetBlob
+from dandiapi.api.models.upload import PrivateUpload, PublicUpload
 from dandiapi.api.permissions import IsApproved
 from dandiapi.api.services.embargo.exceptions import DandisetUnembargoInProgressError
 from dandiapi.api.services.exceptions import NotAllowedError
@@ -97,7 +99,11 @@ def blob_read_view(request: Request) -> HttpResponseBase:
         )
     digest = request_serializer.validated_data['value']
 
-    asset_blob = get_object_or_404(AssetBlob, **{supported_digests[algorithm]: digest})
+    try:
+        asset_blob = get_object_or_404(PublicAssetBlob, **{supported_digests[algorithm]: digest})
+    except PublicAssetBlob.DoesNotExist:
+        asset_blob = get_object_or_404(PrivateAssetBlob, **{supported_digests[algorithm]: digest})
+
     response_serializer = AssetBlobSerializer(asset_blob)
     return Response(response_serializer.data)
 
@@ -226,8 +232,14 @@ def upload_validate_view(request: Request, upload_id: str) -> HttpResponseBase:
 
     Also starts the asynchronous checksum calculation process.
     """
-    upload = get_object_or_404(Upload, upload_id=upload_id)
-    if upload.embargoed and not is_dandiset_owner(upload.dandiset, request.user):
+    try:
+        upload = get_object_or_404(PublicUpload, upload_id=upload_id)
+        private = False
+    except PublicUpload.DoesNotExist:
+        upload = get_object_or_404(PrivateUpload, upload_id=upload_id)
+        private = True
+
+    if (upload.embargoed or private) and not is_dandiset_owner(upload.dandiset, request.user):
         raise Http404 from None
 
     # Verify that the upload was successful
@@ -244,15 +256,26 @@ def upload_validate_view(request: Request, upload_id: str) -> HttpResponseBase:
 
     with transaction.atomic():
         # Avoid a race condition where two clients are uploading the same blob at the same time.
-        asset_blob, created = AssetBlob.objects.get_or_create(
-            etag=upload.etag,
-            size=upload.size,
-            defaults={
-                'embargoed': upload.embargoed,
-                'blob_id': upload.upload_id,
-                'blob': upload.blob,
-            },
-        )
+        if not private:
+            asset_blob, created = PublicAssetBlob.objects.get_or_create(
+                etag=upload.etag,
+                size=upload.size,
+                defaults={
+                    'embargoed': upload.embargoed,
+                    'blob_id': upload.upload_id,
+                    'blob': upload.blob,
+                },
+            )
+        else:
+            asset_blob, created = PrivateAssetBlob.objects.get_or_create(
+                etag=upload.etag,
+                size=upload.size,
+                defaults={
+                    'embargoed': upload.embargoed,
+                    'blob_id': upload.upload_id,
+                    'blob': upload.blob,
+                },
+            )
 
         # Clean up the upload
         upload.delete()

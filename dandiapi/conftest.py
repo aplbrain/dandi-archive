@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
 register(PublishedAssetFactory, _name='published_asset')
 register(DraftAssetFactory, _name='draft_asset')
-register(AssetBlobFactory)
+register(AssetBlobFactory, _name='asset_blob')
 register(EmbargoedAssetBlobFactory, _name='embargoed_asset_blob')
 register(DandisetFactory)
 register(EmbargoedUploadFactory)

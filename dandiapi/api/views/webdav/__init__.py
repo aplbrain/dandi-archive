@@ -24,7 +24,6 @@ if TYPE_CHECKING:
 
 
 def get_atpath_queryset(*, version: Version, path: str, children: bool) -> QuerySet[AssetPath]:
-    # select_related_clauses = ('asset', 'asset__blob')
     select_related_clauses = ('asset', 'asset__public_blob', 'asset__private_blob')
     qs = (
         AssetPath.objects.select_related(*select_related_clauses)

@@ -24,7 +24,6 @@ from dandiapi.api.models import (
     GarbageCollectionEvent,
     PrivateAssetBlob,
     PublicAssetBlob,
-    Upload,
     UserMetadata,
     Version,
 )
@@ -199,7 +198,7 @@ class AssetBlobAdmin(admin.ModelAdmin):
 
 
 class AssetBlobInline(LimitedTabularInline):
-    model = PublicAssetBlob #AssetBlob TODO ?
+    model = PublicAssetBlob
 
 
 @admin.register(Asset)
