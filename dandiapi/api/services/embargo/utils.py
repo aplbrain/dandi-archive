@@ -53,6 +53,7 @@ def retry(times: int, exceptions: tuple[type[Exception]]):
 
 @retry(times=3, exceptions=(Exception,))
 def _delete_object_tags(client: S3Client, blob: str):
+    # TODO: determine which bucket name to pass in
     client.delete_object_tagging(
         Bucket=settings.DANDI_DANDISETS_BUCKET_NAME,
         Key=blob,
@@ -62,6 +63,7 @@ def _delete_object_tags(client: S3Client, blob: str):
 @retry(times=3, exceptions=(Exception,))
 def _delete_zarr_object_tags(client: S3Client, zarr: str):
     paginator = client.get_paginator('list_objects_v2')
+    # TODO: determine which bucket name to pass in
     pages = paginator.paginate(
         Bucket=settings.DANDI_DANDISETS_BUCKET_NAME, Prefix=zarr_s3_path(zarr_id=zarr)
     )

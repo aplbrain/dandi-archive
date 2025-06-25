@@ -13,15 +13,23 @@ class ProcessedS3Log(models.Model):
         ],
     )
 
+    # Represents if this s3 log file is private (including embargoed) or public.
+    # If private is True, the log file lives in the S3 bucket pointed to by
+    # DANDI_DANDISETS_PRIVATE_LOG_BUCKET_NAME.
+    # If private is False...
+    #   & historically_embargoed is False, the log file lives in the S3
+    #   bucket pointed to by DANDI_DANDISETS_LOG_BUCKET_NAME.
+    #   & historically_embargoed is True, the log file lives in the S3
+    #   bucket pointed to by DANDI_DANDISETS_EMBARGO_LOG_BUCKET_NAME.
+    private = models.BooleanField(default=False)
+
     # Represents if this s3 log file was embargoed prior to the embargo re-design.
-    # If this field is True, the log file lives in the S3 bucket pointed to by the
-    # DANDI_DANDISETS_EMBARGO_LOG_BUCKET_NAME setting.
     historically_embargoed = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['name', 'historically_embargoed'],
+                fields=['name', 'private', 'historically_embargoed'],
                 name='%(app_label)s_%(class)s_unique_name_embargoed',
             )
         ]
