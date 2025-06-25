@@ -130,3 +130,6 @@ dmypy.json
 .vscode
 .idea/
 .DS_Store
+
+# node.js files
+node_modules/
