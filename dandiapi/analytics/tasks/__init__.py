@@ -25,10 +25,14 @@ logger = get_task_logger(__name__)
 # should be one of the DANDI_DANDISETS_*_LOG_BUCKET_NAME settings
 LogBucket = str
 # Log buckets actively used in the system
-ACTIVE_LOG_BUCKETS = {
-    settings.DANDI_DANDISETS_LOG_BUCKET_NAME,
-    settings.DANDI_DANDISETS_PRIVATE_LOG_BUCKET_NAME,
-}
+ACTIVE_LOG_BUCKETS = (
+    {settings.DANDI_DANDISETS_LOG_BUCKET_NAME}
+    if not settings.ALLOW_PRIVATE
+    else {
+        settings.DANDI_DANDISETS_LOG_BUCKET_NAME,
+        settings.DANDI_DANDISETS_PRIVATE_LOG_BUCKET_NAME,
+    }
+)
 
 
 def _bucket_objects_after(bucket: str, after: str | None) -> Generator[dict, None, None]:

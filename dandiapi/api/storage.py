@@ -377,4 +377,7 @@ def get_storage_prefix(instance: Any, filename: str) -> str:
 
 
 def get_private_storage() -> Storage:
-    return create_s3_storage(settings.DANDI_DANDISETS_PRIVATE_BUCKET_NAME)
+    if settings.ALLOW_PRIVATE:
+        return create_s3_storage(settings.DANDI_DANDISETS_PRIVATE_BUCKET_NAME)
+    # settings.ALLOW_PRIVATE is set to false. Private storage is not enabled
+    return get_storage()
