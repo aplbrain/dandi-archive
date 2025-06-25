@@ -232,7 +232,7 @@ class AssetAdmin(admin.ModelAdmin):
         'created',
     ]
     list_display_links = ['id', 'asset_id', 'path']
-    list_select_related = ['zarr', 'blob']
+    list_select_related = ['zarr', 'public_blob', 'private_blob']
 
 
 @admin.register(PublicUpload)
