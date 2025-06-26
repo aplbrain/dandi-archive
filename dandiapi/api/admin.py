@@ -203,12 +203,10 @@ class AssetBlobInline(LimitedTabularInline):
 
 @admin.register(Asset)
 class AssetAdmin(admin.ModelAdmin):
-    # autocomplete_fields = ['blob', 'zarr', 'versions']
     autocomplete_fields = ['public_blob', 'private_blob', 'zarr', 'versions']
     fields = [
         'asset_id',
         'path',
-        # 'blob',
         'public_blob',
         'private_blob',
         'zarr',
@@ -222,7 +220,6 @@ class AssetAdmin(admin.ModelAdmin):
         'id',
         'asset_id',
         'path',
-        # 'blob',
         'public_blob',
         'private_blob',
         'zarr',

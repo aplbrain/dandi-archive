@@ -73,6 +73,7 @@ def test_embargo_visibility(
     method,
     url_format,
 ):
+    # TODO: Test with USE_PRIVATE = T/F
     dandiset = dandiset_factory(embargo_status=embargo_status)
     version = draft_version_factory(dandiset=dandiset)
     asset = draft_asset_factory(blob=embargoed_asset_blob)
@@ -91,6 +92,7 @@ def test_embargo_visibility(
 
 @pytest.mark.django_db
 def test_remove_asset_blob_embargoed_tag_fails_on_embargod(embargoed_asset_blob, asset_blob):
+    # TODO: Test with USE_PRIVATE = T/F
     with pytest.raises(AssetBlobEmbargoedError):
         remove_asset_blob_embargoed_tag(embargoed_asset_blob)
 

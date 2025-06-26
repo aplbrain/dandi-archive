@@ -496,6 +496,7 @@ def test_asset_rest_retrieve_embargoed_admin(
     storage,
     monkeypatch,
 ):
+    # TODO: Test with USE_PRIVATE = T/F
     monkeypatch.setattr(PublicAssetBlob.blob.field, 'storage', storage)
 
     api_client.force_authenticate(user=admin_user)
@@ -526,6 +527,7 @@ def test_asset_rest_download_embargoed_admin(
     storage,
     monkeypatch,
 ):
+    # TODO: Test with USE_PRIVATE = T/F
     monkeypatch.setattr(PublicAssetBlob.blob.field, 'storage', storage)
 
     api_client.force_authenticate(user=admin_user)

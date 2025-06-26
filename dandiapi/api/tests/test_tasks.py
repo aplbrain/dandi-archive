@@ -49,6 +49,7 @@ def test_calculate_checksum_task(storage: Storage, asset_blob_factory):
 def test_calculate_checksum_task_embargo(
     storage: Storage, embargoed_asset_blob_factory, monkeypatch
 ):
+    # TODO: Test with USE_PRIVATE = T/F
     # Pretend like AssetBlob was defined with the given storage
     monkeypatch.setattr(PublicAssetBlob.blob.field, 'storage', storage)
 

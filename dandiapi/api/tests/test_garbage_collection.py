@@ -36,6 +36,7 @@ def test_garbage_collect_uploads(upload_factory):
 
 @pytest.mark.django_db
 def test_garbage_collect_asset_blobs(asset_factory, asset_blob_factory):
+    # TODO: Test with USE_PRIVATE = T/F and embargoed asset
     # Case 1: AssetBlob is orphaned, and older than the expiration time
     orphaned_expired_asset_blob: AssetBlob = asset_blob_factory()
     orphaned_expired_asset_blob.created = (
@@ -68,6 +69,7 @@ def test_garbage_collect_asset_blobs(asset_factory, asset_blob_factory):
 
 @pytest.mark.django_db
 def test_garbage_collection_event_records(asset_blob_factory, upload_factory, mocker):
+    # TODO: Test with USE_PRIVATE = T/F and embargoed asset
     # Mock GARBAGE_COLLECTION_EVENT_CHUNK_SIZE to reduce the time of this test
     mocker.patch.object(garbage_collection, 'GARBAGE_COLLECTION_EVENT_CHUNK_SIZE', 1)
 

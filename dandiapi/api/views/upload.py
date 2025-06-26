@@ -167,6 +167,7 @@ def upload_initialize_view(request: Request) -> HttpResponseBase:
             status=status.HTTP_409_CONFLICT,
             headers={'Location': asset_blobs.first().blob_id},
         )
+    # TODO: Handle edge case - dandiset is public and asset blob already exists in private
     if (
         dandiset.embargo_status != Dandiset.EmbargoStatus.OPEN
         and settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED

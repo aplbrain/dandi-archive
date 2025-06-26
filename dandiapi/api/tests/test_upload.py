@@ -378,6 +378,7 @@ def test_upload_initialize_and_complete(api_client, user, dandiset, content_size
 def test_upload_initialize_and_complete_embargo(
     storage, api_client, user, dandiset_factory, content_size, monkeypatch
 ):
+    # TODO: Test with USE_PRIVATE = T/F
     # Pretend like the blobs were defined with the given storage
     monkeypatch.setattr(PublicUpload.blob.field, 'storage', storage)
     monkeypatch.setattr(PublicAssetBlob.blob.field, 'storage', storage)
@@ -453,6 +454,7 @@ def test_upload_validate(api_client, user, upload):
 
 @pytest.mark.django_db(transaction=True)
 def test_upload_validate_embargo(api_client, user, dandiset_factory, embargoed_upload_factory):
+    # TODO: Test with USE_PRIVATE = T/F
     api_client.force_authenticate(user=user)
     dandiset = dandiset_factory(embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
     add_dandiset_owner(dandiset, user)
@@ -537,6 +539,7 @@ def test_upload_validate_existing_assetblob(api_client, user, upload, asset_blob
 def test_upload_validate_embargo_existing_assetblob(
     api_client, user, dandiset_factory, embargoed_upload_factory, asset_blob_factory
 ):
+    # TODO: Test with USE_PRIVATE = T/F
     api_client.force_authenticate(user=user)
     dandiset = dandiset_factory(embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
     add_dandiset_owner(dandiset, user)
@@ -555,6 +558,7 @@ def test_upload_validate_embargo_existing_assetblob(
 def test_upload_validate_embargo_existing_embargoed_assetblob(
     api_client, user, dandiset_factory, embargoed_upload_factory, embargoed_asset_blob_factory
 ):
+    # TODO: Test with USE_PRIVATE = T/F
     api_client.force_authenticate(user=user)
     dandiset = dandiset_factory(embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
     add_dandiset_owner(dandiset, user)
