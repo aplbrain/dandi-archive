@@ -6,12 +6,12 @@ import json
 from typing import TYPE_CHECKING
 
 from celery.utils.log import get_task_logger
+from django.conf import settings
 from django.core import serializers
 from django.db import transaction
 from django.utils import timezone
 from more_itertools import chunked
 
-from dandiapi import settings
 from dandiapi.api.models import (
     AssetBlob,
     GarbageCollectionEvent,

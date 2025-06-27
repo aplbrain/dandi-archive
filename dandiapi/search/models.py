@@ -18,9 +18,9 @@ class AssetSearchManager(models.Manager):
         embargo_statuses_query = Dandiset.objects.filter(id=OuterRef('dandiset_id')).values(
             'embargo_status'
         )
-        # TODO: filter out private
         owned_dandisets_query = get_owned_dandisets(user)
 
+        # Future TODO: Filter out private too
         return self.alias(embargo_status=Subquery(embargo_statuses_query)).filter(
             Q(embargo_status=Dandiset.EmbargoStatus.OPEN) | Q(dandiset_id__in=owned_dandisets_query)
         )

@@ -6,7 +6,6 @@ from django.core.files.base import ContentFile
 import pytest
 import requests
 
-from dandiapi import settings
 from dandiapi.api.models import Dandiset, PublicAssetBlob, PublicUpload
 from dandiapi.api.services.permissions.dandiset import add_dandiset_owner
 
@@ -68,7 +67,13 @@ def test_blob_read_does_not_exist(api_client):
 
 @pytest.mark.django_db
 @pytest.mark.parametrize('embargoed', [True, False])
-def test_upload_initialize(api_client, user, dandiset_factory, embargoed):
+def test_upload_initialize(
+    api_client,
+    user,
+    dandiset_factory,
+    embargoed,
+):
+    # TODO: Test and Check Upload
     dandiset = dandiset_factory(
         embargo_status=Dandiset.EmbargoStatus.EMBARGOED
         if embargoed
@@ -103,6 +108,7 @@ def test_upload_initialize(api_client, user, dandiset_factory, embargoed):
     # 604800 seconds = 1 week
     assert 'X-Amz-Expires=604800' in upload_url
 
+    # TODO: Does not work if embargoed=F and models.use_private=T --> incompatible scenario!
     upload = PublicUpload.objects.get(upload_id=resp.data['upload_id'])
     assert upload.embargoed == embargoed
 
@@ -379,9 +385,6 @@ def test_upload_initialize_and_complete(api_client, user, dandiset, content_size
 def test_upload_initialize_and_complete_embargo(
     storage, api_client, user, dandiset_factory, content_size, embargoed_models, monkeypatch
 ):
-    settings.ALLOW_PRIVATE = embargoed_models.is_private
-    settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED = embargoed_models.is_private
-
     # Pretend like the blobs were defined with the given storage
     monkeypatch.setattr(embargoed_models.UploadModel.blob.field, 'storage', storage)
     monkeypatch.setattr(embargoed_models.BlobModel.blob.field, 'storage', storage)
@@ -459,8 +462,6 @@ def test_upload_validate(api_client, user, upload):
 def test_upload_validate_embargo(
     api_client, user, dandiset_factory, embargoed_models_and_factories
 ):
-    settings.ALLOW_PRIVATE = embargoed_models_and_factories.is_private
-    settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED = embargoed_models_and_factories.is_private
     api_client.force_authenticate(user=user)
     dandiset = dandiset_factory(embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
     add_dandiset_owner(dandiset, user)
@@ -551,8 +552,6 @@ def test_upload_validate_embargo_existing_assetblob(
     asset_blob_factory,
     embargoed_models_and_factories,
 ):
-    settings.ALLOW_PRIVATE = embargoed_models_and_factories.is_private
-    settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED = embargoed_models_and_factories.is_private
     api_client.force_authenticate(user=user)
     dandiset = dandiset_factory(embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
     add_dandiset_owner(dandiset, user)
@@ -571,9 +570,6 @@ def test_upload_validate_embargo_existing_assetblob(
 def test_upload_validate_embargo_existing_embargoed_assetblob(
     api_client, user, dandiset_factory, embargoed_models_and_factories
 ):
-    settings.ALLOW_PRIVATE = embargoed_models_and_factories.is_private
-    settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED = embargoed_models_and_factories.is_private
-
     api_client.force_authenticate(user=user)
     dandiset = dandiset_factory(embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
     add_dandiset_owner(dandiset, user)

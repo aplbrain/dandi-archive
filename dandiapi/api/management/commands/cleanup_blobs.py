@@ -6,7 +6,6 @@ from storages.backends.s3 import S3Storage
 
 from dandiapi.api.models.upload import PrivateAssetBlob, PublicAssetBlob
 
-# TODO: handle private bucket
 BUCKET = settings.DANDI_DANDISETS_BUCKET_NAME
 PRIVATE_BUCKET = settings.DANDI_DANDISETS_BUCKET_NAME
 

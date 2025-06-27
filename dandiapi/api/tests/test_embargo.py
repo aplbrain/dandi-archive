@@ -68,15 +68,14 @@ def test_embargo_visibility(
     dandiset_factory,
     draft_version_factory,
     draft_asset_factory,
-    embargoed_asset_blob,
+    embargoed_factories,
     embargo_status,
     method,
     url_format,
 ):
-    # TODO: Test with USE_PRIVATE = T/F
     dandiset = dandiset_factory(embargo_status=embargo_status)
     version = draft_version_factory(dandiset=dandiset)
-    asset = draft_asset_factory(blob=embargoed_asset_blob)
+    asset = draft_asset_factory(blob=embargoed_factories.embargoed_blob_factory())
     version.assets.add(asset)
 
     url = url_format.format(dandiset=dandiset, asset=asset)
@@ -91,10 +90,9 @@ def test_embargo_visibility(
 
 
 @pytest.mark.django_db
-def test_remove_asset_blob_embargoed_tag_fails_on_embargod(embargoed_asset_blob, asset_blob):
-    # TODO: Test with USE_PRIVATE = T/F
+def test_remove_asset_blob_embargoed_tag_fails_on_embargod(embargoed_factories, asset_blob):
     with pytest.raises(AssetBlobEmbargoedError):
-        remove_asset_blob_embargoed_tag(embargoed_asset_blob)
+        remove_asset_blob_embargoed_tag(embargoed_factories.embargoed_blob_factory())
 
     # Test that error not raised on non-embargoed asset blob
     remove_asset_blob_embargoed_tag(asset_blob)

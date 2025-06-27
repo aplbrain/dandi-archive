@@ -3,9 +3,9 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from django.conf import settings
 from django.db import transaction
 
-from dandiapi import settings
 from dandiapi.api.mail import send_dandiset_unembargoed_message
 from dandiapi.api.models import Asset, AssetBlob, Dandiset, PublicAssetBlob, Version
 from dandiapi.api.services import audit
@@ -58,7 +58,7 @@ def unembargo_dandiset(ds: Dandiset, user: User):
             embargoed=True, assets__versions__dandiset=ds
         ).update(embargoed=False)
     else:
-        # TODO: (1) Move to Open Data Bucket, (2) Convert to PublicAssetBlob
+        # TODO: Unembargo: (1) Move to Open Data Bucket, (2) Convert to PublicAssetBlob
         # updated_blobs = PrivateAssetBlob.objects.filter(
         #     embargoed=True, assets__versions__dandiset=ds
         # ).get()

@@ -222,6 +222,16 @@ class DraftAssetFactory(factory.django.DjangoModelFactory):
         return metadata
 
 
+class PublicEmbargoedDraftAssetFactory(DraftAssetFactory):
+    public_blob = factory.SubFactory(EmbargoedAssetBlobFactory)
+    private_blob = None
+
+
+class PrivateEmbargoedDraftAssetFactory(DraftAssetFactory):
+    public_blob = None
+    private_blob = factory.SubFactory(PrivateEmbargoedAssetBlobFactory)
+
+
 class PublishedAssetFactory(DraftAssetFactory):
     @classmethod
     def _create(cls, *args, **kwargs):

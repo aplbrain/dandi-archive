@@ -491,20 +491,19 @@ def test_asset_rest_retrieve_no_sha256(api_client, version, asset):
 def test_asset_rest_retrieve_embargoed_admin(
     api_client,
     draft_version_factory,
-    draft_asset_factory,
     admin_user,
     storage,
+    embargoed_models_and_factories,
     monkeypatch,
 ):
-    # TODO: Test with USE_PRIVATE = T/F
-    monkeypatch.setattr(PublicAssetBlob.blob.field, 'storage', storage)
+    monkeypatch.setattr(embargoed_models_and_factories.BlobModel.blob.field, 'storage', storage)
 
     api_client.force_authenticate(user=admin_user)
     version = draft_version_factory(dandiset__embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
     ds = version.dandiset
 
     # Create an extra asset so that there are multiple assets to filter down
-    asset = draft_asset_factory(public_blob__embargoed=True)
+    asset = embargoed_models_and_factories.embargoed_draft_asset_factory()
     version.assets.add(asset)
 
     # Asset View
@@ -522,20 +521,19 @@ def test_asset_rest_retrieve_embargoed_admin(
 def test_asset_rest_download_embargoed_admin(
     api_client,
     draft_version_factory,
-    draft_asset_factory,
     admin_user,
     storage,
+    embargoed_models_and_factories,
     monkeypatch,
 ):
-    # TODO: Test with USE_PRIVATE = T/F
-    monkeypatch.setattr(PublicAssetBlob.blob.field, 'storage', storage)
+    monkeypatch.setattr(embargoed_models_and_factories.BlobModel.blob.field, 'storage', storage)
 
     api_client.force_authenticate(user=admin_user)
     version = draft_version_factory(dandiset__embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
     ds = version.dandiset
 
     # Create an extra asset so that there are multiple assets to filter down
-    asset = draft_asset_factory(public_blob__embargoed=True)
+    asset = embargoed_models_and_factories.embargoed_draft_asset_factory()
     version.assets.add(asset)
 
     # Asset View

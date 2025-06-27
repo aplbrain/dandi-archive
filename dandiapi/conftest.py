@@ -20,8 +20,10 @@ from dandiapi.api.tests.factories import (
     EmbargoedAssetBlobFactory,
     EmbargoedUploadFactory,
     PrivateEmbargoedAssetBlobFactory,
+    PrivateEmbargoedDraftAssetFactory,
     PrivateEmbargoedUploadFactory,
     PublicAssetBlobFactory,
+    PublicEmbargoedDraftAssetFactory,
     PublishedAssetFactory,
     PublishedVersionFactory,
     SocialAccountFactory,
@@ -103,7 +105,6 @@ def base_s3_storage_factory(bucket_name: str) -> S3Storage:
 
 
 def s3_storage_factory():
-    # TODO: Add bucket_name parameter OR new function for embargo bucket
     return base_s3_storage_factory(settings.DANDI_DANDISETS_BUCKET_NAME)
 
 
@@ -112,7 +113,6 @@ def base_minio_storage_factory(bucket_name: str) -> MinioStorage:
 
 
 def minio_storage_factory() -> MinioStorage:
-    # TODO: Add bucket_name parameter OR new function for embargo bucket
     return base_minio_storage_factory(settings.DANDI_DANDISETS_BUCKET_NAME)
 
 
@@ -153,20 +153,59 @@ def storage(request, settings) -> Storage:
 class EmbargoedModels(NamedTuple):
     BlobModel: type[PublicAssetBlob | PrivateAssetBlob]
     UploadModel: type[PublicUpload | PrivateUpload]
-    is_private: bool
+    use_private: bool
 
 
 @pytest.fixture(
     params=[
         pytest.param(
-            EmbargoedModels(PublicAssetBlob, PublicUpload, is_private=False), id='public_bucket'
+            EmbargoedModels(PublicAssetBlob, PublicUpload, use_private=False), id='use_public'
         ),
         pytest.param(
-            EmbargoedModels(PrivateAssetBlob, PrivateUpload, is_private=True), id='private_bucket'
+            EmbargoedModels(PrivateAssetBlob, PrivateUpload, use_private=True), id='use_private'
         ),
     ]
 )
-def embargoed_models(request):
+def embargoed_models(settings, request):
+    settings.ALLOW_PRIVATE = request.param.use_private
+    settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED = request.param.use_private
+    return request.param
+
+
+class EmbargoedFactories(NamedTuple):
+    embargoed_blob_factory: type[EmbargoedAssetBlobFactory | PrivateEmbargoedAssetBlobFactory]
+    embargoed_upload_factory: type[EmbargoedUploadFactory | PrivateEmbargoedUploadFactory]
+    embargoed_draft_asset_factory: type[
+        PublicEmbargoedDraftAssetFactory | PrivateEmbargoedDraftAssetFactory
+    ]
+    use_private: bool
+
+
+@pytest.fixture(
+    params=[
+        pytest.param(
+            EmbargoedFactories(
+                EmbargoedAssetBlobFactory,
+                EmbargoedUploadFactory,
+                PublicEmbargoedDraftAssetFactory,
+                use_private=False,
+            ),
+            id='public_bucket',
+        ),
+        pytest.param(
+            EmbargoedFactories(
+                PrivateEmbargoedAssetBlobFactory,
+                PrivateEmbargoedUploadFactory,
+                PrivateEmbargoedDraftAssetFactory,
+                use_private=True,
+            ),
+            id='private_bucket',
+        ),
+    ]
+)
+def embargoed_factories(settings, request):
+    settings.ALLOW_PRIVATE = request.param.use_private
+    settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED = request.param.use_private
     return request.param
 
 
@@ -175,7 +214,10 @@ class EmbargoedModelsAndFactories(NamedTuple):
     UploadModel: type[PublicUpload | PrivateUpload]
     embargoed_blob_factory: type[EmbargoedAssetBlobFactory | PrivateEmbargoedAssetBlobFactory]
     embargoed_upload_factory: type[EmbargoedUploadFactory | PrivateEmbargoedUploadFactory]
-    is_private: bool
+    embargoed_draft_asset_factory: type[
+        PublicEmbargoedDraftAssetFactory | PrivateEmbargoedDraftAssetFactory
+    ]
+    use_private: bool
 
 
 @pytest.fixture(
@@ -186,7 +228,8 @@ class EmbargoedModelsAndFactories(NamedTuple):
                 PublicUpload,
                 EmbargoedAssetBlobFactory,
                 EmbargoedUploadFactory,
-                is_private=False,
+                PublicEmbargoedDraftAssetFactory,
+                use_private=False,
             ),
             id='public_bucket',
         ),
@@ -196,11 +239,52 @@ class EmbargoedModelsAndFactories(NamedTuple):
                 PrivateUpload,
                 PrivateEmbargoedAssetBlobFactory,
                 PrivateEmbargoedUploadFactory,
-                is_private=True,
+                PrivateEmbargoedDraftAssetFactory,
+                use_private=True,
             ),
             id='private_bucket',
         ),
     ]
 )
-def embargoed_models_and_factories(request):
+def embargoed_models_and_factories(settings, request):
+    settings.ALLOW_PRIVATE = request.param.use_private
+    settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED = request.param.use_private
+    return request.param
+
+
+class ModelsAndFactories(NamedTuple):
+    BlobModel: type[PublicAssetBlob | PrivateAssetBlob]
+    UploadModel: type[PublicUpload | PrivateUpload]
+    blob_factory: type[AssetBlobFactory | PrivateEmbargoedAssetBlobFactory]
+    upload_factory: type[UploadFactory | PrivateEmbargoedUploadFactory]
+    use_private: bool
+
+
+@pytest.fixture(
+    params=[
+        pytest.param(
+            ModelsAndFactories(
+                PublicAssetBlob,
+                PublicUpload,
+                AssetBlobFactory,
+                UploadFactory,
+                use_private=False,
+            ),
+            id='public_bucket',
+        ),
+        pytest.param(
+            ModelsAndFactories(
+                PrivateAssetBlob,
+                PrivateUpload,
+                PrivateEmbargoedAssetBlobFactory,
+                PrivateEmbargoedUploadFactory,
+                use_private=True,
+            ),
+            id='private_bucket',
+        ),
+    ]
+)
+def models_and_factories(settings, request):
+    settings.ALLOW_PRIVATE = request.param.use_private
+    settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED = request.param.use_private
     return request.param

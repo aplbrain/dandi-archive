@@ -17,6 +17,7 @@ from dandiapi.api.mail import send_approved_user_message, send_rejected_user_mes
 from dandiapi.api.models import (
     Asset,
     PrivateAssetBlob,
+    PrivateUpload,
     PublicAssetBlob,
     PublicUpload,
     UserMetadata,
@@ -66,12 +67,12 @@ class DashboardView(DashboardMixin, TemplateView):
     def _orphaned_asset_blob_count(self):
         return (
             PublicAssetBlob.objects.annotate(
-                has_asset=Exists(Asset.objects.filter(blob_id=OuterRef('id')))
+                has_asset=Exists(Asset.objects.filter(public_blob_id=OuterRef('id')))
             )
             .filter(has_asset=False)
             .count()
             + PrivateAssetBlob.objects.annotate(
-                has_asset=Exists(Asset.objects.filter(blob_id=OuterRef('id')))
+                has_asset=Exists(Asset.objects.filter(private_blob_id=OuterRef('id')))
             )
             .filter(has_asset=False)
             .count()
@@ -87,7 +88,7 @@ class DashboardView(DashboardMixin, TemplateView):
         )
 
     def _uploads(self):
-        return PublicUpload.objects.annotate()  # TODO: ? .union(PrivateUpload.objects.all())
+        return PublicUpload.objects.annotate().union(PrivateUpload.objects.all())
 
     def _users(self):
         return (

@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from django.conf import settings
 from django.db import transaction
 from django.http.response import Http404, HttpResponseBase
 from django.shortcuts import get_object_or_404
@@ -14,7 +15,6 @@ from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from s3_file_field._multipart import TransferredPart, TransferredParts
 
-from dandiapi import settings
 from dandiapi.api.models import (
     Dandiset,
     PrivateAssetBlob,

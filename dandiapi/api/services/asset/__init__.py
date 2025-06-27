@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
-from dandiapi import settings
 from dandiapi.api.asset_paths import add_asset_paths, delete_asset_paths, get_conflicting_paths
 from dandiapi.api.models.asset import Asset, AssetBlob, PublicAssetBlob
 from dandiapi.api.models.dandiset import Dandiset
@@ -175,7 +175,7 @@ def add_asset_to_version(
         # NOTE: This only applies to asset blobs, as zarrs cannot belong to
         # multiple dandisets at once.
         # TODO: unsure if this logic would need to change? are there unintended side-effects?
-        # TODO: adjust logic above to include checking for embargoed OR private
+        # Future TODO: Check for embargoed OR private
         if (
             asset_blob is not None
             and asset_blob.embargoed
@@ -185,7 +185,7 @@ def add_asset_to_version(
                 PublicAssetBlob.objects.filter(blob_id=asset_blob.blob_id).update(embargoed=False)
             else:
                 # asset_blob = PrivateAssetBlob.objects.filter(blob_id=asset_blob.blob_id).get()
-                # TODO: (1) Move to Open Data Bucket, (2) Convert to PublicAssetBlob
+                # TODO: Unembargo: (1) Move to Open Data Bucket, (2) Convert to PublicAssetBlob
                 pass
             transaction.on_commit(
                 lambda: remove_asset_blob_embargoed_tag_task.delay(blob_id=asset_blob.blob_id)
