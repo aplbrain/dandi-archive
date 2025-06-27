@@ -24,10 +24,10 @@ from dandiapi.api.models import (
     GarbageCollectionEvent,
     PrivateAssetBlob,
     PublicAssetBlob,
+    PublicUpload,
     UserMetadata,
     Version,
 )
-from dandiapi.api.models.upload import PublicUpload
 from dandiapi.api.views.users import social_account_to_dict
 from dandiapi.zarr.tasks import ingest_dandiset_zarrs
 

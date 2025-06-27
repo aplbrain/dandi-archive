@@ -46,7 +46,7 @@ from rest_framework.viewsets import GenericViewSet, ReadOnlyModelViewSet
 from rest_framework_extensions.mixins import DetailSerializerMixin, NestedViewSetMixin
 
 from dandiapi.api.models import Asset, AssetBlob, Dandiset, Version
-from dandiapi.api.models.asset import PrivateAssetBlob, PublicAssetBlob, validate_asset_path
+from dandiapi.api.models.asset import validate_asset_path
 from dandiapi.api.views.common import (
     ASSET_ID_PARAM,
     VERSIONS_DANDISET_PK_PARAM,
@@ -205,12 +205,7 @@ class AssetRequestSerializer(serializers.Serializer):
     def get_blob(self) -> AssetBlob | None:
         asset_blob = None
         if 'blob_id' in self.validated_data:
-            try:
-                asset_blob = PublicAssetBlob.objects.get(blob_id=self.validated_data['blob_id'])
-            except PublicAssetBlob.DoesNotExist:
-                asset_blob = get_object_or_404(
-                    PrivateAssetBlob, blob_id=self.validated_data['blob_id']
-                )
+            asset_blob = AssetBlob.get_by_blob_id_or_404(blob_id=self.validated_data['blob_id'])
 
         return asset_blob
 

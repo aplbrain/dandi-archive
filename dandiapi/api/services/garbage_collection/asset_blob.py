@@ -16,8 +16,9 @@ from dandiapi.api.models import (
     AssetBlob,
     GarbageCollectionEvent,
     GarbageCollectionEventRecord,
+    PrivateAssetBlob,
+    PublicAssetBlob,
 )
-from dandiapi.api.models.asset import PrivateAssetBlob, PublicAssetBlob
 
 if TYPE_CHECKING:
     from django.db.models import QuerySet

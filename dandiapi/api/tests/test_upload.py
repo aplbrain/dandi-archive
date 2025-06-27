@@ -569,10 +569,7 @@ def test_upload_validate_embargo_existing_assetblob(
 
 @pytest.mark.django_db(transaction=True)
 def test_upload_validate_embargo_existing_embargoed_assetblob(
-    api_client,
-    user,
-    dandiset_factory,
-    embargoed_models_and_factories
+    api_client, user, dandiset_factory, embargoed_models_and_factories
 ):
     settings.ALLOW_PRIVATE = embargoed_models_and_factories.is_private
     settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED = embargoed_models_and_factories.is_private

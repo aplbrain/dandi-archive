@@ -14,9 +14,10 @@ from dandiapi import settings
 from dandiapi.api.models import (
     GarbageCollectionEvent,
     GarbageCollectionEventRecord,
+    PrivateUpload,
+    PublicUpload,
     Upload,
 )
-from dandiapi.api.models.upload import PrivateUpload, PublicUpload
 from dandiapi.api.storage import DandiMultipartMixin
 
 if TYPE_CHECKING:

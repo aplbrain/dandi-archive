@@ -151,15 +151,19 @@ def storage(request, settings) -> Storage:
 
 
 class EmbargoedModels(NamedTuple):
-    is_private: bool
     BlobModel: type[PublicAssetBlob | PrivateAssetBlob]
     UploadModel: type[PublicUpload | PrivateUpload]
+    is_private: bool
 
 
 @pytest.fixture(
     params=[
-        pytest.param(EmbargoedModels(False, PublicAssetBlob, PublicUpload), id='public_bucket'),
-        pytest.param(EmbargoedModels(True, PrivateAssetBlob, PrivateUpload), id='private_bucket'),
+        pytest.param(
+            EmbargoedModels(PublicAssetBlob, PublicUpload, is_private=False), id='public_bucket'
+        ),
+        pytest.param(
+            EmbargoedModels(PrivateAssetBlob, PrivateUpload, is_private=True), id='private_bucket'
+        ),
     ]
 )
 def embargoed_models(request):
@@ -167,32 +171,32 @@ def embargoed_models(request):
 
 
 class EmbargoedModelsAndFactories(NamedTuple):
-    is_private: bool
     BlobModel: type[PublicAssetBlob | PrivateAssetBlob]
     UploadModel: type[PublicUpload | PrivateUpload]
     embargoed_blob_factory: type[EmbargoedAssetBlobFactory | PrivateEmbargoedAssetBlobFactory]
     embargoed_upload_factory: type[EmbargoedUploadFactory | PrivateEmbargoedUploadFactory]
+    is_private: bool
 
 
 @pytest.fixture(
     params=[
         pytest.param(
             EmbargoedModelsAndFactories(
-                False,
                 PublicAssetBlob,
                 PublicUpload,
                 EmbargoedAssetBlobFactory,
                 EmbargoedUploadFactory,
+                is_private=False,
             ),
             id='public_bucket',
         ),
         pytest.param(
             EmbargoedModelsAndFactories(
-                True,
                 PrivateAssetBlob,
                 PrivateUpload,
                 PrivateEmbargoedAssetBlobFactory,
                 PrivateEmbargoedUploadFactory,
+                is_private=True,
             ),
             id='private_bucket',
         ),

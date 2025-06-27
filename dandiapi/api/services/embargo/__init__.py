@@ -7,8 +7,7 @@ from django.db import transaction
 
 from dandiapi import settings
 from dandiapi.api.mail import send_dandiset_unembargoed_message
-from dandiapi.api.models import AssetBlob, Dandiset, Version
-from dandiapi.api.models.asset import Asset, PublicAssetBlob
+from dandiapi.api.models import Asset, AssetBlob, Dandiset, PublicAssetBlob, Version
 from dandiapi.api.services import audit
 from dandiapi.api.services.asset.exceptions import DandisetOwnerRequiredError
 from dandiapi.api.services.embargo.utils import _delete_object_tags, remove_dandiset_embargo_tags

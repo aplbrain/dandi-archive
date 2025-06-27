@@ -21,6 +21,7 @@ from dandiapi.api.models import (
     PrivateUpload,
     PublicAssetBlob,
     PublicUpload,
+    Upload,
 )
 from dandiapi.api.permissions import IsApproved
 from dandiapi.api.services.embargo.exceptions import DandisetUnembargoInProgressError
@@ -219,10 +220,7 @@ def upload_complete_view(request: Request, upload_id: str) -> HttpResponseBase:
     request_serializer.is_valid(raise_exception=True)
     parts: list[TransferredPart] = request_serializer.save()
 
-    try:
-        upload = PublicUpload.objects.get(upload_id=upload_id)
-    except PublicUpload.DoesNotExist:
-        upload = get_object_or_404(PrivateUpload, upload_id=upload_id)
+    upload = Upload.get_by_upload_id_or_404(upload_id=upload_id)
     if upload.embargoed and not is_dandiset_owner(upload.dandiset, request.user):
         raise Http404 from None
 
@@ -259,10 +257,7 @@ def upload_validate_view(request: Request, upload_id: str) -> HttpResponseBase:
 
     Also starts the asynchronous checksum calculation process.
     """
-    try:
-        upload = PublicUpload.objects.get(upload_id=upload_id)
-    except PublicUpload.DoesNotExist:
-        upload = get_object_or_404(PrivateUpload, upload_id=upload_id)
+    upload = Upload.get_by_upload_id_or_404(upload_id=upload_id)
 
     if upload.embargoed and not is_dandiset_owner(upload.dandiset, request.user):
         raise Http404 from None

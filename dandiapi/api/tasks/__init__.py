@@ -16,8 +16,7 @@ from dandiapi.api.manifests import (
     write_dandiset_jsonld,
     write_dandiset_yaml,
 )
-from dandiapi.api.models import Asset, Version
-from dandiapi.api.models.asset import PrivateAssetBlob, PublicAssetBlob
+from dandiapi.api.models import Asset, AssetBlob, PrivateAssetBlob, PublicAssetBlob, Version
 from dandiapi.api.models.dandiset import Dandiset
 
 if TYPE_CHECKING:
@@ -30,10 +29,7 @@ logger = get_task_logger(__name__)
 def remove_asset_blob_embargoed_tag_task(blob_id: str) -> None:
     from dandiapi.api.services.embargo import remove_asset_blob_embargoed_tag
 
-    try:
-        asset_blob = PublicAssetBlob.objects.get(blob_id=blob_id)
-    except PublicAssetBlob.DoesNotExist:
-        asset_blob = PrivateAssetBlob.objects.get(blob_id=blob_id)
+    asset_blob = AssetBlob.get_by_blob_id(blob_id)
     remove_asset_blob_embargoed_tag(asset_blob)
 
 
@@ -45,22 +41,13 @@ def remove_asset_blob_embargoed_tag_task(blob_id: str) -> None:
     max_retries=3,
 )
 def calculate_sha256(blob_id: str | UUID) -> None:
-    try:
-        asset_blob = PublicAssetBlob.objects.get(blob_id=blob_id)
-        private = False
-        logger.info('Found PublicAssetBlob %s', blob_id)
-    except PublicAssetBlob.DoesNotExist:
-        asset_blob = PrivateAssetBlob.objects.get(blob_id=blob_id)
-        private = True
-        logger.info('Found PrivateAssetBlob %s', blob_id)
+    asset_blob = AssetBlob.get_by_blob_id(blob_id)
     logger.info('Calculating sha256 checksum for asset blob %s', blob_id)
     sha256 = asset_blob.blob.storage.sha256_checksum(asset_blob.blob.name)
 
     # TODO: Run dandi-cli validation
-    if not private:
-        PublicAssetBlob.objects.filter(blob_id=blob_id).update(sha256=sha256)
-    else:
-        PrivateAssetBlob.objects.filter(blob_id=blob_id).update(sha256=sha256)
+    BlobModel = PublicAssetBlob if isinstance(asset_blob, PublicAssetBlob) else PrivateAssetBlob  # noqa: N806
+    BlobModel.objects.filter(blob_id=blob_id).update(sha256=sha256)
 
 
 @shared_task(soft_time_limit=180)

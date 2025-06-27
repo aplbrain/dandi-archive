@@ -4,8 +4,10 @@ from abc import abstractmethod
 from uuid import uuid4
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import RegexValidator
 from django.db import models
+from django.http import Http404
 from django_extensions.db.models import CreationDateTimeField
 
 from dandiapi.api.storage import (
@@ -44,6 +46,9 @@ class Upload(models.Model):
         ordering = ['created']
         indexes = [models.Index(fields=['etag'])]
 
+    class DoesNotExist(ObjectDoesNotExist):
+        pass
+
     @staticmethod
     def object_key(upload_id):
         upload_id = str(upload_id)
@@ -81,6 +86,15 @@ class Upload(models.Model):
             'upload_id': upload.upload_id,
             'parts': multipart_initialization.parts,
         }
+
+    @classmethod
+    def get_by_upload_id_or_404(cls, upload_id):
+        for subclass in (PublicUpload, PrivateUpload):
+            try:
+                return subclass.objects.get(upload_id=upload_id)
+            except subclass.DoesNotExist:
+                continue
+        raise Http404(f'No Upload found with upload_id={upload_id}')
 
     @abstractmethod
     def to_asset_blob(self) -> AssetBlob:

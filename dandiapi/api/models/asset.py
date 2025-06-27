@@ -9,10 +9,11 @@ import uuid
 from dandischema.models import AccessType
 from django.conf import settings
 from django.contrib.postgres.indexes import HashIndex
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import Q
+from django.http import Http404
 from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
 
@@ -82,6 +83,9 @@ class AssetBlob(TimeStampedModel):
         abstract = True
         indexes = [HashIndex(fields=['etag'])]
 
+    class DoesNotExist(ObjectDoesNotExist):
+        pass
+
     @property
     def references(self) -> int:
         return self.assets.count()
@@ -102,6 +106,22 @@ class AssetBlob(TimeStampedModel):
 
     def __str__(self) -> str:
         return self.blob.name
+
+    @classmethod
+    def get_by_blob_id(cls, blob_id):
+        for subclass in (PublicAssetBlob, PrivateAssetBlob):
+            try:
+                return subclass.objects.get(blob_id=blob_id)
+            except subclass.DoesNotExist:
+                continue
+        raise cls.DoesNotExist(f'No AssetBlob found with blob_id={blob_id}')
+
+    @classmethod
+    def get_by_blob_id_or_404(cls, blob_id):
+        try:
+            return cls.get_by_blob_id(blob_id=blob_id)
+        except cls.DoesNotExist as e:
+            raise Http404(str(e)) from e
 
 
 class PublicAssetBlob(AssetBlob):
