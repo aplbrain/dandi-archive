@@ -47,13 +47,15 @@ def test_calculate_checksum_task(storage: Storage, asset_blob_factory):
 
 @pytest.mark.django_db
 def test_calculate_checksum_task_embargo(
-    storage: Storage, embargoed_asset_blob_factory, monkeypatch
+    storage: Storage, embargoed_models_and_factories, monkeypatch
 ):
-    # TODO: Test with USE_PRIVATE = T/F
+    settings.ALLOW_PRIVATE = embargoed_models_and_factories.is_private
+    settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED = embargoed_models_and_factories.is_private
+
     # Pretend like AssetBlob was defined with the given storage
     monkeypatch.setattr(PublicAssetBlob.blob.field, 'storage', storage)
 
-    asset_blob = embargoed_asset_blob_factory(sha256=None)
+    asset_blob = embargoed_models_and_factories.embargoed_blob_factory(sha256=None)
 
     h = hashlib.sha256()
     h.update(asset_blob.blob.read())

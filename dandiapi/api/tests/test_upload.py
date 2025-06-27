@@ -6,6 +6,7 @@ from django.core.files.base import ContentFile
 import pytest
 import requests
 
+from dandiapi import settings
 from dandiapi.api.models import Dandiset, PublicAssetBlob, PublicUpload
 from dandiapi.api.services.permissions.dandiset import add_dandiset_owner
 
@@ -376,12 +377,14 @@ def test_upload_initialize_and_complete(api_client, user, dandiset, content_size
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.parametrize('content_size', [10, mb(10), mb(12)], ids=['10B', '10MB', '12MB'])
 def test_upload_initialize_and_complete_embargo(
-    storage, api_client, user, dandiset_factory, content_size, monkeypatch
+    storage, api_client, user, dandiset_factory, content_size, embargoed_models, monkeypatch
 ):
-    # TODO: Test with USE_PRIVATE = T/F
+    settings.ALLOW_PRIVATE = embargoed_models.is_private
+    settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED = embargoed_models.is_private
+
     # Pretend like the blobs were defined with the given storage
-    monkeypatch.setattr(PublicUpload.blob.field, 'storage', storage)
-    monkeypatch.setattr(PublicAssetBlob.blob.field, 'storage', storage)
+    monkeypatch.setattr(embargoed_models.UploadModel.blob.field, 'storage', storage)
+    monkeypatch.setattr(embargoed_models.BlobModel.blob.field, 'storage', storage)
 
     api_client.force_authenticate(user=user)
     dandiset = dandiset_factory(embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
@@ -426,8 +429,8 @@ def test_upload_initialize_and_complete_embargo(
     assert completion_response.status_code == 200
 
     # Verify object was uploaded
-    upload = PublicUpload.objects.get(upload_id=upload_id)
-    assert PublicAssetBlob.blob.field.storage.exists(upload.blob.name)
+    upload = embargoed_models.UploadModel.objects.get(upload_id=upload_id)
+    assert embargoed_models.BlobModel.blob.field.storage.exists(upload.blob.name)
     assert upload.blob.name.startswith('test-prefix/blobs/')
 
 
@@ -453,12 +456,15 @@ def test_upload_validate(api_client, user, upload):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_upload_validate_embargo(api_client, user, dandiset_factory, embargoed_upload_factory):
-    # TODO: Test with USE_PRIVATE = T/F
+def test_upload_validate_embargo(
+    api_client, user, dandiset_factory, embargoed_models_and_factories
+):
+    settings.ALLOW_PRIVATE = embargoed_models_and_factories.is_private
+    settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED = embargoed_models_and_factories.is_private
     api_client.force_authenticate(user=user)
     dandiset = dandiset_factory(embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
     add_dandiset_owner(dandiset, user)
-    embargoed_upload = embargoed_upload_factory(dandiset=dandiset)
+    embargoed_upload = embargoed_models_and_factories.embargoed_upload_factory(dandiset=dandiset)
 
     resp = api_client.post(f'/api/uploads/{embargoed_upload.upload_id}/validate/')
     assert resp.status_code == 200
@@ -470,11 +476,13 @@ def test_upload_validate_embargo(api_client, user, dandiset_factory, embargoed_u
     }
 
     # Verify that a new embargoed AssetBlob was created
-    embargoed_asset_blob = PublicAssetBlob.objects.get(blob_id=embargoed_upload.upload_id)
+    embargoed_asset_blob = embargoed_models_and_factories.BlobModel.objects.get(
+        blob_id=embargoed_upload.upload_id
+    )
     assert embargoed_asset_blob.blob.name == embargoed_upload.blob.name
 
     # Verify that the Upload was deleted
-    assert not PublicUpload.objects.all().exists()
+    assert not embargoed_models_and_factories.UploadModel.objects.all().exists()
 
 
 @pytest.mark.django_db(transaction=True)
@@ -537,13 +545,18 @@ def test_upload_validate_existing_assetblob(api_client, user, upload, asset_blob
 
 @pytest.mark.django_db(transaction=True)
 def test_upload_validate_embargo_existing_assetblob(
-    api_client, user, dandiset_factory, embargoed_upload_factory, asset_blob_factory
+    api_client,
+    user,
+    dandiset_factory,
+    asset_blob_factory,
+    embargoed_models_and_factories,
 ):
-    # TODO: Test with USE_PRIVATE = T/F
+    settings.ALLOW_PRIVATE = embargoed_models_and_factories.is_private
+    settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED = embargoed_models_and_factories.is_private
     api_client.force_authenticate(user=user)
     dandiset = dandiset_factory(embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
     add_dandiset_owner(dandiset, user)
-    embargoed_upload = embargoed_upload_factory(dandiset=dandiset)
+    embargoed_upload = embargoed_models_and_factories.embargoed_upload_factory(dandiset=dandiset)
 
     # The upload should recognize this preexisting AssetBlob and use it instead
     asset_blob_factory(etag=embargoed_upload.etag, size=embargoed_upload.size)
@@ -556,19 +569,26 @@ def test_upload_validate_embargo_existing_assetblob(
 
 @pytest.mark.django_db(transaction=True)
 def test_upload_validate_embargo_existing_embargoed_assetblob(
-    api_client, user, dandiset_factory, embargoed_upload_factory, embargoed_asset_blob_factory
+    api_client,
+    user,
+    dandiset_factory,
+    embargoed_models_and_factories
 ):
-    # TODO: Test with USE_PRIVATE = T/F
+    settings.ALLOW_PRIVATE = embargoed_models_and_factories.is_private
+    settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED = embargoed_models_and_factories.is_private
+
     api_client.force_authenticate(user=user)
     dandiset = dandiset_factory(embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
     add_dandiset_owner(dandiset, user)
-    embargoed_upload = embargoed_upload_factory(dandiset=dandiset)
+    embargoed_upload = embargoed_models_and_factories.embargoed_upload_factory(dandiset=dandiset)
 
     # The upload should recognize this preexisting embargoed AssetBlob and use it instead
     # This only works because the embargoed asset blob belongs to the same dandiset
-    embargoed_asset_blob_factory(etag=embargoed_upload.etag, size=embargoed_upload.size)
+    embargoed_models_and_factories.embargoed_blob_factory(
+        etag=embargoed_upload.etag, size=embargoed_upload.size
+    )
 
     resp = api_client.post(f'/api/uploads/{embargoed_upload.upload_id}/validate/')
     assert resp.status_code == 409
 
-    assert PublicAssetBlob.objects.all().count() == 1
+    assert embargoed_models_and_factories.BlobModel.objects.all().count() == 1

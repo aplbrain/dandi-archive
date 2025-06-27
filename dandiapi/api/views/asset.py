@@ -206,9 +206,7 @@ class AssetRequestSerializer(serializers.Serializer):
         asset_blob = None
         if 'blob_id' in self.validated_data:
             try:
-                asset_blob = get_object_or_404(
-                    PublicAssetBlob, blob_id=self.validated_data['blob_id']
-                )
+                asset_blob = PublicAssetBlob.objects.get(blob_id=self.validated_data['blob_id'])
             except PublicAssetBlob.DoesNotExist:
                 asset_blob = get_object_or_404(
                     PrivateAssetBlob, blob_id=self.validated_data['blob_id']

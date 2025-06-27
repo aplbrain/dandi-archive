@@ -15,6 +15,8 @@ import faker
 from dandiapi.api.models import (
     Asset,
     Dandiset,
+    PrivateAssetBlob,
+    PrivateUpload,
     PublicAssetBlob,
     PublicUpload,
     Upload,
@@ -185,6 +187,13 @@ class EmbargoedAssetBlobFactory(AssetBlobFactory):
     embargoed = True
 
 
+class PrivateEmbargoedAssetBlobFactory(AssetBlobFactory):
+    class Meta:
+        model = PrivateAssetBlob
+
+    embargoed = True
+
+
 class PublicAssetBlobFactory(AssetBlobFactory):
     # Added to fix error about public_asset_blob__blob_id fixture not existing
     class Meta:
@@ -248,5 +257,12 @@ class UploadFactory(factory.django.DjangoModelFactory):
 class EmbargoedUploadFactory(UploadFactory):
     class Meta:
         model = PublicUpload
+
+    embargoed = True
+
+
+class PrivateEmbargoedUploadFactory(UploadFactory):
+    class Meta:
+        model = PrivateUpload
 
     embargoed = True
