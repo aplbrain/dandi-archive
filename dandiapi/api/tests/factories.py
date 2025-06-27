@@ -14,8 +14,11 @@ import faker
 
 from dandiapi.api.models import (
     Asset,
-    AssetBlob,
     Dandiset,
+    PrivateAssetBlob,
+    PrivateUpload,
+    PublicAssetBlob,
+    PublicUpload,
     Upload,
     UserMetadata,
     Version,
@@ -148,7 +151,7 @@ class PublishedVersionFactory(BaseVersionFactory):
 
 class AssetBlobFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = AssetBlob
+        model = PublicAssetBlob
 
     blob_id = factory.Faker('uuid4')
     size = 100
@@ -179,9 +182,22 @@ class AssetBlobFactory(factory.django.DjangoModelFactory):
 
 class EmbargoedAssetBlobFactory(AssetBlobFactory):
     class Meta:
-        model = AssetBlob
+        model = PublicAssetBlob
 
     embargoed = True
+
+
+class PrivateEmbargoedAssetBlobFactory(AssetBlobFactory):
+    class Meta:
+        model = PrivateAssetBlob
+
+    embargoed = True
+
+
+class PublicAssetBlobFactory(AssetBlobFactory):
+    # Added to fix error about public_asset_blob__blob_id fixture not existing
+    class Meta:
+        model = PublicAssetBlob
 
 
 class DraftAssetFactory(factory.django.DjangoModelFactory):
@@ -189,7 +205,7 @@ class DraftAssetFactory(factory.django.DjangoModelFactory):
         model = Asset
 
     path = factory.Faker('file_path', absolute=False, extension='nwb')
-    blob = factory.SubFactory(AssetBlobFactory)
+    public_blob = factory.SubFactory(PublicAssetBlobFactory)
 
     @factory.lazy_attribute
     def metadata(self):
@@ -206,6 +222,16 @@ class DraftAssetFactory(factory.django.DjangoModelFactory):
         return metadata
 
 
+class PublicEmbargoedDraftAssetFactory(DraftAssetFactory):
+    public_blob = factory.SubFactory(EmbargoedAssetBlobFactory)
+    private_blob = None
+
+
+class PrivateEmbargoedDraftAssetFactory(DraftAssetFactory):
+    public_blob = None
+    private_blob = factory.SubFactory(PrivateEmbargoedAssetBlobFactory)
+
+
 class PublishedAssetFactory(DraftAssetFactory):
     @classmethod
     def _create(cls, *args, **kwargs):
@@ -219,7 +245,7 @@ class PublishedAssetFactory(DraftAssetFactory):
 
 class UploadFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Upload
+        model = PublicUpload
 
     upload_id = factory.Faker('uuid4')
     multipart_upload_id = factory.Faker('uuid4')
@@ -240,6 +266,13 @@ class UploadFactory(factory.django.DjangoModelFactory):
 
 class EmbargoedUploadFactory(UploadFactory):
     class Meta:
-        model = Upload
+        model = PublicUpload
+
+    embargoed = True
+
+
+class PrivateEmbargoedUploadFactory(UploadFactory):
+    class Meta:
+        model = PrivateUpload
 
     embargoed = True

@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from django.conf import settings
 from django.db import transaction
 from django.http.response import Http404, HttpResponseBase
 from django.shortcuts import get_object_or_404
@@ -14,13 +15,20 @@ from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from s3_file_field._multipart import TransferredPart, TransferredParts
 
-from dandiapi.api.models import AssetBlob, Dandiset, Upload
+from dandiapi.api.models import (
+    Dandiset,
+    PrivateAssetBlob,
+    PrivateUpload,
+    PublicAssetBlob,
+    PublicUpload,
+    Upload,
+)
 from dandiapi.api.permissions import IsApproved
 from dandiapi.api.services.embargo.exceptions import DandisetUnembargoInProgressError
 from dandiapi.api.services.exceptions import NotAllowedError
 from dandiapi.api.services.permissions.dandiset import get_visible_dandisets, is_dandiset_owner
 from dandiapi.api.tasks import calculate_sha256
-from dandiapi.api.views.serializers import AssetBlobSerializer
+from dandiapi.api.views.serializers import AssetBlobSerializer, PrivateAssetBlobSerializer
 
 if TYPE_CHECKING:
     from rest_framework.request import Request
@@ -97,7 +105,8 @@ def blob_read_view(request: Request) -> HttpResponseBase:
         )
     digest = request_serializer.validated_data['value']
 
-    asset_blob = get_object_or_404(AssetBlob, **{supported_digests[algorithm]: digest})
+    asset_blob = get_object_or_404(PublicAssetBlob, **{supported_digests[algorithm]: digest})
+
     response_serializer = AssetBlobSerializer(asset_blob)
     return Response(response_serializer.data)
 
@@ -149,17 +158,39 @@ def upload_initialize_view(request: Request) -> HttpResponseBase:
         dandiset,
     )
 
-    asset_blobs = AssetBlob.objects.filter(etag=etag)
+    asset_blobs = PublicAssetBlob.objects.filter(etag=etag)
     if asset_blobs.exists():
         return Response(
             'Blob already exists.',
             status=status.HTTP_409_CONFLICT,
             headers={'Location': asset_blobs.first().blob_id},
         )
+    if settings.ALLOW_PRIVATE:
+        # Blob is embargoed and stored in the private bucket
+        private_asset_blobs = PrivateAssetBlob.objects.filter(etag=etag)
+        if private_asset_blobs.exists():
+            return Response(
+                'Blob already exists.',
+                status=status.HTTP_409_CONFLICT,
+                headers={'Location': private_asset_blobs.first().blob_id},
+            )
 
     logger.info('Blob with ETag %s does not yet exist', etag)
 
-    upload, initialization = Upload.initialize_multipart_upload(etag, content_size, dandiset)
+    if dandiset.embargo_status == Dandiset.EmbargoStatus.OPEN or (
+        dandiset.embargo_status == Dandiset.EmbargoStatus.EMBARGOED
+        and not settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED
+    ):
+        # Dandiset is stored in the Public Bucket
+        upload, initialization = PublicUpload.initialize_multipart_upload(
+            etag, content_size, dandiset
+        )
+    else:
+        # Dandiset is stored in the Private Bucket
+        upload, initialization = PrivateUpload.initialize_multipart_upload(
+            etag, content_size, dandiset
+        )
+
     logger.info('Upload of ETag %s initialized', etag)
     upload.save()
     logger.info('Upload of ETag %s saved', etag)
@@ -189,7 +220,7 @@ def upload_complete_view(request: Request, upload_id: str) -> HttpResponseBase:
     request_serializer.is_valid(raise_exception=True)
     parts: list[TransferredPart] = request_serializer.save()
 
-    upload: Upload = get_object_or_404(Upload, upload_id=upload_id)
+    upload = Upload.get_by_upload_id_or_404(upload_id=upload_id)
     if upload.embargoed and not is_dandiset_owner(upload.dandiset, request.user):
         raise Http404 from None
 
@@ -213,7 +244,7 @@ def upload_complete_view(request: Request, upload_id: str) -> HttpResponseBase:
 @swagger_auto_schema(
     method='POST',
     responses={
-        200: AssetBlobSerializer,
+        200: AssetBlobSerializer | PrivateAssetBlobSerializer,
         400: 'The specified upload has not completed or has failed.',
     },
 )
@@ -226,7 +257,8 @@ def upload_validate_view(request: Request, upload_id: str) -> HttpResponseBase:
 
     Also starts the asynchronous checksum calculation process.
     """
-    upload = get_object_or_404(Upload, upload_id=upload_id)
+    upload = Upload.get_by_upload_id_or_404(upload_id=upload_id)
+
     if upload.embargoed and not is_dandiset_owner(upload.dandiset, request.user):
         raise Http404 from None
 
@@ -244,15 +276,42 @@ def upload_validate_view(request: Request, upload_id: str) -> HttpResponseBase:
 
     with transaction.atomic():
         # Avoid a race condition where two clients are uploading the same blob at the same time.
-        asset_blob, created = AssetBlob.objects.get_or_create(
-            etag=upload.etag,
-            size=upload.size,
-            defaults={
-                'embargoed': upload.embargoed,
-                'blob_id': upload.upload_id,
-                'blob': upload.blob,
-            },
-        )
+        if not settings.ALLOW_PRIVATE:
+            # Not using private bucket. Get or create blob in public bucket
+            asset_blob, created = PublicAssetBlob.objects.get_or_create(
+                etag=upload.etag,
+                size=upload.size,
+                defaults={
+                    'embargoed': upload.embargoed,
+                    'blob_id': upload.upload_id,
+                    'blob': upload.blob,
+                },
+            )
+        else:
+            # Otherwise, check both buckets
+            asset_blob = None
+            for BlobModel in (PublicAssetBlob, PrivateAssetBlob):  # noqa: N806
+                try:
+                    asset_blob = BlobModel.objects.get(etag=upload.etag, size=upload.size)
+                    created = False
+                    break
+                except BlobModel.DoesNotExist:
+                    continue
+
+            # blob does not exist in either bucket
+            if asset_blob is None:
+                BlobModel = (  # noqa: N806
+                    PublicAssetBlob if isinstance(upload, PublicUpload) else PrivateAssetBlob
+                )
+                # Create blob in appropriate bucket
+                asset_blob = BlobModel.objects.create(
+                    etag=upload.etag,
+                    size=upload.size,
+                    embargoed=upload.embargoed,
+                    blob_id=upload.upload_id,
+                    blob=upload.blob,
+                )
+                created = True
 
         # Clean up the upload
         upload.delete()
@@ -265,5 +324,9 @@ def upload_validate_view(request: Request, upload_id: str) -> HttpResponseBase:
     # Start calculating the sha256 in the background
     calculate_sha256.delay(asset_blob.blob_id)
 
-    response_serializer = AssetBlobSerializer(asset_blob)
+    response_serializer = (
+        AssetBlobSerializer(asset_blob)
+        if isinstance(asset_blob, PublicAssetBlob)
+        else PrivateAssetBlobSerializer(asset_blob)
+    )
     return Response(response_serializer.data, status=status.HTTP_200_OK)

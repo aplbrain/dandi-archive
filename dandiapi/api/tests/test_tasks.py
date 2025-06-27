@@ -15,7 +15,7 @@ from zarr_checksum.checksum import EMPTY_CHECKSUM
 from zarr_checksum.generators import ZarrArchiveFile
 
 from dandiapi.api import tasks
-from dandiapi.api.models import Asset, AssetBlob, Version
+from dandiapi.api.models import Asset, PublicAssetBlob, Version
 from dandiapi.api.services.permissions.dandiset import add_dandiset_owner
 from dandiapi.zarr.models import ZarrArchiveStatus
 
@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 @pytest.mark.django_db
 def test_calculate_checksum_task(storage: Storage, asset_blob_factory):
     # Pretend like AssetBlob was defined with the given storage
-    AssetBlob.blob.field.storage = storage
+    PublicAssetBlob.blob.field.storage = storage
 
     asset_blob = asset_blob_factory(sha256=None)
 
@@ -47,12 +47,12 @@ def test_calculate_checksum_task(storage: Storage, asset_blob_factory):
 
 @pytest.mark.django_db
 def test_calculate_checksum_task_embargo(
-    storage: Storage, embargoed_asset_blob_factory, monkeypatch
+    storage: Storage, embargoed_models_and_factories, monkeypatch
 ):
     # Pretend like AssetBlob was defined with the given storage
-    monkeypatch.setattr(AssetBlob.blob.field, 'storage', storage)
+    monkeypatch.setattr(embargoed_models_and_factories.BlobModel.blob.field, 'storage', storage)
 
-    asset_blob = embargoed_asset_blob_factory(sha256=None)
+    asset_blob = embargoed_models_and_factories.embargoed_blob_factory(sha256=None)
 
     h = hashlib.sha256()
     h.update(asset_blob.blob.read())
@@ -69,7 +69,7 @@ def test_calculate_checksum_task_embargo(
 def test_write_manifest_files(storage: Storage, version: Version, asset_factory):
     # Pretend like AssetBlob was defined with the given storage
     # The task piggybacks off of the AssetBlob storage to write the yamls
-    AssetBlob.blob.field.storage = storage
+    PublicAssetBlob.blob.field.storage = storage
 
     # Create a new asset in the version so there is information to write
     version.assets.add(asset_factory())

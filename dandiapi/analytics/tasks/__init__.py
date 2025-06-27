@@ -14,7 +14,7 @@ from more_itertools import batched
 from s3logparse import s3logparse
 
 from dandiapi.analytics.models import ProcessedS3Log
-from dandiapi.api.models.asset import AssetBlob
+from dandiapi.api.models import PrivateAssetBlob, PublicAssetBlob
 from dandiapi.api.storage import get_boto_client, get_private_storage, get_storage
 
 if TYPE_CHECKING:
@@ -25,10 +25,14 @@ logger = get_task_logger(__name__)
 # should be one of the DANDI_DANDISETS_*_LOG_BUCKET_NAME settings
 LogBucket = str
 # Log buckets actively used in the system
-ACTIVE_LOG_BUCKETS = {
-    settings.DANDI_DANDISETS_LOG_BUCKET_NAME,
-    settings.DANDI_DANDISETS_PRIVATE_LOG_BUCKET_NAME,
-}
+ACTIVE_LOG_BUCKETS = (
+    {settings.DANDI_DANDISETS_LOG_BUCKET_NAME}
+    if not settings.ALLOW_PRIVATE
+    else {
+        settings.DANDI_DANDISETS_LOG_BUCKET_NAME,
+        settings.DANDI_DANDISETS_PRIVATE_LOG_BUCKET_NAME,
+    }
+)
 
 
 def _bucket_objects_after(bucket: str, after: str | None) -> Generator[dict, None, None]:
@@ -76,6 +80,7 @@ def process_s3_log_file_task(bucket: LogBucket, s3_log_key: str) -> None:
     if bucket not in ACTIVE_LOG_BUCKETS:
         raise RuntimeError
     private = bucket == settings.DANDI_DANDISETS_PRIVATE_LOG_BUCKET_NAME
+    BlobModel = PublicAssetBlob if not private else PrivateAssetBlob  # noqa: N806
 
     # short circuit if the log file has already been processed. note that this doesn't guarantee
     # exactly once processing, that's what the unique constraint on ProcessedS3Log is for.
@@ -111,7 +116,7 @@ def process_s3_log_file_task(bucket: LogBucket, s3_log_key: str) -> None:
 
         # batch the blob queries to avoid a large WHERE IN clause
         for batch in batched(download_counts, 1_000):
-            asset_blobs += AssetBlob.objects.filter(blob__in=batch)
+            asset_blobs += BlobModel.objects.filter(blob__in=batch)
 
         for asset_blob in asset_blobs:
             asset_blob.download_count = F('download_count') + download_counts[asset_blob.blob]
@@ -119,4 +124,4 @@ def process_s3_log_file_task(bucket: LogBucket, s3_log_key: str) -> None:
         # note this task is run serially per log file. this is to avoid the contention between
         # multiple log files trying to update the same blobs. this serialization is enforced through
         # the task queue configuration.
-        AssetBlob.objects.bulk_update(asset_blobs, ['download_count'], batch_size=1_000)
+        BlobModel.objects.bulk_update(asset_blobs, ['download_count'], batch_size=1_000)
