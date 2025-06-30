@@ -53,7 +53,6 @@ class Upload(models.Model):
     def object_key(upload_id):
         upload_id = str(upload_id)
         return (
-            # TODO: determine which bucket
             f'{settings.DANDI_DANDISETS_BUCKET_PREFIX}'
             f'blobs/{upload_id[0:3]}/{upload_id[3:6]}/{upload_id}'
         )

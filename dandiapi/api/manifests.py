@@ -19,10 +19,8 @@ if TYPE_CHECKING:
 
 def _s3_url(path: str) -> str:
     """Turn an object path into a fully qualified S3 URL."""
-    # TODO: determine which bucket name to pass in
-    # if embargoed:
-    #     storage = create_s3_storage(settings.DANDI_DANDISETS_EMBARGO_BUCKET_NAME)
-    # else:
+    # TODO: Determine which S3 bucket?
+    # Note this was NOT modified in the embargo re-design PR. How did it work before?
     storage = create_s3_storage(settings.DANDI_DANDISETS_BUCKET_NAME)
     signed_url = storage.url(path)
     # Strip off the query parameters from the presigning, as they are different every time

@@ -140,7 +140,6 @@ def test_upload_initialize_embargoed(api_client, user, dandiset_factory, embargo
     # 604800 seconds = 1 week
     assert 'X-Amz-Expires=604800' in upload_url
 
-    # TODO: Does not work if embargoed=F and models.use_private=T --> incompatible scenario!
     upload = embargoed_context.upload_model.objects.get(upload_id=resp.data['upload_id'])
     assert upload.embargoed
 

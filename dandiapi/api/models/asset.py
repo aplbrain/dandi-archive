@@ -261,7 +261,7 @@ class Asset(PublishableMetadataMixin, TimeStampedModel):
     @property
     def is_private(self):
         return self.private_blob is not None
-        # TODO: private zarr??
+        # Future TODO: private zarr?
 
     @property
     def is_embargoed(self) -> bool:

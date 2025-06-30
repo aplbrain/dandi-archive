@@ -174,7 +174,6 @@ def add_asset_to_version(
         # embargoed blob results in that blob being unembargoed.
         # NOTE: This only applies to asset blobs, as zarrs cannot belong to
         # multiple dandisets at once.
-        # TODO: unsure if this logic would need to change? are there unintended side-effects?
         # Future TODO: Check for embargoed OR private
         if (
             asset_blob is not None

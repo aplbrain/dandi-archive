@@ -14,7 +14,7 @@ from dandiapi.api.services.embargo.utils import _delete_object_tags, remove_dand
 from dandiapi.api.services.exceptions import DandiError
 from dandiapi.api.services.metadata import validate_version_metadata
 from dandiapi.api.services.permissions.dandiset import is_dandiset_owner
-from dandiapi.api.storage import get_boto_client
+from dandiapi.api.storage import get_boto_client, get_private_storage
 from dandiapi.api.tasks import unembargo_dandiset_task
 
 from .exceptions import (
@@ -96,7 +96,17 @@ def remove_asset_blob_embargoed_tag(asset_blob: AssetBlob) -> None:
     if asset_blob.embargoed:
         raise AssetBlobEmbargoedError
 
-    _delete_object_tags(client=get_boto_client(), blob=asset_blob.blob.name)
+    if isinstance(asset_blob, PublicAssetBlob):
+        _delete_object_tags(
+            client=get_boto_client(),
+            blob=asset_blob.blob.name,
+        )
+    else:
+        _delete_object_tags(
+            client=get_boto_client(storage=get_private_storage()),
+            blob=asset_blob.blob.name,
+            bucket_name=settings.DANDI_DANDISETS_PRIVATE_BUCKET_NAME,
+        )
 
 
 def kickoff_dandiset_unembargo(*, user: User, dandiset: Dandiset):
