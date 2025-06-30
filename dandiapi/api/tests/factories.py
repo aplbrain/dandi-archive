@@ -180,6 +180,12 @@ class AssetBlobFactory(factory.django.DjangoModelFactory):
         return etagger.as_str()
 
 
+# Future TODO: Private, Non-Embargoed
+# class PrivateAssetBlobFactory(AssetBlobFactory):
+#     class Meta:
+#         model = PrivateAssetBlob
+
+
 class EmbargoedAssetBlobFactory(AssetBlobFactory):
     class Meta:
         model = PublicAssetBlob
@@ -222,6 +228,12 @@ class DraftAssetFactory(factory.django.DjangoModelFactory):
         return metadata
 
 
+# Future TODO: Private, Non-Embargoed
+# class PrivateDraftAssetFactory(DraftAssetFactory):
+#     public_blob = None
+#     private_blob = factory.SubFactory(PrivateAssetBlobFactory)
+
+
 class PublicEmbargoedDraftAssetFactory(DraftAssetFactory):
     public_blob = factory.SubFactory(EmbargoedAssetBlobFactory)
     private_blob = None
@@ -262,6 +274,12 @@ class UploadFactory(factory.django.DjangoModelFactory):
         h.update(self.blob.read())
         self.blob.seek(0)
         return h.hexdigest()
+
+
+# Future TODO: Private, Non-Embargoed
+# class PrivateUploadFactory(UploadFactory):
+#     class Meta:
+#         model = PrivateUpload
 
 
 class EmbargoedUploadFactory(UploadFactory):

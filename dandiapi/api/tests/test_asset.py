@@ -493,17 +493,17 @@ def test_asset_rest_retrieve_embargoed_admin(
     draft_version_factory,
     admin_user,
     storage,
-    embargoed_models_and_factories,
+    embargoed_context,
     monkeypatch,
 ):
-    monkeypatch.setattr(embargoed_models_and_factories.BlobModel.blob.field, 'storage', storage)
+    monkeypatch.setattr(embargoed_context.blob_model.blob.field, 'storage', storage)
 
     api_client.force_authenticate(user=admin_user)
     version = draft_version_factory(dandiset__embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
     ds = version.dandiset
 
     # Create an extra asset so that there are multiple assets to filter down
-    asset = embargoed_models_and_factories.embargoed_draft_asset_factory()
+    asset = embargoed_context.draft_asset_factory()
     version.assets.add(asset)
 
     # Asset View
@@ -523,17 +523,17 @@ def test_asset_rest_download_embargoed_admin(
     draft_version_factory,
     admin_user,
     storage,
-    embargoed_models_and_factories,
+    embargoed_context,
     monkeypatch,
 ):
-    monkeypatch.setattr(embargoed_models_and_factories.BlobModel.blob.field, 'storage', storage)
+    monkeypatch.setattr(embargoed_context.blob_model.blob.field, 'storage', storage)
 
     api_client.force_authenticate(user=admin_user)
     version = draft_version_factory(dandiset__embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
     ds = version.dandiset
 
     # Create an extra asset so that there are multiple assets to filter down
-    asset = embargoed_models_and_factories.embargoed_draft_asset_factory()
+    asset = embargoed_context.draft_asset_factory()
     version.assets.add(asset)
 
     # Asset View
@@ -1651,11 +1651,11 @@ def test_asset_download_embargo(
     draft_version_factory,
     dandiset_factory,
     asset_factory,
-    embargoed_asset_blob,
+    embargoed_context,
     monkeypatch,
 ):
     # Pretend like AssetBlob was defined with the given storage
-    monkeypatch.setattr(PublicAssetBlob.blob.field, 'storage', storage)
+    monkeypatch.setattr(embargoed_context.blob_model.blob.field, 'storage', storage)
 
     # Set draft version as embargoed
     version = draft_version_factory(
@@ -1667,7 +1667,7 @@ def test_asset_download_embargo(
     client = authenticated_api_client
 
     # Generate assets and blobs
-    asset = asset_factory(blob=embargoed_asset_blob)
+    asset = asset_factory(blob=embargoed_context.blob_factory())
     version.assets.add(asset)
 
     response = client.get(
