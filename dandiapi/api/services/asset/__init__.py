@@ -184,10 +184,10 @@ def add_asset_to_version(  # noqa: C901, PLR0912
         ):
             # Asset is embargoed, but the dandiset Version is open. So, we must unembargo the Asset
             if not settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED:
-                PublicAssetBlob.objects.filter(blob_id=asset_blob.blob_id).update(embargoed=False)
-
+                blob_id = asset_blob.blob_id
+                PublicAssetBlob.objects.filter(blob_id=blob_id).update(embargoed=False)
                 transaction.on_commit(
-                    lambda: remove_asset_blob_embargoed_tag_task.delay(blob_id=asset_blob.blob_id)
+                    lambda: remove_asset_blob_embargoed_tag_task.delay(blob_id=blob_id)
                 )
             else:
                 # Unembargo AssetBlob
