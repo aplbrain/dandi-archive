@@ -85,6 +85,20 @@ def remove_dandiset_embargo_tags(dandiset: Dandiset):
     private_client = get_boto_client(
         storage=get_private_storage(), config=Config(max_pool_connections=100)
     )
+
+    # TODO: Unembargo Asset Blobs
+    # if settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED:
+    #     (1) Gather set of PrivateAssetBlobs to be unembargoed
+    #     private_embargoed_assets = (
+    #         Asset.objects.filter(versions__dandiset=dandiset)
+    #         .filter(Q(private_blob__embargoed=True))
+    #         .values_list('private_blob__blob')
+    #         .iterator(chunk_size=TAG_REMOVAL_CHUNK_SIZE)
+    #     )
+    #     (2) Copy AssetBlobs to public bucket
+    #     (and get new PublicAssetBlobs? Could be done in function or here...?)
+    #     batch_copy(embargoed_assets)
+
     embargoed_assets = (
         Asset.objects.filter(versions__dandiset=dandiset)
         # zarrs have no embargoed flag themselves and so are all included

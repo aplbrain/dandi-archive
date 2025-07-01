@@ -33,7 +33,6 @@ logger = logging.getLogger(__name__)
 @transaction.atomic()
 def unembargo_dandiset(ds: Dandiset, user: User):
     """Unembargo a dandiset by copying all embargoed asset blobs to the public bucket."""
-    # TODO: Move embargoed dandiset to public bucket
     logger.info('Unembargoing Dandiset %s', ds.identifier)
     logger.info('\t%s assets', ds.draft_version.assets.count())
 
@@ -58,10 +57,8 @@ def unembargo_dandiset(ds: Dandiset, user: User):
             embargoed=True, assets__versions__dandiset=ds
         ).update(embargoed=False)
     else:
-        # TODO: Unembargo: (1) Move to Open Data Bucket, (2) Convert to PublicAssetBlob
-        # updated_blobs = PrivateAssetBlob.objects.filter(
-        #     embargoed=True, assets__versions__dandiset=ds
-        # ).get()
+        # Embargoed tags should not exist because new PublicAssetBlobs were copied from
+        # the old PrivateAssetBlobs -- in remove_dandiset_embargo_tags ?
         pass
     logger.info('Set %s assets to PENDING', updated_assets)
     logger.info('Updated %s asset blobs', updated_blobs)

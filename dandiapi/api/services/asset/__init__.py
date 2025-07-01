@@ -7,8 +7,10 @@ from django.db import transaction
 from django.utils import timezone
 
 from dandiapi.api.asset_paths import add_asset_paths, delete_asset_paths, get_conflicting_paths
+from dandiapi.api.copy import copy_object_multipart
 from dandiapi.api.models.asset import Asset, AssetBlob, PublicAssetBlob
 from dandiapi.api.models.dandiset import Dandiset
+from dandiapi.api.models.upload import PublicUpload
 from dandiapi.api.models.version import Version
 from dandiapi.api.services import audit
 from dandiapi.api.services.asset.exceptions import (
@@ -134,7 +136,7 @@ def change_asset(  # noqa: PLR0913
     return new_asset, True
 
 
-def add_asset_to_version(
+def add_asset_to_version(  # noqa: C901, PLR0912
     *,
     user,
     version: Version,
@@ -180,15 +182,47 @@ def add_asset_to_version(
             and asset_blob.embargoed
             and version.dandiset.embargo_status == Dandiset.EmbargoStatus.OPEN
         ):
+            # Asset is embargoed, but the dandiset Version is open. So, we must unembargo the Asset
             if not settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED:
                 PublicAssetBlob.objects.filter(blob_id=asset_blob.blob_id).update(embargoed=False)
+
+                transaction.on_commit(
+                    lambda: remove_asset_blob_embargoed_tag_task.delay(blob_id=asset_blob.blob_id)
+                )
             else:
-                # asset_blob = PrivateAssetBlob.objects.filter(blob_id=asset_blob.blob_id).get()
-                # TODO: Unembargo: (1) Move to Open Data Bucket, (2) Convert to PublicAssetBlob
-                pass
-            transaction.on_commit(
-                lambda: remove_asset_blob_embargoed_tag_task.delay(blob_id=asset_blob.blob_id)
-            )
+                # Unembargo AssetBlob
+                # (1) Check that AssetBlob does not already exist in public bucket
+                # TODO: Open Question: Use etag or something else?
+                matching_blob = PublicAssetBlob.objects.filter(etag=asset_blob.etag)
+                if matching_blob is not None:
+                    asset_blob = matching_blob
+                else:
+                    # (2) Copy AssetBlob to public bucket
+                    # TODO: Question: should this be a bathc copy too? or not since only 1 blob?
+                    resp = copy_object_multipart(
+                        asset_blob.blob.storage,
+                        source_bucket=settings.DANDI_DANDISETS_PRIVATE_BUCKET_NAME,
+                        source_key=asset_blob.blob.name,
+                        dest_bucket=settings.DANDI_DANDISETS_BUCKET_NAME,
+                        dest_key=PublicUpload.object_key(asset_blob.blob_id),
+                    )
+                    # TODO: Is this the right thing to check?
+                    if resp.etag != asset_blob.etag:
+                        raise RuntimeError(
+                            'ETag mismatch between copied object and original embargoed object'
+                        )
+
+                    # (3) Create new PublicAssetBlob
+                    asset_blob = PublicAssetBlob(
+                        blob=resp.key,
+                        blob_id=asset_blob.blob_id,
+                        sha256=asset_blob.sha256,
+                        etag=asset_blob.etag,
+                        size=asset_blob.size,
+                    )
+                    asset_blob.save()
+
+                    # TODO: Delete PrivateAssetBlob?
 
         asset = _add_asset_to_version(
             version=version,
