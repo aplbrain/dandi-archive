@@ -14,7 +14,15 @@ from django.views.decorators.http import require_http_methods
 from django.views.generic.base import TemplateView
 
 from dandiapi.api.mail import send_approved_user_message, send_rejected_user_message
-from dandiapi.api.models import Asset, AssetBlob, Upload, UserMetadata, Version
+from dandiapi.api.models import (
+    Asset,
+    PrivateAssetBlob,
+    PrivateUpload,
+    PublicAssetBlob,
+    PublicUpload,
+    UserMetadata,
+    Version,
+)
 from dandiapi.api.views.users import social_account_to_dict
 
 if TYPE_CHECKING:
@@ -58,8 +66,13 @@ class DashboardView(DashboardMixin, TemplateView):
 
     def _orphaned_asset_blob_count(self):
         return (
-            AssetBlob.objects.annotate(
-                has_asset=Exists(Asset.objects.filter(blob_id=OuterRef('id')))
+            PublicAssetBlob.objects.annotate(
+                has_asset=Exists(Asset.objects.filter(public_blob_id=OuterRef('id')))
+            )
+            .filter(has_asset=False)
+            .count()
+            + PrivateAssetBlob.objects.annotate(
+                has_asset=Exists(Asset.objects.filter(private_blob_id=OuterRef('id')))
             )
             .filter(has_asset=False)
             .count()
@@ -75,7 +88,7 @@ class DashboardView(DashboardMixin, TemplateView):
         )
 
     def _uploads(self):
-        return Upload.objects.annotate()
+        return PublicUpload.objects.annotate().union(PrivateUpload.objects.all())
 
     def _users(self):
         return (

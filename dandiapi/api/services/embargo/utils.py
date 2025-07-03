@@ -10,7 +10,7 @@ from django.db.models import Q
 from more_itertools import chunked
 
 from dandiapi.api.models.asset import Asset
-from dandiapi.api.storage import get_boto_client
+from dandiapi.api.storage import get_boto_client, get_private_storage
 from dandiapi.zarr.models import zarr_s3_path
 
 from .exceptions import AssetTagRemovalError
@@ -52,10 +52,11 @@ def retry(times: int, exceptions: tuple[type[Exception]]):
 
 
 @retry(times=3, exceptions=(Exception,))
-def _delete_object_tags(client: S3Client, blob: str):
-    # TODO: determine which bucket name to pass in
+def _delete_object_tags(
+    client: S3Client, blob: str, bucket_name: str = settings.DANDI_DANDISETS_BUCKET_NAME
+):
     client.delete_object_tagging(
-        Bucket=settings.DANDI_DANDISETS_BUCKET_NAME,
+        Bucket=bucket_name,
         Key=blob,
     )
 
@@ -63,7 +64,7 @@ def _delete_object_tags(client: S3Client, blob: str):
 @retry(times=3, exceptions=(Exception,))
 def _delete_zarr_object_tags(client: S3Client, zarr: str):
     paginator = client.get_paginator('list_objects_v2')
-    # TODO: determine which bucket name to pass in
+    # Future TODO: if private zarr
     pages = paginator.paginate(
         Bucket=settings.DANDI_DANDISETS_BUCKET_NAME, Prefix=zarr_s3_path(zarr_id=zarr)
     )
@@ -81,11 +82,30 @@ def _delete_zarr_object_tags(client: S3Client, zarr: str):
 
 def remove_dandiset_embargo_tags(dandiset: Dandiset):
     client = get_boto_client(config=Config(max_pool_connections=100))
+    private_client = get_boto_client(
+        storage=get_private_storage(), config=Config(max_pool_connections=100)
+    )
+
+    # TODO: Unembargo Asset Blobs
+    # if settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED:
+    #     (1) Gather set of PrivateAssetBlobs to be unembargoed
+    #     private_embargoed_assets = (
+    #         Asset.objects.filter(versions__dandiset=dandiset)
+    #         .filter(Q(private_blob__embargoed=True))
+    #         .values_list('private_blob__blob')
+    #         .iterator(chunk_size=TAG_REMOVAL_CHUNK_SIZE)
+    #     )
+    #     (2) Copy AssetBlobs to public bucket
+    #     (and get new PublicAssetBlobs? Could be done in function or here...?)
+    #     batch_copy(embargoed_assets)
+
     embargoed_assets = (
         Asset.objects.filter(versions__dandiset=dandiset)
         # zarrs have no embargoed flag themselves and so are all included
-        .filter(Q(blob__embargoed=True) | Q(zarr__isnull=False))
-        .values_list('blob__blob', 'zarr__zarr_id')
+        .filter(
+            Q(public_blob__embargoed=True) | Q(private_blob__embargoed=True) | Q(zarr__isnull=False)
+        )
+        .values_list('public_blob__blob', 'private_blob__blob', 'zarr__zarr_id')
         .iterator(chunk_size=TAG_REMOVAL_CHUNK_SIZE)
     )
 
@@ -94,9 +114,18 @@ def remove_dandiset_embargo_tags(dandiset: Dandiset):
     for chunk in chunks:
         futures = []
         with ThreadPoolExecutor(max_workers=100) as e:
-            for blob, zarr in chunk:
-                if blob is not None:
-                    futures.append(e.submit(_delete_object_tags, client=client, blob=blob))
+            for public_blob, private_blob, zarr in chunk:
+                if public_blob is not None:
+                    futures.append(e.submit(_delete_object_tags, client=client, blob=public_blob))
+                if private_blob is not None:
+                    futures.append(
+                        e.submit(
+                            _delete_object_tags,
+                            client=private_client,
+                            blob=private_blob,
+                            bucket_name=settings.DANDI_DANDISETS_PRIVATE_BUCKET_NAME,
+                        )
+                    )
                 if zarr is not None:
                     futures.append(e.submit(_delete_zarr_object_tags, client=client, zarr=zarr))
 

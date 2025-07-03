@@ -18,12 +18,13 @@ from guardian.admin import GuardedModelAdmin
 
 from dandiapi.api.models import (
     Asset,
-    AssetBlob,
     AuditRecord,
     Dandiset,
     DandisetStar,
     GarbageCollectionEvent,
-    Upload,
+    PrivateAssetBlob,
+    PublicAssetBlob,
+    PublicUpload,
     UserMetadata,
     Version,
 )
@@ -185,7 +186,8 @@ class VersionAdmin(admin.ModelAdmin):
         return obj.number_of_assets
 
 
-@admin.register(AssetBlob)
+@admin.register(PublicAssetBlob)
+@admin.register(PrivateAssetBlob)
 class AssetBlobAdmin(admin.ModelAdmin):
     search_fields = ['blob']
     list_display = ['id', 'blob_id', 'blob', 'references', 'size', 'sha256', 'modified', 'created']
@@ -196,16 +198,17 @@ class AssetBlobAdmin(admin.ModelAdmin):
 
 
 class AssetBlobInline(LimitedTabularInline):
-    model = AssetBlob
+    model = PublicAssetBlob
 
 
 @admin.register(Asset)
 class AssetAdmin(admin.ModelAdmin):
-    autocomplete_fields = ['blob', 'zarr', 'versions']
+    autocomplete_fields = ['public_blob', 'private_blob', 'zarr', 'versions']
     fields = [
         'asset_id',
         'path',
-        'blob',
+        'public_blob',
+        'private_blob',
         'zarr',
         'metadata',
         'versions',
@@ -217,7 +220,8 @@ class AssetAdmin(admin.ModelAdmin):
         'id',
         'asset_id',
         'path',
-        'blob',
+        'public_blob',
+        'private_blob',
         'zarr',
         'status',
         'size',
@@ -225,10 +229,10 @@ class AssetAdmin(admin.ModelAdmin):
         'created',
     ]
     list_display_links = ['id', 'asset_id', 'path']
-    list_select_related = ['zarr', 'blob']
+    list_select_related = ['zarr', 'public_blob', 'private_blob']
 
 
-@admin.register(Upload)
+@admin.register(PublicUpload)
 class UploadAdmin(admin.ModelAdmin):
     list_display = ['id', 'upload_id', 'blob', 'etag', 'upload_id', 'size', 'created']
     list_display_links = ['id', 'upload_id']

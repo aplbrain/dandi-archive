@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from dandiapi.api.management.commands.create_dev_dandiset import create_dev_dandiset
-from dandiapi.api.models import Asset, AssetBlob, Dandiset, Version
+from dandiapi.api.models import Asset, Dandiset, PublicAssetBlob, Version
 from dandiapi.api.services.permissions.dandiset import get_dandiset_owners
 
 
@@ -25,6 +25,6 @@ def test_create_dev_dandiset(user):
     asset = Asset.objects.get()
     assert asset in version.assets.all()
 
-    assert AssetBlob.objects.count() == 1
-    asset_blob = AssetBlob.objects.get()
-    assert AssetBlob.blob.field.storage.exists(asset_blob.blob.name)
+    assert PublicAssetBlob.objects.count() == 1
+    asset_blob = PublicAssetBlob.objects.get()
+    assert PublicAssetBlob.blob.field.storage.exists(asset_blob.blob.name)

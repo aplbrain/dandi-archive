@@ -68,7 +68,8 @@ def validate_pending_asset_metadata():
     validatable_assets = (
         Asset.objects.filter(status=Asset.Status.PENDING)
         .filter(
-            (Q(blob__isnull=False) & Q(blob__sha256__isnull=False))
+            (Q(public_blob__isnull=False) & Q(public_blob__sha256__isnull=False))
+            | (Q(private_blob__isnull=False) & Q(private_blob__sha256__isnull=False))
             | (
                 Q(zarr__isnull=False)
                 & Q(zarr__checksum__isnull=False)
