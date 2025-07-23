@@ -68,7 +68,8 @@ def validate_pending_asset_metadata():
     validatable_assets = (
         Asset.objects.filter(status=Asset.Status.PENDING)
         .filter(
-            (Q(blob__isnull=False) & Q(blob__sha256__isnull=False))
+            (Q(public_blob__isnull=False) & Q(public_blob__sha256__isnull=False))
+            | (Q(private_blob__isnull=False) & Q(private_blob__sha256__isnull=False))
             | (
                 Q(zarr__isnull=False)
                 & Q(zarr__checksum__isnull=False)
@@ -136,7 +137,7 @@ def garbage_collection() -> None:
 def register_scheduled_tasks(sender: Celery, **kwargs):
     """Register tasks with a celery beat schedule."""
     logger.info(
-        'Registering scheduled tasks for %s. ' 'DANDI_VALIDATION_JOB_INTERVAL is %s seconds.',
+        'Registering scheduled tasks for %s. DANDI_VALIDATION_JOB_INTERVAL is %s seconds.',
         sender,
         settings.DANDI_VALIDATION_JOB_INTERVAL,
     )
@@ -157,8 +158,12 @@ def register_scheduled_tasks(sender: Celery, **kwargs):
     # Refresh the materialized view used by asset search every 10 mins.
     sender.add_periodic_task(timedelta(minutes=10), refresh_materialized_view_search.s())
 
-    # Process new S3 logs every hour
-    sender.add_periodic_task(timedelta(hours=1), collect_s3_log_records_task.s())
+    # Process new S3 logs every hour, from each bucket
+    for log_bucket in [
+        settings.DANDI_DANDISETS_LOG_BUCKET_NAME,
+        settings.DANDI_DANDISETS_PRIVATE_LOG_BUCKET_NAME,
+    ]:
+        sender.add_periodic_task(timedelta(hours=1), collect_s3_log_records_task.s(log_bucket))
 
     # Run garbage collection once a day
     # TODO: enable this once we're ready to run garbage collection automatically

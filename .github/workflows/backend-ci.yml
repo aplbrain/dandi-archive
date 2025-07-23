@@ -61,3 +61,5 @@ jobs:
           DJANGO_DANDI_DEV_EMAIL: test@example.com
           DJANGO_DANDI_ADMIN_EMAIL: test-admin@example.com
           DANDI_ALLOW_LOCALHOST_URLS: 1
+          DJANGO_ALLOW_PRIVATE: true
+          DJANGO_USE_PRIVATE_BUCKET_FOR_EMBARGOED: true

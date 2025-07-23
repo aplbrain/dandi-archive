@@ -61,6 +61,14 @@ class CopyObjectPart:
         )
 
 
+# TODO: Implement S3 batch copy operation
+# def batch_copy()
+#   """Batch unembargo objects"""
+#   # (1) Check that AssetBlob does not already exist in public bucket
+#   # (2) Copy AssetBlob to public bucket
+#   # (3) Return AssetBlobs
+
+
 def copy_object_multipart(
     storage, source_bucket: str, source_key: str, dest_bucket: str, dest_key: str
 ) -> CopyObjectResponse:

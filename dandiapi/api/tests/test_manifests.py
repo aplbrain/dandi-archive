@@ -15,7 +15,7 @@ from dandiapi.api.manifests import (
     write_dandiset_jsonld,
     write_dandiset_yaml,
 )
-from dandiapi.api.models import AssetBlob, Version
+from dandiapi.api.models import PublicAssetBlob, Version
 
 if TYPE_CHECKING:
     from django.core.files.storage import Storage
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 def test_write_dandiset_jsonld(storage: Storage, version: Version):
     # Pretend like AssetBlob was defined with the given storage
     # The task piggybacks off of the AssetBlob storage to write the yamls
-    AssetBlob.blob.field.storage = storage
+    PublicAssetBlob.blob.field.storage = storage
 
     write_dandiset_jsonld(version)
     expected = JSONRenderer().render(version.metadata)
@@ -42,7 +42,7 @@ def test_write_dandiset_jsonld(storage: Storage, version: Version):
 def test_write_assets_jsonld(storage: Storage, version: Version, asset_factory):
     # Pretend like AssetBlob was defined with the given storage
     # The task piggybacks off of the AssetBlob storage to write the yamls
-    AssetBlob.blob.field.storage = storage
+    PublicAssetBlob.blob.field.storage = storage
 
     # Create a new asset in the version so there is information to write
     version.assets.add(asset_factory())
@@ -62,7 +62,7 @@ def test_write_assets_jsonld(storage: Storage, version: Version, asset_factory):
 def test_write_collection_jsonld(storage: Storage, version: Version, asset):
     # Pretend like AssetBlob was defined with the given storage
     # The task piggybacks off of the AssetBlob storage to write the yamls
-    AssetBlob.blob.field.storage = storage
+    PublicAssetBlob.blob.field.storage = storage
 
     version.assets.add(asset)
     asset_metadata = asset.full_metadata
@@ -89,7 +89,7 @@ def test_write_collection_jsonld(storage: Storage, version: Version, asset):
 def test_write_dandiset_yaml(storage: Storage, version: Version):
     # Pretend like AssetBlob was defined with the given storage
     # The task piggybacks off of the AssetBlob storage to write the yamls
-    AssetBlob.blob.field.storage = storage
+    PublicAssetBlob.blob.field.storage = storage
 
     write_dandiset_yaml(version)
     expected = YAMLRenderer().render(version.metadata)
@@ -106,7 +106,7 @@ def test_write_dandiset_yaml(storage: Storage, version: Version):
 def test_write_assets_yaml(storage: Storage, version: Version, asset_factory):
     # Pretend like AssetBlob was defined with the given storage
     # The task piggybacks off of the AssetBlob storage to write the yamls
-    AssetBlob.blob.field.storage = storage
+    PublicAssetBlob.blob.field.storage = storage
 
     # Create a new asset in the version so there is information to write
     version.assets.add(asset_factory())
@@ -126,7 +126,7 @@ def test_write_assets_yaml(storage: Storage, version: Version, asset_factory):
 def test_write_dandiset_yaml_already_exists(storage: Storage, version: Version):
     # Pretend like AssetBlob was defined with the given storage
     # The task piggybacks off of the AssetBlob storage to write the yamls
-    AssetBlob.blob.field.storage = storage
+    PublicAssetBlob.blob.field.storage = storage
 
     # Save an invalid file for the task to overwrite
     dandiset_yaml_path = (
@@ -146,7 +146,7 @@ def test_write_dandiset_yaml_already_exists(storage: Storage, version: Version):
 def test_write_assets_yaml_already_exists(storage: Storage, version: Version, asset_factory):
     # Pretend like AssetBlob was defined with the given storage
     # The task piggybacks off of the AssetBlob storage to write the yamls
-    AssetBlob.blob.field.storage = storage
+    PublicAssetBlob.blob.field.storage = storage
 
     # Create a new asset in the version so there is information to write
     version.assets.add(asset_factory())
