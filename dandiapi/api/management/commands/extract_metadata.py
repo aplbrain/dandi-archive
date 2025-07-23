@@ -86,7 +86,7 @@ def extract_dandiset_assets(dandiset: Dandiset):
         published=False,
         path__iendswith='.nwb',
         metadata__schemaVersion__lt=get_schema_version(),
-    ).select_related('blob', 'zarr')
+    ).select_related('public_blob', 'private_blob', 'zarr')
     if not assets:
         logger.info('No old draft NWB assets found in dandiset %s. Skipping...', dandiset)
         return

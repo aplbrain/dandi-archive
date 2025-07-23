@@ -37,7 +37,9 @@ def get_root_paths_many(versions: QuerySet[Version], *, join_assets=False) -> Qu
     # Use prefetch_related here instead of select_related,
     # as otherwise the resulting join is very large
     if join_assets:
-        qs = qs.prefetch_related('asset', 'asset__blob', 'asset__zarr')
+        qs = qs.prefetch_related(
+            'asset', 'asset__public_blob', 'asset__private_blob', 'asset__zarr'
+        )
 
     return qs.filter(version__in=versions).exclude(path__contains='/').order_by('path')
 
@@ -46,7 +48,9 @@ def get_root_paths(version: Version) -> QuerySet[AssetPath]:
     """Return all root paths for a version."""
     # Use prefetch_related here instead of select_related,
     # as otherwise the resulting join is very large
-    qs = AssetPath.objects.prefetch_related('asset', 'asset__blob', 'asset__zarr')
+    qs = AssetPath.objects.prefetch_related(
+        'asset', 'asset__public_blob', 'asset__private_blob', 'asset__zarr'
+    )
     return qs.filter(version=version).exclude(path__contains='/').order_by('path')
 
 
@@ -63,7 +67,12 @@ def get_path_children(path: AssetPath, depth: int | None = 1) -> QuerySet[AssetP
 
     path_ids = relation_qs.values_list('child', flat=True).distinct()
     return (
-        AssetPath.objects.select_related('asset', 'asset__blob', 'asset__zarr')
+        AssetPath.objects.select_related(
+            'asset',
+            'asset__public_blob',
+            'asset__private_blob',
+            'asset__zarr',
+        )
         .filter(id__in=path_ids)
         .order_by('path')
     )
@@ -243,11 +252,13 @@ def add_version_asset_paths(version: Version):
 
         # Get all aggregates
         sizes = child_leaves.aggregate(
-            size=Coalesce(Sum('asset__blob__size'), 0), zsize=Coalesce(Sum('asset__zarr__size'), 0)
+            pubsize=Coalesce(Sum('asset__public_blob__size'), 0),
+            prvsize=Coalesce(Sum('asset__private_blob__size'), 0),
+            zsize=Coalesce(Sum('asset__zarr__size'), 0),
         )
 
         node.aggregate_files += child_leaves.count()
-        node.aggregate_size += sizes['size'] + sizes['zsize']
+        node.aggregate_size += sizes['pubsize'] + sizes['prvsize'] + sizes['zsize']
         node.save()
 
 

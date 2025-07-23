@@ -23,6 +23,6 @@ def calculate_sha256(asset_id: str | None = None, blob_id: str | None = None):
     # Make sure we have a good blob_id to work with.
     if asset_id:
         asset = Asset.objects.get(asset_id=asset_id)
-        blob_id = asset.blob_id
+        blob_id = asset.blob.blob_id
 
     do_calculate_sha256(blob_id=blob_id)

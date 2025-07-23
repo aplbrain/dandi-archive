@@ -380,7 +380,6 @@ def test_audit_finalize_zarr(
     boto = get_boto_client()
     zarr_archive = ZarrArchive.objects.get(zarr_id=zarr.zarr_id)
     for path in paths:
-        # TODO: test both buckets?
         boto.put_object(
             Bucket=settings.DANDI_DANDISETS_BUCKET_NAME, Key=zarr_archive.s3_path(path), Body=b'a'
         )
@@ -422,7 +421,6 @@ def test_audit_delete_zarr_chunks(
     boto = get_boto_client()
     zarr_archive = ZarrArchive.objects.get(zarr_id=zarr.zarr_id)
     for path in paths:
-        # TODO: test both buckets?
         boto.put_object(
             Bucket=settings.DANDI_DANDISETS_BUCKET_NAME, Key=zarr_archive.s3_path(path), Body=b'a'
         )

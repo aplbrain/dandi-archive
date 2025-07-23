@@ -92,7 +92,7 @@ def version_aggregate_assets_summary(version: Version) -> None:
     assets_summary = aggregate_assets_summary(
         asset.full_metadata
         for asset in version.assets.filter(status=Asset.Status.VALID)
-        .select_related('blob', 'zarr', 'zarr__dandiset')
+        .select_related('public_blob', 'private_blob', 'zarr', 'zarr__dandiset')
         .iterator()
     )
 
@@ -126,7 +126,9 @@ def validate_version_metadata(*, version: Version) -> None:
         metadata_for_validation['assetsSummary'] = {
             'schemaKey': 'AssetsSummary',
             'numberOfBytes': 1
-            if version.assets.filter(Q(blob__size__gt=0) | Q(zarr__size__gt=0)).exists()
+            if version.assets.filter(
+                Q(public_blob__size__gt=0) | Q(private_blob__size__gt=0) | Q(zarr__size__gt=0)
+            ).exists()
             else 0,
             'numberOfFiles': 1 if version.assets.exists() else 0,
         }

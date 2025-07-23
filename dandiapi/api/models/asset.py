@@ -9,15 +9,20 @@ import uuid
 from dandischema.models import AccessType
 from django.conf import settings
 from django.contrib.postgres.indexes import HashIndex
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import Q
+from django.http import Http404
 from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
 
 from dandiapi.api.models.metadata import PublishableMetadataMixin
-from dandiapi.api.storage import get_storage, get_storage_prefix
+from dandiapi.api.storage import (
+    get_private_storage,
+    get_storage,
+    get_storage_prefix,
+)
 
 from .version import Version
 
@@ -60,10 +65,8 @@ class AssetBlob(TimeStampedModel):
     SHA256_REGEX = r'[0-9a-f]{64}'
     ETAG_REGEX = r'[0-9a-f]{32}(-[1-9][0-9]*)?'
 
-    # TODO: do we need an indicator of embargo vs. private?
     embargoed = models.BooleanField(default=False)
-    # TODO: storage and upload_to will be dependent on bucket
-    blob = models.FileField(blank=True, storage=get_storage, upload_to=get_storage_prefix)
+
     blob_id = models.UUIDField(unique=True)
     sha256 = models.CharField(  # noqa: DJ001
         null=True,
@@ -77,13 +80,11 @@ class AssetBlob(TimeStampedModel):
     download_count = models.PositiveBigIntegerField(default=0)
 
     class Meta:
+        abstract = True
         indexes = [HashIndex(fields=['etag'])]
-        constraints = [
-            models.UniqueConstraint(
-                name='unique-etag-size',
-                fields=['etag', 'size'],
-            )
-        ]
+
+    class DoesNotExist(ObjectDoesNotExist):
+        pass
 
     @property
     def references(self) -> int:
@@ -106,14 +107,73 @@ class AssetBlob(TimeStampedModel):
     def __str__(self) -> str:
         return self.blob.name
 
+    @classmethod
+    def get_by_blob_id(cls, blob_id):
+        for subclass in (PublicAssetBlob, PrivateAssetBlob):
+            try:
+                return subclass.objects.get(blob_id=blob_id)
+            except subclass.DoesNotExist:
+                continue
+        raise cls.DoesNotExist(f'No AssetBlob found with blob_id={blob_id}')
+
+    @classmethod
+    def get_by_blob_id_or_404(cls, blob_id):
+        try:
+            return cls.get_by_blob_id(blob_id=blob_id)
+        except cls.DoesNotExist as e:
+            raise Http404(str(e)) from e
+
+
+class PublicAssetBlob(AssetBlob):
+    blob = models.FileField(
+        blank=True,
+        storage=get_storage,
+        upload_to=get_storage_prefix,
+    )
+
+    class Meta(AssetBlob.Meta):
+        constraints = [
+            models.UniqueConstraint(
+                name='unique-etag-size',
+                fields=['etag', 'size'],
+            )
+        ]
+
+
+class PrivateAssetBlob(AssetBlob):
+    blob = models.FileField(
+        blank=True,
+        storage=get_private_storage,
+        upload_to=get_storage_prefix,
+    )
+
+    class Meta(AssetBlob.Meta):
+        constraints = [
+            models.UniqueConstraint(
+                name='unique-private-etag-size',
+                fields=['etag', 'size'],
+            )
+        ]
+
 
 class Asset(PublishableMetadataMixin, TimeStampedModel):
     UUID_REGEX = r'[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}'
 
     asset_id = models.UUIDField(unique=True, default=uuid.uuid4)
     path = models.CharField(max_length=512, validators=[validate_asset_path], db_collation='C')
-    blob = models.ForeignKey(
-        AssetBlob, related_name='assets', on_delete=models.CASCADE, null=True, blank=True
+    public_blob = models.ForeignKey(
+        PublicAssetBlob,
+        related_name='assets',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    private_blob = models.ForeignKey(
+        PrivateAssetBlob,
+        related_name='assets',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
     zarr = models.ForeignKey(
         'zarr.ZarrArchive', related_name='assets', on_delete=models.CASCADE, null=True, blank=True
@@ -144,11 +204,10 @@ class Asset(PublishableMetadataMixin, TimeStampedModel):
         ]
         constraints = [
             models.CheckConstraint(
-                name='blob-xor-zarr',
-                check=(
-                    Q(blob__isnull=True, zarr__isnull=False)
-                    | Q(blob__isnull=False, zarr__isnull=True)
-                ),
+                name='public-blob-xor-private-blob-xor-zarr',
+                check=Q(public_blob__isnull=True, private_blob__isnull=True, zarr__isnull=False)
+                | Q(public_blob__isnull=True, private_blob__isnull=False, zarr__isnull=True)
+                | Q(public_blob__isnull=False, private_blob__isnull=True, zarr__isnull=True),
             ),
             models.CheckConstraint(
                 name='asset_metadata_has_schema_version',
@@ -170,12 +229,39 @@ class Asset(PublishableMetadataMixin, TimeStampedModel):
         ]
 
     @property
+    def blob(self):
+        if self.is_blob:
+            if not self.is_private:
+                return self.public_blob
+            return self.private_blob
+        return None
+
+    @blob.setter
+    def blob(self, value):
+        if isinstance(value, PublicAssetBlob):
+            self.public_blob = value
+            self.private_blob = None
+        elif isinstance(value, PrivateAssetBlob):
+            self.public_blob = None
+            self.private_blob = value
+        elif value is None:
+            self.public_blob = None
+            self.private_blob = None
+        else:
+            raise ValueError('Unsupported type')
+
+    @property
     def is_blob(self):
-        return self.blob is not None
+        return self.public_blob is not None or self.private_blob is not None
 
     @property
     def is_zarr(self):
         return self.zarr is not None
+
+    @property
+    def is_private(self):
+        return self.private_blob is not None
+        # Future TODO: private zarr?
 
     @property
     def is_embargoed(self) -> bool:
@@ -300,5 +386,5 @@ class Asset(PublishableMetadataMixin, TimeStampedModel):
             .distinct()
             .aggregate(size=models.Sum('size'))['size']
             or 0
-            for cls in (AssetBlob, ZarrArchive)
+            for cls in (PublicAssetBlob, PrivateAssetBlob, ZarrArchive)
         )

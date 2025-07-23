@@ -92,8 +92,10 @@ class AssetViewSet(DetailSerializerMixin, GenericViewSet):
         if asset_id is None:
             return
 
-        asset = get_object_or_404(Asset.objects.select_related('blob', 'zarr'), asset_id=asset_id)
-        if not asset.is_embargoed:
+        asset = get_object_or_404(
+            Asset.objects.select_related('public_blob', 'private_blob', 'zarr'), asset_id=asset_id
+        )
+        if not asset.is_embargoed and not asset.is_private:
             return
 
         # Clients must be authenticated to access it
@@ -203,7 +205,7 @@ class AssetRequestSerializer(serializers.Serializer):
     def get_blob(self) -> AssetBlob | None:
         asset_blob = None
         if 'blob_id' in self.validated_data:
-            asset_blob = get_object_or_404(AssetBlob, blob_id=self.validated_data['blob_id'])
+            asset_blob = AssetBlob.get_by_blob_id_or_404(blob_id=self.validated_data['blob_id'])
 
         return asset_blob
 
@@ -462,7 +464,9 @@ class NestedAssetViewSet(NestedViewSetMixin, AssetViewSet, ReadOnlyModelViewSet)
         # Now we can retrieve the actual fully joined rows using the limited number of assets we're
         # going to return
         queryset = self.filter_queryset(
-            Asset.objects.filter(id__in=page_of_asset_ids).select_related('blob', 'zarr')
+            Asset.objects.filter(id__in=page_of_asset_ids).select_related(
+                'public_blob', 'private_blob', 'zarr'
+            )
         )
 
         # Must apply this to the main queryset, since it affects the data returned

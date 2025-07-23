@@ -1,27 +1,30 @@
 from __future__ import annotations
 
+from abc import abstractmethod
 from uuid import uuid4
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import RegexValidator
 from django.db import models
+from django.http import Http404
 from django_extensions.db.models import CreationDateTimeField
 
-from dandiapi.api.storage import get_storage, get_storage_prefix
+from dandiapi.api.storage import (
+    get_private_storage,
+    get_storage,
+    get_storage_prefix,
+)
 
-from .asset import AssetBlob
+from .asset import AssetBlob, PrivateAssetBlob, PublicAssetBlob
 from .dandiset import Dandiset
 
 
-class Upload(models.Model):  # noqa: DJ008
+class Upload(models.Model):
     ETAG_REGEX = r'[0-9a-f]{32}(-[1-9][0-9]*)?'
 
     created = CreationDateTimeField()
 
-    dandiset = models.ForeignKey(Dandiset, related_name='uploads', on_delete=models.CASCADE)
-
-    # TODO: storage and upload_to will be dependent on bucket
-    blob = models.FileField(blank=True, storage=get_storage, upload_to=get_storage_prefix)
     embargoed = models.BooleanField(default=False)
 
     # This is the key used to generate the object key, and the primary identifier for the upload.
@@ -39,14 +42,17 @@ class Upload(models.Model):  # noqa: DJ008
     size = models.PositiveBigIntegerField()
 
     class Meta:
+        abstract = True
         ordering = ['created']
         indexes = [models.Index(fields=['etag'])]
+
+    class DoesNotExist(ObjectDoesNotExist):
+        pass
 
     @staticmethod
     def object_key(upload_id):
         upload_id = str(upload_id)
         return (
-            # TODO: determine which bucket
             f'{settings.DANDI_DANDISETS_BUCKET_PREFIX}'
             f'blobs/{upload_id[0:3]}/{upload_id[3:6]}/{upload_id}'
         )
@@ -80,9 +86,73 @@ class Upload(models.Model):  # noqa: DJ008
             'parts': multipart_initialization.parts,
         }
 
+    @classmethod
+    def get_by_upload_id_or_404(cls, upload_id):
+        for subclass in (PublicUpload, PrivateUpload):
+            try:
+                return subclass.objects.get(upload_id=upload_id)
+            except subclass.DoesNotExist:
+                continue
+        raise Http404(f'No Upload found with upload_id={upload_id}')
+
+    @abstractmethod
     def to_asset_blob(self) -> AssetBlob:
         """Convert this upload into an AssetBlob."""
-        return AssetBlob(
+
+    @abstractmethod
+    def object_key_exists(self):
+        pass
+
+    @abstractmethod
+    def actual_size(self):
+        pass
+
+    @abstractmethod
+    def actual_etag(self):
+        pass
+
+
+class PublicUpload(Upload):  # noqa: DJ008
+    blob = models.FileField(
+        blank=True,
+        storage=get_storage,
+        upload_to=get_storage_prefix,
+    )
+
+    dandiset = models.ForeignKey(Dandiset, related_name='uploads', on_delete=models.CASCADE)
+
+    def to_asset_blob(self) -> PublicAssetBlob:
+        """Convert this upload into an AssetBlob."""
+        return PublicAssetBlob(
+            embargoed=self.embargoed,
+            blob_id=self.upload_id,
+            blob=self.blob,
+            etag=self.etag,
+            size=self.size,
+        )
+
+    def object_key_exists(self):
+        return self.blob.field.storage.exists(self.blob.name)
+
+    def actual_size(self):
+        return self.blob.field.storage.size(self.blob.name)
+
+    def actual_etag(self):
+        return self.blob.storage.etag_from_blob_name(self.blob.name)
+
+
+class PrivateUpload(Upload):  # noqa: DJ008
+    blob = models.FileField(
+        blank=True,
+        storage=get_private_storage,
+        upload_to=get_storage_prefix,
+    )
+
+    dandiset = models.ForeignKey(Dandiset, related_name='private_uploads', on_delete=models.CASCADE)
+
+    def to_asset_blob(self) -> PrivateAssetBlob:
+        """Convert this upload into an AssetBlob."""
+        return PrivateAssetBlob(
             embargoed=self.embargoed,
             blob_id=self.upload_id,
             blob=self.blob,
