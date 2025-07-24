@@ -14,16 +14,16 @@ from dandiapi.api.models.upload import PrivateUpload, PublicUpload
 from dandiapi.api.storage import create_s3_storage
 from dandiapi.api.tests.factories import (
     AssetBlobFactory,
+    PrivateAssetBlobFactory,
     DandisetFactory,
     DraftAssetFactory,
+    PrivateDraftAssetFactory,
     DraftVersionFactory,
     EmbargoedAssetBlobFactory,
     EmbargoedUploadFactory,
-    PrivateEmbargoedAssetBlobFactory,
-    PrivateEmbargoedDraftAssetFactory,
-    PrivateEmbargoedUploadFactory,
     PublicAssetBlobFactory,
-    PublicEmbargoedDraftAssetFactory,
+    PrivateUploadFactory,
+    EmbargoedDraftAssetFactory,
     PublishedAssetFactory,
     PublishedVersionFactory,
     SocialAccountFactory,
@@ -41,6 +41,7 @@ if TYPE_CHECKING:
 register(PublishedAssetFactory, _name='published_asset')
 register(DraftAssetFactory, _name='draft_asset')
 register(AssetBlobFactory, _name='asset_blob')
+register(PrivateAssetBlobFactory, _name='private_asset_blob')
 register(PublicAssetBlobFactory)
 register(EmbargoedAssetBlobFactory, _name='embargoed_asset_blob')
 register(DandisetFactory)
@@ -155,16 +156,13 @@ class StorageContext(NamedTuple):
     upload_model: type[PublicUpload | PrivateUpload]
     use_private: bool
     blob_factory: type[
-        AssetBlobFactory | EmbargoedAssetBlobFactory | PrivateEmbargoedAssetBlobFactory
-        # Future TODO: PrivateAssetBlobFactory
+        AssetBlobFactory | EmbargoedAssetBlobFactory | PrivateAssetBlobFactory
     ]
     upload_factory: type[
-        UploadFactory | EmbargoedUploadFactory | PrivateEmbargoedUploadFactory
-        # Future TODO: PrivateUploadFactory
+        UploadFactory | EmbargoedUploadFactory | PrivateUploadFactory
     ]
     draft_asset_factory: type[
-        DraftAssetFactory | PublicEmbargoedDraftAssetFactory | PrivateEmbargoedDraftAssetFactory
-        # Future TODO: PrivateDraftAssetFactory
+        DraftAssetFactory | EmbargoedDraftAssetFactory | PrivateDraftAssetFactory
     ]
 
 
@@ -182,39 +180,35 @@ PublicEmbargoedStorageContext = StorageContext(
     upload_model=PublicUpload,
     blob_factory=EmbargoedAssetBlobFactory,
     upload_factory=EmbargoedUploadFactory,
-    draft_asset_factory=PublicEmbargoedDraftAssetFactory,
+    draft_asset_factory=EmbargoedDraftAssetFactory,
     use_private=False,
 )
 
-PrivateEmbargoedStorageCntext = StorageContext(
+PrivateStorageContext = StorageContext(
     blob_model=PrivateAssetBlob,
     upload_model=PrivateUpload,
-    blob_factory=PrivateEmbargoedAssetBlobFactory,
-    upload_factory=PrivateEmbargoedUploadFactory,
-    draft_asset_factory=PrivateEmbargoedDraftAssetFactory,
+    blob_factory=PrivateAssetBlobFactory,
+    upload_factory=PrivateUploadFactory,
+    draft_asset_factory=PrivateDraftAssetFactory,
     use_private=True,
 )
-
 
 @pytest.fixture(
     params=[
         pytest.param(PublicStorageContext, id='use_public'),
-        pytest.param(PrivateEmbargoedStorageCntext, id='use_private'),
+        pytest.param(PrivateStorageContext, id='use_private')
     ]
 )
 def storage_context(settings, request):
     settings.ALLOW_PRIVATE = request.param.use_private
-    settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED = request.param.use_private
     return request.param
 
 
 @pytest.fixture(
     params=[
         pytest.param(PublicEmbargoedStorageContext, id='use_public'),
-        pytest.param(PrivateEmbargoedStorageCntext, id='use_private'),
     ]
 )
 def embargoed_context(settings, request):
     settings.ALLOW_PRIVATE = request.param.use_private
-    settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED = request.param.use_private
     return request.param

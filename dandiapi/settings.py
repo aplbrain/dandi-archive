@@ -113,7 +113,6 @@ class DandiMixin(ConfigMixin):
     DANDI_DEV_EMAIL = values.EmailValue(environ_required=True)
     DANDI_ADMIN_EMAIL = values.EmailValue(environ_required=True)
     ALLOW_PRIVATE = values.BooleanValue(environ=True, default=False)
-    USE_PRIVATE_BUCKET_FOR_EMBARGOED = values.BooleanValue(environ=True, default=False)
 
     DANDI_VALIDATION_JOB_INTERVAL = values.IntegerValue(environ=True, default=60)
 
@@ -169,7 +168,6 @@ class TestingConfiguration(DandiMixin, TestingBaseConfiguration):
     DANDI_JUPYTERHUB_URL = 'https://hub.dandiarchive.org/'
 
     ALLOW_PRIVATE = False
-    USE_PRIVATE_BUCKET_FOR_EMBARGOED = False
 
     # This makes the dandischema pydantic model allow URLs with localhost in them.
     DANDI_ALLOW_LOCALHOST_URLS = True

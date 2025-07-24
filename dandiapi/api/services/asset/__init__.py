@@ -182,47 +182,11 @@ def add_asset_to_version(  # noqa: C901, PLR0912
             and asset_blob.embargoed
             and version.dandiset.embargo_status == Dandiset.EmbargoStatus.OPEN
         ):
-            # Asset is embargoed, but the dandiset Version is open. So, we must unembargo the Asset
-            if not settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED:
-                blob_id = asset_blob.blob_id
-                PublicAssetBlob.objects.filter(blob_id=blob_id).update(embargoed=False)
-                transaction.on_commit(
-                    lambda: remove_asset_blob_embargoed_tag_task.delay(blob_id=blob_id)
-                )
-            else:
-                # Unembargo AssetBlob
-                # (1) Check that AssetBlob does not already exist in public bucket
-                # TODO: Open Question: Use etag or something else?
-                matching_blob = PublicAssetBlob.objects.filter(etag=asset_blob.etag)
-                if matching_blob is not None:
-                    asset_blob = matching_blob
-                else:
-                    # (2) Copy AssetBlob to public bucket
-                    # TODO: Question: should this be a bathc copy too? or not since only 1 blob?
-                    resp = copy_object_multipart(
-                        asset_blob.blob.storage,
-                        source_bucket=settings.DANDI_DANDISETS_PRIVATE_BUCKET_NAME,
-                        source_key=asset_blob.blob.name,
-                        dest_bucket=settings.DANDI_DANDISETS_BUCKET_NAME,
-                        dest_key=PublicUpload.object_key(asset_blob.blob_id),
-                    )
-                    # TODO: Is this the right thing to check?
-                    if resp.etag != asset_blob.etag:
-                        raise RuntimeError(
-                            'ETag mismatch between copied object and original embargoed object'
-                        )
-
-                    # (3) Create new PublicAssetBlob
-                    asset_blob = PublicAssetBlob(
-                        blob=resp.key,
-                        blob_id=asset_blob.blob_id,
-                        sha256=asset_blob.sha256,
-                        etag=asset_blob.etag,
-                        size=asset_blob.size,
-                    )
-                    asset_blob.save()
-
-                    # TODO: Delete PrivateAssetBlob?
+            blob_id = asset_blob.blob_id
+            PublicAssetBlob.objects.filter(blob_id=blob_id).update(embargoed=False)
+            transaction.on_commit(
+                lambda: remove_asset_blob_embargoed_tag_task.delay(blob_id=blob_id)
+            )
 
         asset = _add_asset_to_version(
             version=version,

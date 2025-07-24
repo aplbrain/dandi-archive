@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from django.db import migrations, models
 
-
+# NOTE : we shouldn't need these at all
 def migrate_embargoed_asset_blobs(apps, _):
     Asset = apps.get_model('api.Asset')
     AssetBlob = apps.get_model('api.AssetBlob')

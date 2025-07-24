@@ -153,7 +153,7 @@ class PrivateUpload(Upload):  # noqa: DJ008
     def to_asset_blob(self) -> PrivateAssetBlob:
         """Convert this upload into an AssetBlob."""
         return PrivateAssetBlob(
-            embargoed=self.embargoed,
+            embargoed=self.embargoed, #TODO: embargoed=false? how to handle since inheriting Upload?
             blob_id=self.upload_id,
             blob=self.blob,
             etag=self.etag,

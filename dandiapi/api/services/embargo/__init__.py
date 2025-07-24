@@ -52,14 +52,9 @@ def unembargo_dandiset(ds: Dandiset, user: User):
     updated_assets = Asset.objects.filter(versions__dandiset=ds).update(status=Asset.Status.PENDING)
     # Update embargoed flag on asset blobs
     # Zarrs have no such property as it is derived from the dandiset
-    if not settings.USE_PRIVATE_BUCKET_FOR_EMBARGOED:
-        updated_blobs = PublicAssetBlob.objects.filter(
-            embargoed=True, assets__versions__dandiset=ds
-        ).update(embargoed=False)
-    else:
-        # Embargoed tags should not exist because new PublicAssetBlobs were copied from
-        # the old PrivateAssetBlobs -- in remove_dandiset_embargo_tags ?
-        pass
+    updated_blobs = PublicAssetBlob.objects.filter(
+        embargoed=True, assets__versions__dandiset=ds
+    ).update(embargoed=False)
     logger.info('Set %s assets to PENDING', updated_assets)
     logger.info('Updated %s asset blobs', updated_blobs)
 
@@ -93,17 +88,10 @@ def remove_asset_blob_embargoed_tag(asset_blob: AssetBlob) -> None:
     if asset_blob.embargoed:
         raise AssetBlobEmbargoedError
 
-    if isinstance(asset_blob, PublicAssetBlob):
-        _delete_object_tags(
-            client=get_boto_client(),
-            blob=asset_blob.blob.name,
-        )
-    else:
-        _delete_object_tags(
-            client=get_boto_client(storage=get_private_storage()),
-            blob=asset_blob.blob.name,
-            bucket_name=settings.DANDI_DANDISETS_PRIVATE_BUCKET_NAME,
-        )
+    _delete_object_tags(
+        client=get_boto_client(),
+        blob=asset_blob.blob.name,
+    )
 
 
 def kickoff_dandiset_unembargo(*, user: User, dandiset: Dandiset):

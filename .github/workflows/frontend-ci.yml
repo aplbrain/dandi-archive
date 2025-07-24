@@ -84,7 +84,6 @@ jobs:
       DJANGO_DANDI_ADMIN_EMAIL: admin@kitware.com
       DANDI_ALLOW_LOCALHOST_URLS: 1
       DJANGO_ALLOW_PRIVATE: true
-      DJANGO_USE_PRIVATE_BUCKET_FOR_EMBARGOED: true
 
       # Web client env vars
       VITE_APP_DANDI_API_ROOT: http://localhost:8000/api/

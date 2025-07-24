@@ -181,21 +181,15 @@ class AssetBlobFactory(factory.django.DjangoModelFactory):
 
 
 # Future TODO: Private, Non-Embargoed
-# class PrivateAssetBlobFactory(AssetBlobFactory):
-#     class Meta:
-#         model = PrivateAssetBlob
+# NOTE: anything else to add? should non-embargoed factories have embargoed=False?
+class PrivateAssetBlobFactory(AssetBlobFactory):
+    class Meta:
+        model = PrivateAssetBlob
 
 
 class EmbargoedAssetBlobFactory(AssetBlobFactory):
     class Meta:
         model = PublicAssetBlob
-
-    embargoed = True
-
-
-class PrivateEmbargoedAssetBlobFactory(AssetBlobFactory):
-    class Meta:
-        model = PrivateAssetBlob
 
     embargoed = True
 
@@ -229,19 +223,14 @@ class DraftAssetFactory(factory.django.DjangoModelFactory):
 
 
 # Future TODO: Private, Non-Embargoed
-# class PrivateDraftAssetFactory(DraftAssetFactory):
-#     public_blob = None
-#     private_blob = factory.SubFactory(PrivateAssetBlobFactory)
+class PrivateDraftAssetFactory(DraftAssetFactory):
+    public_blob = None
+    private_blob = factory.SubFactory(PrivateAssetBlobFactory)
 
 
-class PublicEmbargoedDraftAssetFactory(DraftAssetFactory):
+class EmbargoedDraftAssetFactory(DraftAssetFactory):
     public_blob = factory.SubFactory(EmbargoedAssetBlobFactory)
     private_blob = None
-
-
-class PrivateEmbargoedDraftAssetFactory(DraftAssetFactory):
-    public_blob = None
-    private_blob = factory.SubFactory(PrivateEmbargoedAssetBlobFactory)
 
 
 class PublishedAssetFactory(DraftAssetFactory):
@@ -277,9 +266,9 @@ class UploadFactory(factory.django.DjangoModelFactory):
 
 
 # Future TODO: Private, Non-Embargoed
-# class PrivateUploadFactory(UploadFactory):
-#     class Meta:
-#         model = PrivateUpload
+class PrivateUploadFactory(UploadFactory):
+    class Meta:
+        model = PrivateUpload
 
 
 class EmbargoedUploadFactory(UploadFactory):
@@ -288,9 +277,3 @@ class EmbargoedUploadFactory(UploadFactory):
 
     embargoed = True
 
-
-class PrivateEmbargoedUploadFactory(UploadFactory):
-    class Meta:
-        model = PrivateUpload
-
-    embargoed = True
