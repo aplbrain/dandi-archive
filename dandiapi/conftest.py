@@ -175,7 +175,7 @@ PublicStorageContext = StorageContext(
     use_private=False,
 )
 
-PublicEmbargoedStorageContext = StorageContext(
+EmbargoedStorageContext = StorageContext(
     blob_model=PublicAssetBlob,
     upload_model=PublicUpload,
     blob_factory=EmbargoedAssetBlobFactory,
@@ -206,7 +206,7 @@ def storage_context(settings, request):
 
 @pytest.fixture(
     params=[
-        pytest.param(PublicEmbargoedStorageContext, id='use_public'),
+        pytest.param(EmbargoedStorageContext, id='use_public'),
     ]
 )
 def embargoed_context(settings, request):

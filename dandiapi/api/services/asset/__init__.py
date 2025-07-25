@@ -176,7 +176,6 @@ def add_asset_to_version(  # noqa: C901, PLR0912
         # embargoed blob results in that blob being unembargoed.
         # NOTE: This only applies to asset blobs, as zarrs cannot belong to
         # multiple dandisets at once.
-        # Future TODO: Check for embargoed OR private
         if (
             asset_blob is not None
             and asset_blob.embargoed
@@ -187,6 +186,13 @@ def add_asset_to_version(  # noqa: C901, PLR0912
             transaction.on_commit(
                 lambda: remove_asset_blob_embargoed_tag_task.delay(blob_id=blob_id)
             )
+        # TODO: add logic in case a public asset_blob identical to a private asset_blob is being uploaded
+        # in that case, save identical versions in public/private buckets
+        # maybe instead of elif statement add this to original if as an or condition?
+
+        # elif(asset_blob is not None
+        #      and settings.ALLOW_PRIVATE
+        #      and ): how to check for identical private asset?
 
         asset = _add_asset_to_version(
             version=version,

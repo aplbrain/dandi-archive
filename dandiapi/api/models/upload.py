@@ -148,12 +148,14 @@ class PrivateUpload(Upload):  # noqa: DJ008
         upload_to=get_storage_prefix,
     )
 
+    embargo = models.BooleanField(default=False) # NOTE: is this the right way to do this? still getting the hang of Django!
+
     dandiset = models.ForeignKey(Dandiset, related_name='private_uploads', on_delete=models.CASCADE)
 
     def to_asset_blob(self) -> PrivateAssetBlob:
         """Convert this upload into an AssetBlob."""
         return PrivateAssetBlob(
-            embargoed=self.embargoed, #TODO: embargoed=false? how to handle since inheriting Upload?
+            embargoed=False,
             blob_id=self.upload_id,
             blob=self.blob,
             etag=self.etag,

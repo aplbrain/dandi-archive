@@ -147,6 +147,8 @@ class PrivateAssetBlob(AssetBlob):
         upload_to=get_storage_prefix,
     )
 
+    embargo = models.BooleanField(default=False) # NOTE: is this the right way to do this? still getting the hang of Django!
+
     class Meta(AssetBlob.Meta):
         constraints = [
             models.UniqueConstraint(
