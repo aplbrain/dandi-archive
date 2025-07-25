@@ -1,3 +1,173 @@
+# v0.12.2 (Tue Jul 22 2025)
+
+#### 🏠 Internal
+
+- Point staging web app at sandbox URL [#2446](https://github.com/dandi/dandi-archive/pull/2446) ([@mvandenburgh](https://github.com/mvandenburgh))
+- Add source script for fish shell [#2440](https://github.com/dandi/dandi-archive/pull/2440) ([@jjnesbitt](https://github.com/jjnesbitt))
+
+#### Authors: 2
+
+- Jacob Nesbitt ([@jjnesbitt](https://github.com/jjnesbitt))
+- Mike VanDenburgh ([@mvandenburgh](https://github.com/mvandenburgh))
+
+---
+
+# v0.12.1 (Fri Jul 18 2025)
+
+#### 🐛 Bug Fix
+
+- Update hardcoded staging URL [#2441](https://github.com/dandi/dandi-archive/pull/2441) ([@mvandenburgh](https://github.com/mvandenburgh))
+
+#### Authors: 1
+
+- Mike VanDenburgh ([@mvandenburgh](https://github.com/mvandenburgh))
+
+---
+
+# v0.12.0 (Fri Jul 18 2025)
+
+#### 🚀 Enhancement
+
+- Redirect `gui-staging` URLs to `sandbox` [#2439](https://github.com/dandi/dandi-archive/pull/2439) ([@mvandenburgh](https://github.com/mvandenburgh))
+
+#### 🐛 Bug Fix
+
+- ENH: add filtering capabilities to NestedAssetViewSet [#2414](https://github.com/dandi/dandi-archive/pull/2414) ([@bendichter](https://github.com/bendichter))
+
+#### 📝 Documentation
+
+- Use 1. for all items in markdown ordered lists [#2436](https://github.com/dandi/dandi-archive/pull/2436) ([@jjnesbitt](https://github.com/jjnesbitt))
+
+#### Authors: 3
+
+- Ben Dichter ([@bendichter](https://github.com/bendichter))
+- Jacob Nesbitt ([@jjnesbitt](https://github.com/jjnesbitt))
+- Mike VanDenburgh ([@mvandenburgh](https://github.com/mvandenburgh))
+
+---
+
+# v0.11.9 (Mon Jul 14 2025)
+
+#### 🏎 Performance
+
+- Replace stats endpoint caching with ApplicationStats model [#2435](https://github.com/dandi/dandi-archive/pull/2435) ([@jjnesbitt](https://github.com/jjnesbitt))
+
+#### 🏠 Internal
+
+- Remove the rest of `dandiapi.analytics` [#2438](https://github.com/dandi/dandi-archive/pull/2438) ([@mvandenburgh](https://github.com/mvandenburgh))
+
+#### Authors: 2
+
+- Jacob Nesbitt ([@jjnesbitt](https://github.com/jjnesbitt))
+- Mike VanDenburgh ([@mvandenburgh](https://github.com/mvandenburgh))
+
+---
+
+# v0.11.8 (Fri Jul 11 2025)
+
+#### 🐛 Bug Fix
+
+- Remove `ProcessedS3Log` model [#2426](https://github.com/dandi/dandi-archive/pull/2426) ([@mvandenburgh](https://github.com/mvandenburgh))
+- Fix type checking error [#2437](https://github.com/dandi/dandi-archive/pull/2437) ([@mvandenburgh](https://github.com/mvandenburgh))
+
+#### Authors: 1
+
+- Mike VanDenburgh ([@mvandenburgh](https://github.com/mvandenburgh))
+
+---
+
+# v0.11.7 (Fri Jul 11 2025)
+
+#### 🐛 Bug Fix
+
+- Fix Meditor rendering bugs [#2434](https://github.com/dandi/dandi-archive/pull/2434) ([@mvandenburgh](https://github.com/mvandenburgh))
+
+#### Authors: 1
+
+- Mike VanDenburgh ([@mvandenburgh](https://github.com/mvandenburgh))
+
+---
+
+# v0.11.6 (Thu Jul 10 2025)
+
+#### 🐛 Bug Fix
+
+- Fix missing species on search page [#2422](https://github.com/dandi/dandi-archive/pull/2422) ([@mvandenburgh](https://github.com/mvandenburgh))
+
+#### Authors: 1
+
+- Mike VanDenburgh ([@mvandenburgh](https://github.com/mvandenburgh))
+
+---
+
+# v0.11.5 (Thu Jul 03 2025)
+
+#### 🐛 Bug Fix
+
+- Remove s3 log processing task [#2425](https://github.com/dandi/dandi-archive/pull/2425) ([@mvandenburgh](https://github.com/mvandenburgh))
+- enh: add action to export github usernames [#2424](https://github.com/dandi/dandi-archive/pull/2424) ([@satra](https://github.com/satra) [@jjnesbitt](https://github.com/jjnesbitt))
+
+#### 🏎 Performance
+
+- Set `statement_timeout` in materialized view query [#2427](https://github.com/dandi/dandi-archive/pull/2427) ([@mvandenburgh](https://github.com/mvandenburgh))
+
+#### 🔩 Dependency Updates
+
+- Update to Python 3.13 [#2420](https://github.com/dandi/dandi-archive/pull/2420) ([@mvandenburgh](https://github.com/mvandenburgh) [@waxlamp](https://github.com/waxlamp))
+
+#### Authors: 4
+
+- Jacob Nesbitt ([@jjnesbitt](https://github.com/jjnesbitt))
+- Mike VanDenburgh ([@mvandenburgh](https://github.com/mvandenburgh))
+- Roni Choudhury ([@waxlamp](https://github.com/waxlamp))
+- Satrajit Ghosh ([@satra](https://github.com/satra))
+
+---
+
+# v0.11.4 (Tue Jul 01 2025)
+
+#### 🐛 Bug Fix
+
+- Set timeout of refresh_materialized_view_search to 10 minutes [#2423](https://github.com/dandi/dandi-archive/pull/2423) ([@jjnesbitt](https://github.com/jjnesbitt))
+
+#### Authors: 1
+
+- Jacob Nesbitt ([@jjnesbitt](https://github.com/jjnesbitt))
+
+---
+
+# v0.11.3 (Mon Jun 30 2025)
+
+#### 🐛 Bug Fix
+
+- Increase timeout for `refresh_materialized_view_search` [#2421](https://github.com/dandi/dandi-archive/pull/2421) ([@mvandenburgh](https://github.com/mvandenburgh))
+
+#### Authors: 1
+
+- Mike VanDenburgh ([@mvandenburgh](https://github.com/mvandenburgh))
+
+---
+
+# v0.11.2 (Mon Jun 23 2025)
+
+#### 🐛 Bug Fix
+
+- Empty commit to force release cycle [#2418](https://github.com/dandi/dandi-archive/pull/2418) ([@waxlamp](https://github.com/waxlamp))
+- ENH: allow googlebot also /search endpoint and for filtered listing of assets [#2408](https://github.com/dandi/dandi-archive/pull/2408) ([@yarikoptic](https://github.com/yarikoptic))
+
+#### 🏠 Internal
+
+- Remove gossip and mingling from Celery workers [#2251](https://github.com/dandi/dandi-archive/pull/2251) (aaronkanzer@dhcp-10-29-159-71.dyn.mit.edu [@aaronkanzer](https://github.com/aaronkanzer))
+
+#### Authors: 4
+
+- [@aaronkanzer](https://github.com/aaronkanzer)
+- Aaron Kanzer (aaronkanzer@dhcp-10-29-159-71.dyn.mit.edu)
+- Roni Choudhury ([@waxlamp](https://github.com/waxlamp))
+- Yaroslav Halchenko ([@yarikoptic](https://github.com/yarikoptic))
+
+---
+
 # v0.11.1 (Thu Jun 05 2025)
 
 #### 🏎 Performance
