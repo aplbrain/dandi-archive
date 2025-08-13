@@ -1,20 +1,25 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="icon" href="/favicon.ico">
-    <title>EMBER-DANDI Archive</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css">
-  </head>
-  <body>
-    <noscript>
-      <strong>We're sorry but the EMBER-DANDI Archive doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
-    </noscript>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-    <!-- built files will be auto injected -->
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>We'll be right back</title>
+  <style>
+    :root { --bg:#0b1220; --fg:#e6e8ee; --muted:#9aa3b2; }
+    html,body { height:100%; margin:0; }
+    body { display:flex; align-items:center; justify-content:center; background:var(--bg); color:var(--fg); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+    .card { max-width: 640px; padding: 2.5rem; border-radius: 1.25rem; background: rgba(255,255,255,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.35); text-align:center; }
+    h1 { margin: 0 0 0.5rem; font-size: clamp(2rem, 4vw, 2.5rem); }
+    p { margin: 0.25rem 0; color: var(--muted); line-height: 1.5; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .small { margin-top: 1rem; font-size: 0.9rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main class="card" role="main" aria-label="Site under maintenance">
+    <h1>EMBER is under scheduled maintenance</h1>
+    <p>We're making some improvements. Please check back soon.</p>
+  </main>
+</body>
 </html>
