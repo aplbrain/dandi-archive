@@ -49,8 +49,9 @@ to = "https://docs.dandiarchive.org"
 
 [[redirects]]
 from = "/*"
-to = "/index.html"
+to = "/maintenance.html"
 status = 200
+force = true
 
 [[plugins]]
 package = "/netlify/plugins/server-info-build"
