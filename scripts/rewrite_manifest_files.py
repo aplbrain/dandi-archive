@@ -1,20 +1,22 @@
 """
 Rewrite (update) all manifest files.
 
-This will allow us to rewrite the manifest files.  Currently the asset manifest files .jsonid and yaml contain the name of the bucket.
-when moving to AWS Open Data bucket we are copying all the data over to the new bucket.  Now we need to change the manifest files to reflect that.
+This script runs the `write_manifest_files()` function on all dandiset versions, allowing us to
+rewrite the manifest files. We needed to run this as a one-time script when we moved from our
+development AWS account to the AWS Open Data account, thus changing the AWS S3 bucket our data is
+stored in. Currently the asset manifest files (.jsonld and .yaml) contain the name of the bucket, so
+this became out of date when we copied the data over and changed the bucket. This script runs an
+update on the manifest files, fixing the bucket referenced the asset manifest files.
+
 We are doing this using the heroku CLI to connect to our database and then write_manifest_files()
 
 Usage:
     # Open an interactive bash shell inside the heroku dyno for the given app
     heroku run -a <heroku_app_name> bash
 
-    # Run the script directly
-    ./manage.py rewrite_manifest_files.py
-    # OR
     # Open a Django shell
     ./manage.py shell_plus
-    # And run the script by copying and pasting the code
+    # Run the script by copying and pasting the code
 """
 
 from __future__ import annotations
