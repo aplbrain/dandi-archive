@@ -55,7 +55,7 @@ jobs:
           - "3.13"
         dandi-version:
           - release
-          - master
+          - prod
     env:
       DANDI_TESTS_PULL_DOCKER_COMPOSE: 0
     steps:
@@ -79,7 +79,7 @@ jobs:
           DANDI_TESTS_PERSIST_DOCKER_COMPOSE: "1"
 
       - name: Run dandi-api tests in dandi-cli
-        if: matrix.dandi-version == 'master'
+        if: matrix.dandi-version == 'prod'
         run: >
           uvx --with "dandi[test] @ git+https://github.com/dandi/dandi-cli"
           pytest --pyargs -v --dandi-api dandi
