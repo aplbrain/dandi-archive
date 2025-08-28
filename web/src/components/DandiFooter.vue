@@ -9,7 +9,7 @@
           <a
             target="_blank"
             rel="noopener"
-            :href="`${dandiDocumentationUrl}/about/terms/`"
+            :href="`${dandiDocumentationUrl}/terms-policies/terms/`"
             class="text-primary"
           >Terms</a>
           <v-icon size="x-small">
@@ -17,7 +17,7 @@
           </v-icon> / <a
             target="_blank"
             rel="noopener"
-            :href="`${dandiDocumentationUrl}/about/policies/`"
+            :href="`${dandiDocumentationUrl}/terms-policies/policies/`"
             class="text-primary"
           >Policies</a>
           <v-icon size="x-small">
