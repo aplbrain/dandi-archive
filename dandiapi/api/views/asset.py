@@ -3,7 +3,8 @@ from __future__ import annotations
 import re
 import typing
 
-from django.contrib.auth.models import User
+if typing.TYPE_CHECKING:
+    from django.contrib.auth.models import User
 
 from dandiapi.api.asset_paths import search_asset_paths
 from dandiapi.api.services.asset import (
@@ -99,7 +100,7 @@ class AssetViewSet(DetailSerializerMixin, GenericViewSet):
         # Clients must be authenticated to access it
         if not self.request.user.is_authenticated:
             raise NotAuthenticated
-        self.request.user = typing.cast(User, self.request.user)
+        self.request.user = typing.cast('User', self.request.user)
 
         # Admins are allowed to access any embargoed asset blob
         if self.request.user.is_superuser:
@@ -139,7 +140,7 @@ class AssetViewSet(DetailSerializerMixin, GenericViewSet):
         asset = self.get_object()
 
         # Raise error if zarr
-        if asset.is_zarr:
+        if asset.zarr is not None:
             return Response(
                 'Unable to provide download link for zarr assets.'
                 ' Please browse the zarr files directly to do so.',

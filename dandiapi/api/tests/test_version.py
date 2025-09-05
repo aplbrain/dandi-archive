@@ -24,7 +24,7 @@ from dandiapi.api.models import Asset, Version
 from dandiapi.api.services.publish import _build_publishable_version_from_draft
 from dandiapi.zarr.tasks import ingest_zarr_archive
 
-from .fuzzy import TIMESTAMP_RE, URN_RE, UTC_ISO_TIMESTAMP_RE, VERSION_ID_RE
+from .fuzzy import HTTP_URL_RE, TIMESTAMP_RE, URN_RE, UTC_ISO_TIMESTAMP_RE, VERSION_ID_RE
 
 
 @pytest.mark.django_db
@@ -73,9 +73,7 @@ def test_draft_version_metadata_computed(draft_version: Version):
 
     expected_metadata = {
         **original_metadata,
-        'manifestLocation': [
-            f'{settings.DANDI_API_URL}/api/dandisets/{draft_version.dandiset.identifier}/versions/draft/assets/'
-        ],
+        'manifestLocation': [HTTP_URL_RE],
         'name': draft_version.name,
         'identifier': f'DANDI:{draft_version.dandiset.identifier}',
         'version': draft_version.version,
@@ -109,20 +107,13 @@ def test_published_version_metadata_computed(published_version: Version):
 
     expected_metadata = {
         **original_metadata,
-        'manifestLocation': [
-            (
-                f'http://{settings.MINIO_STORAGE_ENDPOINT}/test-dandiapi-dandisets'
-                f'/test-prefix/dandisets/{published_version.dandiset.identifier}'
-                f'/{published_version.version}/assets.yaml'
-            )
-        ],
+        'manifestLocation': [HTTP_URL_RE],
         'name': published_version.name,
         'identifier': f'DANDI:{published_version.dandiset.identifier}',
         'version': published_version.version,
         'id': f'DANDI:{published_version.dandiset.identifier}/{published_version.version}',
         'doi': (
-            f'10.80507/dandi.'
-            f'{published_version.dandiset.identifier}/{published_version.version}'
+            f'10.80507/dandi.{published_version.dandiset.identifier}/{published_version.version}'
         ),
         'url': (
             f'{settings.DANDI_WEB_APP_URL}/dandiset/'
@@ -163,8 +154,7 @@ def test_version_metadata_citation_published(published_version):
     year = datetime.datetime.now(datetime.UTC).year
     url = f'https://doi.org/{published_version.doi}'
     assert published_version.metadata['citation'] == (
-        f'{name} ({year}). (Version {published_version.version}) [Data set]. '
-        f'DANDI Archive. {url}'
+        f'{name} ({year}). (Version {published_version.version}) [Data set]. DANDI Archive. {url}'
     )
 
 
@@ -334,9 +324,7 @@ def test_version_publish_version(draft_version, asset):
         },
         'dateCreated': UTC_ISO_TIMESTAMP_RE,
         'datePublished': UTC_ISO_TIMESTAMP_RE,
-        'manifestLocation': [
-            f'http://{settings.MINIO_STORAGE_ENDPOINT}/test-dandiapi-dandisets/test-prefix/dandisets/{publish_version.dandiset.identifier}/{publish_version.version}/assets.yaml',
-        ],
+        'manifestLocation': [HTTP_URL_RE],
         'identifier': f'DANDI:{publish_version.dandiset.identifier}',
         'version': publish_version.version,
         'id': f'DANDI:{publish_version.dandiset.identifier}/{publish_version.version}',
