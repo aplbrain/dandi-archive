@@ -1,13 +1,14 @@
 const dandiUrl = 'https://dandiarchive.org';
+const dandiAboutUrl = 'https://about.dandiarchive.org/';
+const dandiDocumentationUrl = 'https://docs.dandiarchive.org';
+const dandiHelpUrl = 'https://github.com/dandi/helpdesk/issues/new/choose';
+const dandihubUrl = 'https://hub.dandiarchive.org/';
+const sandboxDocsUrl = `${dandiDocumentationUrl}/getting-started/creating-account/`;
+
 const emberHomeUrl = 'https://emberarchive.org';
 const emberAboutUrl = 'https://emberarchive.org/about';
 const emberGitHubUrl = 'https://github.com/aplbrain/dandi-archive';
 const emberDocumentationUrl = 'https://emberarchive.org/documentation';
-const dandiDocumentationUrl = 'https://docs.dandiarchive.org/documentation';
-// const dandiAboutUrl = 'https://about.dandiarchive.org/';
-const dandiHelpUrl = 'https://github.com/dandi/helpdesk/issues/new/choose';
-const dandihubUrl = 'https://hub.dandiarchive.org/';
-const sandboxDocsUrl = `${dandiDocumentationUrl}/getting-started/creating-account/`;
 
 const draftVersion = 'draft';
 
@@ -59,13 +60,14 @@ const DANDISETS_PER_PAGE = 8;
 
 export {
   dandiUrl,
+  dandiAboutUrl,
+  dandiDocumentationUrl,
+  dandihubUrl,
+  sandboxDocsUrl,
   emberHomeUrl,
   emberAboutUrl,
   emberGitHubUrl,
   emberDocumentationUrl,
-  dandiDocumentationUrl,
-  dandihubUrl,
-  sandboxDocsUrl,
   draftVersion,
   dandiHelpUrl,
   VALIDATION_ICONS,
