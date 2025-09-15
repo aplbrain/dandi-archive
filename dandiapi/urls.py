@@ -15,6 +15,7 @@ from dandiapi.api.views import (
     DashboardView,
     NestedAssetViewSet,
     VersionViewSet,
+    asset_audit_events,
     auth_token_view,
     authorize_view,
     blob_read_view,
@@ -28,6 +29,7 @@ from dandiapi.api.views import (
     upload_validate_view,
     user_approval_view,
     user_questionnaire_form_view,
+    users_list_view,
     users_me_view,
     users_search_view,
     webdav,
@@ -77,9 +79,8 @@ api_urlpatterns = [
     ),
     path('api/users/me/', users_me_view),
     path('api/users/search/', users_search_view),
-    re_path(
-        r'^api/users/questionnaire-form/$', user_questionnaire_form_view, name='user-questionnaire'
-    ),
+    path('api/users/', users_list_view),
+    path('api/users/questionnaire-form/', user_questionnaire_form_view, name='user-questionnaire'),
     path('api/search/genotypes/', search_genotypes),
     path('api/search/species/', search_species),
 ]
@@ -124,6 +125,7 @@ register_converter(DandisetIDConverter, 'dandiset_id')
 urlpatterns = [
     path('', root_content_view),
     path('robots.txt', robots_txt_view, name='robots_txt'),
+    path('api/audit/events/asset', asset_audit_events, name='asset_audit_events'),
     *api_urlpatterns,
     *webdav_urlpatterns,
     path('admin/', admin.site.urls),
@@ -133,7 +135,7 @@ urlpatterns = [
     path('dashboard/mailchimp/', mailchimp_csv_view, name='mailchimp-csv'),
     # this url overrides the authorize url in oauth2_provider.urls to
     # support our user signup workflow
-    re_path(r'^oauth/authorize/$', authorize_view, name='authorize'),
+    path('oauth/authorize/', authorize_view, name='authorize'),
     path('oauth/', include('oauth2_provider.urls')),
     # Doc page views
     path('api/docs/redoc/', schema_view.with_ui('redoc'), name='docs-redoc'),
