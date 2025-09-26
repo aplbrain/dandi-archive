@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 import datetime
+from typing import TYPE_CHECKING
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
+from django.utils import timezone
 import pytest
+
+if TYPE_CHECKING:
+    from rest_framework.test import APIClient
 
 from dandiapi.api.asset_paths import add_asset_paths, add_version_asset_paths
 from dandiapi.api.models import Dandiset, Version
@@ -15,7 +21,13 @@ from dandiapi.api.services.permissions.dandiset import (
     replace_dandiset_owners,
 )
 
-from .fuzzy import DANDISET_ID_RE, DANDISET_SCHEMA_ID_RE, TIMESTAMP_RE, UTC_ISO_TIMESTAMP_RE
+from .fuzzy import (
+    DANDISET_ID_RE,
+    DANDISET_SCHEMA_ID_RE,
+    DATE_RE,
+    TIMESTAMP_RE,
+    UTC_ISO_TIMESTAMP_RE,
+)
 
 
 @pytest.mark.django_db
@@ -363,9 +375,7 @@ def test_dandiset_rest_create(api_client, user):
     name = 'Test Dandiset'
     metadata = {'foo': 'bar'}
 
-    response = api_client.post(
-        '/api/dandisets/', {'name': name, 'metadata': metadata}, format='json'
-    )
+    response = api_client.post('/api/dandisets/', {'name': name, 'metadata': metadata})
     assert response.data == {
         'identifier': DANDISET_ID_RE,
         'created': TIMESTAMP_RE,
@@ -451,11 +461,7 @@ def test_dandiset_rest_create_with_identifier(api_client, admin_user):
     identifier = '123456'
     metadata = {'foo': 'bar', 'identifier': f'DANDI:{identifier}'}
 
-    response = api_client.post(
-        '/api/dandisets/',
-        {'name': name, 'metadata': metadata},
-        format='json',
-    )
+    response = api_client.post('/api/dandisets/', {'name': name, 'metadata': metadata})
     assert response.data == {
         'identifier': identifier,
         'created': TIMESTAMP_RE,
@@ -554,11 +560,7 @@ def test_dandiset_rest_create_with_contributor(api_client, admin_user):
         ],
     }
 
-    response = api_client.post(
-        '/api/dandisets/',
-        {'name': name, 'metadata': metadata},
-        format='json',
-    )
+    response = api_client.post('/api/dandisets/', {'name': name, 'metadata': metadata})
     assert response.data == {
         'identifier': identifier,
         'created': TIMESTAMP_RE,
@@ -639,9 +641,7 @@ def test_dandiset_rest_create_embargoed(api_client, user):
     name = 'Test Dandiset'
     metadata = {'foo': 'bar'}
 
-    response = api_client.post(
-        '/api/dandisets/?embargo=true', {'name': name, 'metadata': metadata}, format='json'
-    )
+    response = api_client.post('/api/dandisets/?embargo=true', {'name': name, 'metadata': metadata})
     assert response.data == {
         'identifier': DANDISET_ID_RE,
         'created': TIMESTAMP_RE,
@@ -697,7 +697,13 @@ def test_dandiset_rest_create_embargoed(api_client, user):
         '@context': f'https://raw.githubusercontent.com/dandi/schema/master/releases/{settings.DANDI_SCHEMA_VERSION}/context.json',
         'schemaVersion': settings.DANDI_SCHEMA_VERSION,
         'schemaKey': 'Dandiset',
-        'access': [{'schemaKey': 'AccessRequirements', 'status': 'dandi:EmbargoedAccess'}],
+        'access': [
+            {
+                'schemaKey': 'AccessRequirements',
+                'status': 'dandi:EmbargoedAccess',
+                'embargoedUntil': DATE_RE,
+            }
+        ],
         'repository': settings.DANDI_WEB_APP_URL,
         'contributor': [
             {
@@ -718,17 +724,137 @@ def test_dandiset_rest_create_embargoed(api_client, user):
 
 
 @pytest.mark.django_db
+def test_dandiset_rest_create_embargoed_with_award_info(authenticated_api_client: APIClient):
+    name = 'Test Embargoed Dandiset'
+    metadata = {'name': name, 'description': 'Test embargoed dandiset', 'license': ['spdx:CC0-1.0']}
+
+    # Create embargoed dandiset with funding and award info
+    embargo_end_date = (timezone.now().date() + datetime.timedelta(days=365)).isoformat()
+    query_params = {
+        'embargo': 'true',
+        'funding_source': 'National Institutes of Health (NIH)',
+        'award_number': 'R01MH123456',
+        'embargo_end_date': embargo_end_date,
+    }
+    url = f'/api/dandisets/?{urlencode(query_params)}'
+
+    response = authenticated_api_client.post(url, {'name': name, 'metadata': metadata})
+
+    assert response.status_code == 200
+    assert response.data['embargo_status'] == 'EMBARGOED'
+
+    # Verify the created dandiset in database
+    dandiset = Dandiset.objects.get(id=response.data['identifier'])
+    assert dandiset.embargo_status == Dandiset.EmbargoStatus.EMBARGOED
+
+    # Check draft version metadata has access requirements
+    assert dandiset.draft_version.metadata['access'] == [
+        {
+            'schemaKey': 'AccessRequirements',
+            'status': 'dandi:EmbargoedAccess',
+            'embargoedUntil': embargo_end_date,
+        }
+    ]
+
+    # Check funding organization is added as contributor
+    assert dandiset.draft_version.metadata['contributor'] == [
+        {
+            'schemaKey': 'Organization',
+            'name': 'National Institutes of Health (NIH)',
+            'awardNumber': 'R01MH123456',
+            'roleName': ['dcite:Funder'],
+            'includeInCitation': False,
+        }
+    ]
+
+
+@pytest.mark.django_db
+def test_dandiset_rest_create_embargoed_no_funding_info(authenticated_api_client: APIClient):
+    """Test creating embargoed dandiset with no funding source or award number (should succeed)."""
+    name = 'Test Embargoed Dandiset - No Funding'
+    metadata = {'name': name, 'description': 'Test embargoed dandiset', 'license': ['spdx:CC0-1.0']}
+
+    # Create embargoed dandiset without funding info
+    query_params = {'embargo': 'true'}
+    url = f'/api/dandisets/?{urlencode(query_params)}'
+
+    response = authenticated_api_client.post(url, {'name': name, 'metadata': metadata})
+
+    assert response.status_code == 200
+    assert response.data['embargo_status'] == 'EMBARGOED'
+
+    # Verify the created dandiset in database
+    dandiset = Dandiset.objects.get(id=response.data['identifier'])
+    assert dandiset.embargo_status == Dandiset.EmbargoStatus.EMBARGOED
+
+    # Check draft version metadata has access requirements with automatic 2-year embargo
+    assert dandiset.draft_version.metadata['access'] == [
+        {
+            'schemaKey': 'AccessRequirements',
+            'status': 'dandi:EmbargoedAccess',
+            'embargoedUntil': DATE_RE,
+        }
+    ]
+
+    # Verify embargo end date is approximately 2 years from now
+    embargo_end_str = dandiset.draft_version.metadata['access'][0]['embargoedUntil']
+    embargo_end = datetime.datetime.fromisoformat(embargo_end_str).date()
+    expected_end = timezone.now().date() + datetime.timedelta(days=2 * 365)
+    # Allow for some variance due to test execution time
+    assert abs((embargo_end - expected_end).days) <= 1
+
+    # Check that no funding organization is added as contributor
+    assert [
+        c
+        for c in dandiset.draft_version.metadata['contributor']
+        if c['schemaKey'] == 'Organization'
+    ] == []
+
+
+@pytest.mark.django_db
+def test_dandiset_rest_create_embargoed_funding_no_award(authenticated_api_client: APIClient):
+    """Test creating embargoed dandiset with funding source but no award number (should fail)."""
+    name = 'Test Embargoed Dandiset - Funding Only'
+    metadata = {'name': name, 'description': 'Test embargoed dandiset', 'license': ['spdx:CC0-1.0']}
+
+    # Create embargoed dandiset with funding source but no award number
+    query_params = {
+        'embargo': 'true',
+        'funding_source': 'National Institutes of Health (NIH)',
+    }
+    url = f'/api/dandisets/?{urlencode(query_params)}'
+
+    response = authenticated_api_client.post(url, {'name': name, 'metadata': metadata})
+
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_dandiset_rest_create_embargoed_award_no_funding(authenticated_api_client: APIClient):
+    """Test creating embargoed dandiset with award number but no funding source (should fail)."""
+    name = 'Test Embargoed Dandiset - Award Only'
+    metadata = {'name': name, 'description': 'Test embargoed dandiset', 'license': ['spdx:CC0-1.0']}
+
+    # Create embargoed dandiset with award number but no funding source
+    query_params = {
+        'embargo': 'true',
+        'award_number': 'R01MH123456',
+    }
+    url = f'/api/dandisets/?{urlencode(query_params)}'
+
+    response = authenticated_api_client.post(url, {'name': name, 'metadata': metadata})
+
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
 def test_dandiset_rest_create_with_duplicate_identifier(api_client, admin_user, dandiset):
     api_client.force_authenticate(user=admin_user)
     name = 'Test Dandiset'
     identifier = dandiset.identifier
     metadata = {'foo': 'bar', 'identifier': f'DANDI:{identifier}'}
 
-    response = api_client.post(
-        '/api/dandisets/',
-        {'name': name, 'metadata': metadata},
-        format='json',
-    )
+    response = api_client.post('/api/dandisets/', {'name': name, 'metadata': metadata})
     assert response.status_code == 400
     assert response.data == f'Dandiset {identifier} already exists'
 
@@ -740,11 +866,7 @@ def test_dandiset_rest_create_with_invalid_identifier(api_client, admin_user):
     identifier = 'abc123'
     metadata = {'foo': 'bar', 'identifier': identifier}
 
-    response = api_client.post(
-        '/api/dandisets/',
-        {'name': name, 'metadata': metadata},
-        format='json',
-    )
+    response = api_client.post('/api/dandisets/', {'name': name, 'metadata': metadata})
     assert response.status_code == 400
     assert response.data == f'Invalid Identifier {identifier}'
 
@@ -885,7 +1007,6 @@ def test_dandiset_rest_change_owner(
     resp = api_client.put(
         f'/api/dandisets/{dandiset.identifier}/users/',
         [{'username': social_account2.extra_data['login']}],
-        format='json',
     )
 
     assert resp.status_code == 200
@@ -930,7 +1051,6 @@ def test_dandiset_rest_change_owners_unembargo_in_progress(
             {'username': social_account1.extra_data['login']},
             {'username': social_account2.extra_data['login']},
         ],
-        format='json',
     )
 
     assert resp.status_code == 400
@@ -958,7 +1078,6 @@ def test_dandiset_rest_add_owner(
             {'username': social_account1.extra_data['login']},
             {'username': social_account2.extra_data['login']},
         ],
-        format='json',
     )
 
     assert resp.status_code == 200
@@ -998,7 +1117,6 @@ def test_dandiset_rest_add_owner_not_allowed(
             {'username': social_account1.extra_data['login']},
             {'username': social_account2.extra_data['login']},
         ],
-        format='json',
     )
     assert resp.status_code == 403
 
@@ -1022,7 +1140,6 @@ def test_dandiset_rest_remove_owner(
     resp = api_client.put(
         f'/api/dandisets/{dandiset.identifier}/users/',
         [{'username': social_account1.extra_data['login']}],
-        format='json',
     )
 
     assert resp.status_code == 200
@@ -1045,9 +1162,7 @@ def test_dandiset_rest_not_an_owner(api_client, dandiset, user):
     api_client.force_authenticate(user=user)
 
     resp = api_client.put(
-        f'/api/dandisets/{dandiset.identifier}/users/',
-        [{'username': user.username}],
-        format='json',
+        f'/api/dandisets/{dandiset.identifier}/users/', [{'username': user.username}]
     )
     assert resp.status_code == 403
 
@@ -1057,11 +1172,7 @@ def test_dandiset_rest_delete_all_owners_fails(api_client, dandiset, user):
     add_dandiset_owner(dandiset, user)
     api_client.force_authenticate(user=user)
 
-    resp = api_client.put(
-        f'/api/dandisets/{dandiset.identifier}/users/',
-        [],
-        format='json',
-    )
+    resp = api_client.put(f'/api/dandisets/{dandiset.identifier}/users/', [])
     assert resp.status_code == 400
     assert resp.data == ['Cannot remove all draft owners']
 
@@ -1072,11 +1183,7 @@ def test_dandiset_rest_add_owner_does_not_exist(api_client, dandiset, user):
     api_client.force_authenticate(user=user)
     fake_name = user.username + 'butnotreally'
 
-    resp = api_client.put(
-        f'/api/dandisets/{dandiset.identifier}/users/',
-        [{'username': fake_name}],
-        format='json',
-    )
+    resp = api_client.put(f'/api/dandisets/{dandiset.identifier}/users/', [{'username': fake_name}])
     assert resp.status_code == 400
     assert resp.data == [f'User {fake_name} not found']
 
@@ -1086,11 +1193,7 @@ def test_dandiset_rest_add_malformed(api_client, dandiset, user):
     add_dandiset_owner(dandiset, user)
     api_client.force_authenticate(user=user)
 
-    resp = api_client.put(
-        f'/api/dandisets/{dandiset.identifier}/users/',
-        [{'email': user.email}],
-        format='json',
-    )
+    resp = api_client.put(f'/api/dandisets/{dandiset.identifier}/users/', [{'email': user.email}])
     assert resp.status_code == 400
     assert resp.data == [{'username': ['This field is required.']}]
 

@@ -42,7 +42,6 @@ def test_user_registration_email_content(
     api_client.post(
         '/api/users/questionnaire-form/',
         {f'question_{i}': f'answer_{i}' for i in range(len(QUESTIONS))},
-        format='json',
     )
 
     assert len(mailoutbox) == 2
@@ -85,7 +84,6 @@ def test_user_registration_email_count(
     api_client.post(
         '/api/users/questionnaire-form/',
         {f'question_{i}': f'answer_{i}' for i in range(len(QUESTIONS))},
-        format='json',
     )
     assert len(mailoutbox) == email_count
 
@@ -94,10 +92,7 @@ def test_user_registration_email_count(
 def test_user_me(api_client, social_account):
     api_client.force_authenticate(user=social_account.user)
 
-    assert api_client.get(
-        '/api/users/me/',
-        format='json',
-    ).data == serialize_social_account(social_account)
+    assert api_client.get('/api/users/me/').data == serialize_social_account(social_account)
 
 
 @pytest.mark.django_db
@@ -106,10 +101,7 @@ def test_user_me_admin(api_client, admin_user, social_account_factory):
     social_account = social_account_factory(user=admin_user)
     UserMetadata.objects.create(user=admin_user)
 
-    assert api_client.get(
-        '/api/users/me/',
-        format='json',
-    ).data == serialize_social_account(social_account)
+    assert api_client.get('/api/users/me/').data == serialize_social_account(social_account)
 
 
 @pytest.mark.django_db
@@ -122,9 +114,7 @@ def test_user_search(api_client, social_account, social_account_factory):
     social_account_factory()
 
     assert api_client.get(
-        '/api/users/search/?',
-        {'username': social_account.user.username},
-        format='json',
+        '/api/users/search/?', {'username': social_account.user.username}
     ).data == [serialize_social_account(social_account)]
 
 
@@ -134,47 +124,29 @@ def test_user_search_prefer_social(api_client, user_factory, social_account):
 
     # Check that when social account is present, it is used
     assert api_client.get(
-        '/api/users/search/?',
-        {'username': social_account.user.username},
-        format='json',
+        '/api/users/search/?', {'username': social_account.user.username}
     ).data == [serialize_social_account(social_account)]
 
     # Create user without a social account
     user = user_factory()
     api_client.force_authenticate(user=user)
-    assert api_client.get(
-        '/api/users/search/?',
-        {'username': user.username},
-        format='json',
-    ).data == [user_to_dict(user)]
+    assert api_client.get('/api/users/search/?', {'username': user.username}).data == [
+        user_to_dict(user)
+    ]
 
 
 @pytest.mark.django_db
 def test_user_search_blank_username(api_client, user):
     api_client.force_authenticate(user=user)
 
-    assert (
-        api_client.get(
-            '/api/users/search/?',
-            {'username': ''},
-            format='json',
-        ).data
-        == []
-    )
+    assert api_client.get('/api/users/search/?', {'username': ''}).data == []
 
 
 @pytest.mark.django_db
 def test_user_search_no_matches(api_client, user):
     api_client.force_authenticate(user=user)
 
-    assert (
-        api_client.get(
-            '/api/users/search/?',
-            {'username': '_'},
-            format='json',
-        ).data
-        == []
-    )
+    assert api_client.get('/api/users/search/?', {'username': '_'}).data == []
 
 
 @pytest.mark.django_db
@@ -193,11 +165,9 @@ def test_user_search_multiple_matches(api_client, user, user_factory, social_acc
     users = [user_factory(username=username) for username in usernames]
     social_accounts = [social_account_factory(user=user) for user in users]
 
-    assert api_client.get(
-        '/api/users/search/?',
-        {'username': 'odysseus'},
-        format='json',
-    ).data == [serialize_social_account(social_account) for social_account in social_accounts[:3]]
+    assert api_client.get('/api/users/search/?', {'username': 'odysseus'}).data == [
+        serialize_social_account(social_account) for social_account in social_accounts[:3]
+    ]
 
 
 @pytest.mark.django_db
@@ -208,11 +178,7 @@ def test_user_search_limit_enforced(api_client, user, user_factory, social_accou
     users = [user_factory(username=username) for username in usernames]
     social_accounts = [social_account_factory(user=user) for user in users]
 
-    assert api_client.get(
-        '/api/users/search/?',
-        {'username': 'odysseus'},
-        format='json',
-    ).json() == [
+    assert api_client.get('/api/users/search/?', {'username': 'odysseus'}).json() == [
         serialize_social_account(social_account) for social_account in social_accounts[:10]
     ]
 
@@ -226,9 +192,7 @@ def test_user_search_extra_data(api_client, user, social_account, social_account
     social_accounts[-1].extra_data['test'] = social_account.extra_data['login']
 
     assert api_client.get(
-        '/api/users/search/?',
-        {'username': social_account.extra_data['login']},
-        format='json',
+        '/api/users/search/?', {'username': social_account.extra_data['login']}
     ).data == [serialize_social_account(social_account)]
 
 
@@ -300,15 +264,11 @@ def test_user_status(
     # test that only APPROVED users can create dandisets
     name = 'Test Dandiset'
     metadata = {'foo': 'bar'}
-    response: Response = api_client.post(
-        '/api/dandisets/', {'name': name, 'metadata': metadata}, format='json'
-    )
+    response: Response = api_client.post('/api/dandisets/', {'name': name, 'metadata': metadata})
     assert response.status_code == expected_status_code
 
     # test that only APPROVED users show up in search
-    response: Response = api_client.get(
-        '/api/users/search/?', {'username': user.username}, format='json'
-    )
+    response: Response = api_client.get('/api/users/search/?', {'username': user.username})
     assert response.data == expected_search_results_value
 
 
@@ -354,3 +314,54 @@ def test_user_edu_auto_approve(user: User, api_client: APIClient, email: str, ex
     assert resp.status_code == 302
 
     assert user_metadata.status == expected_status
+
+
+@pytest.mark.django_db
+def test_user_list_requires_admin(user_factory, api_client: APIClient):
+    resp = api_client.get('/api/users/')
+    assert resp.status_code == 401
+
+    normal_user = user_factory()
+    api_client.force_authenticate(user=normal_user)
+    resp = api_client.get('/api/users/')
+    assert resp.status_code == 403
+
+    staff_user = user_factory(is_staff=True)
+    api_client.force_authenticate(user=staff_user)
+    resp = api_client.get('/api/users/')
+    assert resp.status_code == 200
+
+    superuser = user_factory(is_superuser=True)
+    api_client.force_authenticate(user=superuser)
+    resp = api_client.get('/api/users/')
+    assert resp.status_code == 200
+
+
+@pytest.mark.django_db
+def test_user_list_user_without_socialaccount(user_factory, api_client: APIClient):
+    # Intentionally create an approved superuser without a social account, so that we
+    # can both query the endpoint, as well as see an empty result
+    approved_user = user_factory(is_superuser=True)
+
+    # Test without filtering
+    api_client.force_authenticate(user=approved_user)
+    resp = api_client.get('/api/users/')
+    assert resp.json() == []
+
+
+@pytest.mark.django_db
+def test_user_list_approved_toggle(social_account_factory, api_client: APIClient):
+    # Must use social_account_factory instead of user_factory, as otherwise
+    # the social account won't be created on its own.
+    approved_user = social_account_factory(user__is_superuser=True).user
+    social_account_factory(user__metadata__status=UserMetadata.Status.PENDING)
+    social_account_factory(user__metadata__status=UserMetadata.Status.INCOMPLETE)
+    social_account_factory(user__metadata__status=UserMetadata.Status.REJECTED)
+
+    # Test without filtering
+    api_client.force_authenticate(user=approved_user)
+    resp = api_client.get('/api/users/')
+    assert len(resp.json()) == 4
+
+    resp = api_client.get('/api/users/', {'approved_only': True})
+    assert resp.json() == [approved_user.socialaccount_set.first().extra_data['login']]
