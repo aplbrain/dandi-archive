@@ -11,7 +11,6 @@ import django_extensions.db.fields
 
 import dandiapi.api.models.asset
 import dandiapi.api.models.metadata
-import dandiapi.api.storage
 
 
 class Migration(migrations.Migration):
@@ -114,10 +113,7 @@ class Migration(migrations.Migration):
                 ('download_count', models.PositiveBigIntegerField(default=0)),
                 (
                     'blob',
-                    models.FileField(
-                        blank=True,
-                        upload_to=dandiapi.api.storage.get_storage_prefix,
-                    ),
+                    models.FileField(blank=True),
                 ),
             ],
             options={
@@ -327,10 +323,7 @@ class Migration(migrations.Migration):
                 ('size', models.PositiveBigIntegerField()),
                 (
                     'blob',
-                    models.FileField(
-                        blank=True,
-                        upload_to=dandiapi.api.storage.get_storage_prefix,
-                    ),
+                    models.FileField(blank=True),
                 ),
                 (
                     'dandiset',
@@ -375,10 +368,7 @@ class Migration(migrations.Migration):
                 ('size', models.PositiveBigIntegerField()),
                 (
                     'blob',
-                    models.FileField(
-                        blank=True,
-                        upload_to=dandiapi.api.storage.get_storage_prefix,
-                    ),
+                    models.FileField(blank=True),
                 ),
                 (
                     'dandiset',
@@ -437,10 +427,7 @@ class Migration(migrations.Migration):
                 ('download_count', models.PositiveBigIntegerField(default=0)),
                 (
                     'blob',
-                    models.FileField(
-                        blank=True,
-                        upload_to=dandiapi.api.storage.get_storage_prefix,
-                    ),
+                    models.FileField(blank=True),
                 ),
                 (
                     'dandiset',
