@@ -13,6 +13,7 @@ from dandiapi.api.models.dandiset import Dandiset
 from dandiapi.api.services.metadata import version_aggregate_assets_summary
 from dandiapi.api.services.metadata.exceptions import VersionMetadataConcurrentlyModifiedError
 from dandiapi.api.services.permissions.dandiset import add_dandiset_owner
+from dandiapi.api.tests.factories import DandisetFactory
 
 if TYPE_CHECKING:
     from django.contrib.auth.models import User
@@ -27,40 +28,28 @@ from dandiapi.zarr.tasks import ingest_zarr_archive
 from .fuzzy import HTTP_URL_RE, TIMESTAMP_RE, URN_RE, UTC_ISO_TIMESTAMP_RE, VERSION_ID_RE
 
 
+@freeze_time()
 @pytest.mark.django_db
-def test_version_next_published_version_nosave(dandiset):
-    # Without saving, the output should be reproducible
+def test_version_next_published_version_simultaneous():
+    dandiset = DandisetFactory.create()
+    # Versions created at the same time should have the same version string
     version_str_1 = Version.next_published_version(dandiset)
     version_str_2 = Version.next_published_version(dandiset)
+
     assert version_str_1 == version_str_2
     assert version_str_1 == VERSION_ID_RE
 
 
+@freeze_time()
 @pytest.mark.django_db
-def test_version_next_published_version_save(mocker, dandiset, published_version_factory):
-    # Given an existing version at the current time, a different one should be allocated
-    next_published_version_spy = mocker.spy(Version, 'next_published_version')
-    version_1 = published_version_factory(dandiset=dandiset)
-    next_published_version_spy.assert_called_once()
-
+def test_version_next_published_version_preexisting(published_version_factory):
+    dandiset = DandisetFactory.create()
+    # Given a saved Version at the current time, a different one should be allocated
+    version_str_1 = Version.next_published_version(dandiset)
+    published_version_factory(dandiset=dandiset, version=version_str_1)
     version_str_2 = Version.next_published_version(dandiset)
-    assert version_1.version != version_str_2
 
-
-@pytest.mark.django_db
-def test_version_next_published_version_simultaneous_save(
-    dandiset_factory,
-    published_version_factory,
-):
-    dandiset_1 = dandiset_factory()
-    dandiset_2 = dandiset_factory()
-    with freeze_time():
-        # version strings have a time component. mock all functions that retrieve the
-        # current time so the test isn't flaky at time boundaries.
-        version_1 = published_version_factory(dandiset=dandiset_1)
-        version_2 = published_version_factory(dandiset=dandiset_2)
-    # Different dandisets published at the same time should have the same version string
-    assert version_1.version == version_2.version
+    assert version_str_2 != version_str_1
 
 
 @pytest.mark.django_db
@@ -432,7 +421,7 @@ def test_version_rest_list(api_client, version, draft_version_factory):
                 'asset_count': 0,
                 'active_uploads': 0,
                 'size': 0,
-                'status': 'Pending',
+                'status': version.status,
             }
         ],
     }
@@ -473,7 +462,7 @@ def test_version_rest_info(api_client, version):
         'active_uploads': 0,
         'metadata': version.metadata,
         'size': version.size,
-        'status': 'Pending',
+        'status': version.status,
         'asset_validation_errors': [],
         'version_validation_errors': [],
         'contact_person': version.metadata['contributor'][0]['name'],
