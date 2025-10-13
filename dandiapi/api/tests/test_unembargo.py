@@ -26,9 +26,9 @@ from dandiapi.api.services.embargo.utils import (
 )
 from dandiapi.api.services.exceptions import DandiError
 from dandiapi.api.services.permissions.dandiset import add_dandiset_owner
-from dandiapi.api.storage import get_boto_client
 from dandiapi.api.tasks import unembargo_dandiset_task, write_manifest_files
-from dandiapi.zarr.models import ZarrArchive, ZarrArchiveStatus, zarr_s3_path
+from dandiapi.api.tests.factories import DandisetFactory
+from dandiapi.zarr.models import ZarrArchive, ZarrArchiveStatus
 from dandiapi.zarr.tasks import ingest_zarr_archive
 
 if TYPE_CHECKING:
@@ -38,12 +38,9 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.django_db
-def test_kickoff_dandiset_unembargo_dandiset_not_embargoed(
-    api_client, user, dandiset_factory, draft_version_factory
-):
-    dandiset = dandiset_factory(embargo_status=Dandiset.EmbargoStatus.OPEN)
+def test_kickoff_dandiset_unembargo_dandiset_not_embargoed(api_client, user, draft_version_factory):
+    dandiset = DandisetFactory.create(embargo_status=Dandiset.EmbargoStatus.OPEN, owners=[user])
     draft_version_factory(dandiset=dandiset)
-    add_dandiset_owner(dandiset, user)
     api_client.force_authenticate(user=user)
 
     resp = api_client.post(f'/api/dandisets/{dandiset.identifier}/unembargo/')
@@ -51,10 +48,8 @@ def test_kickoff_dandiset_unembargo_dandiset_not_embargoed(
 
 
 @pytest.mark.django_db
-def test_kickoff_dandiset_unembargo_not_owner(
-    api_client, user, dandiset_factory, draft_version_factory
-):
-    dandiset = dandiset_factory(embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
+def test_kickoff_dandiset_unembargo_not_owner(api_client, user, draft_version_factory):
+    dandiset = DandisetFactory.create(embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
     draft_version_factory(dandiset=dandiset)
     api_client.force_authenticate(user=user)
 
@@ -64,11 +59,12 @@ def test_kickoff_dandiset_unembargo_not_owner(
 
 @pytest.mark.django_db
 def test_kickoff_dandiset_unembargo_active_uploads(
-    api_client, user, dandiset_factory, draft_version_factory, upload_factory
+    api_client, user, draft_version_factory, upload_factory
 ):
-    dandiset = dandiset_factory(embargo_status=Dandiset.EmbargoStatus.EMBARGOED)
+    dandiset = DandisetFactory.create(
+        embargo_status=Dandiset.EmbargoStatus.EMBARGOED, owners=[user]
+    )
     draft_version_factory(dandiset=dandiset)
-    add_dandiset_owner(dandiset, user)
     api_client.force_authenticate(user=user)
 
     # Test that active uploads prevent unembargp
@@ -192,38 +188,16 @@ def test_remove_asset_blob_embargoed_tag_fails_on_embargoed(embargoed_asset_blob
 
 
 @pytest.mark.django_db
-def test_delete_zarr_object_tags_fails_remove_tags(zarr_archive, zarr_file_factory, mocker):
-    mocked = mocker.patch(
-        'dandiapi.api.services.embargo.utils._delete_object_tags', side_effect=ValueError
-    )
-    files = [zarr_file_factory(zarr_archive) for _ in range(2)]
-
-    with pytest.raises(AssetTagRemovalError):
-        _delete_zarr_object_tags(client=get_boto_client(), zarr=zarr_archive.zarr_id)
-
-    # Check that each file was called 4 times total. Once initially, and 3 retries
-    assert mocked.call_count == 4 * len(files)
-    for file in files:
-        calls = [
-            c
-            for c in mocked.mock_calls
-            if c.kwargs['blob']
-            == zarr_s3_path(zarr_id=zarr_archive.zarr_id, zarr_path=str(file.path))
-        ]
-        assert len(calls) == 4
-
-
-@pytest.mark.django_db
 def test_delete_zarr_object_tags(zarr_archive, zarr_file_factory, mocker):
     mocked_delete_object_tags = mocker.patch(
         'dandiapi.api.services.embargo.utils._delete_object_tags'
     )
 
     # Create files
-    files = [zarr_file_factory(zarr_archive) for _ in range(10)]
+    files = [zarr_file_factory(zarr_archive=zarr_archive) for _ in range(10)]
 
     # This should call the mocked function for each file
-    _delete_zarr_object_tags(client=get_boto_client(), zarr=zarr_archive.zarr_id)
+    _delete_zarr_object_tags(zarr=zarr_archive.zarr_id)
 
     assert mocked_delete_object_tags.call_count == len(files)
 
@@ -275,7 +249,9 @@ def test_unembargo_dandiset(
     zarr_archive: ZarrArchive = embargoed_zarr_archive_factory(
         dandiset=ds, status=ZarrArchiveStatus.UPLOADED
     )
-    zarr_files: list[ZarrArchiveFile] = [zarr_file_factory(zarr_archive) for _ in range(5)]
+    zarr_files: list[ZarrArchiveFile] = [
+        zarr_file_factory(zarr_archive=zarr_archive) for _ in range(5)
+    ]
     ingest_zarr_archive(zarr_id=zarr_archive.zarr_id)
     zarr_archive.refresh_from_db()
     zarr_asset = asset_factory(zarr=zarr_archive, blob=None, status=Asset.Status.VALID)

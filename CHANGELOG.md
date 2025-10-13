@@ -1,3 +1,79 @@
+# v0.16.1 (Tue Oct 07 2025)
+
+#### 🐛 Bug Fix
+
+- Local runtime schema serialization endpoints [#2386](https://github.com/dandi/dandi-archive/pull/2386) ([@yarikoptic](https://github.com/yarikoptic) [@mvandenburgh](https://github.com/mvandenburgh) [@candleindark](https://github.com/candleindark) [@jjnesbitt](https://github.com/jjnesbitt))
+
+#### Authors: 4
+
+- Isaac To ([@candleindark](https://github.com/candleindark))
+- Jacob Nesbitt ([@jjnesbitt](https://github.com/jjnesbitt))
+- Mike VanDenburgh ([@mvandenburgh](https://github.com/mvandenburgh))
+- Yaroslav Halchenko ([@yarikoptic](https://github.com/yarikoptic))
+
+---
+
+# v0.16.0 (Mon Oct 06 2025)
+
+#### 🚀 Enhancement
+
+- Add support to open NIfTI and Zarr assets in NeuroGlass ephemeral mode [#2572](https://github.com/dandi/dandi-archive/pull/2572) ([@kabilar](https://github.com/kabilar))
+
+#### 🐛 Bug Fix
+
+- Fix bug resulting from typo and small refactor [#2575](https://github.com/dandi/dandi-archive/pull/2575) ([@candleindark](https://github.com/candleindark))
+- Fix `ValidationError` error handling [#2569](https://github.com/dandi/dandi-archive/pull/2569) ([@brianhelba](https://github.com/brianhelba))
+- Directly add metadata instead of using `.model_construct` [#2571](https://github.com/dandi/dandi-archive/pull/2571) ([@brianhelba](https://github.com/brianhelba))
+
+#### 🏠 Internal
+
+- Remove `get_boto_client` and `get_storage_params` helpers [#2568](https://github.com/dandi/dandi-archive/pull/2568) ([@brianhelba](https://github.com/brianhelba))
+- Remove the `DJANGO_DANDI_DANDISETS_BUCKET_PREFIX` setting [#2566](https://github.com/dandi/dandi-archive/pull/2566) ([@brianhelba](https://github.com/brianhelba))
+
+#### 🧪 Tests
+
+- Create a `ZarrFileFactory` [#2562](https://github.com/dandi/dandi-archive/pull/2562) ([@brianhelba](https://github.com/brianhelba))
+
+#### Authors: 3
+
+- Brian Helba ([@brianhelba](https://github.com/brianhelba))
+- Isaac To ([@candleindark](https://github.com/candleindark))
+- Kabilar Gunalan ([@kabilar](https://github.com/kabilar))
+
+---
+
+# v0.15.5 (Mon Sep 29 2025)
+
+#### 🐛 Bug Fix
+
+- Add management command to delete extra manifest files [#2552](https://github.com/dandi/dandi-archive/pull/2552) ([@jjnesbitt](https://github.com/jjnesbitt))
+- Fix a drf-yasg warning [#2564](https://github.com/dandi/dandi-archive/pull/2564) ([@brianhelba](https://github.com/brianhelba))
+- Don't retry _delete_object_tags [#2551](https://github.com/dandi/dandi-archive/pull/2551) ([@jjnesbitt](https://github.com/jjnesbitt))
+
+#### 🏠 Internal
+
+- Ensure that genotype and species search return deterministic orderings [#2563](https://github.com/dandi/dandi-archive/pull/2563) ([@brianhelba](https://github.com/brianhelba))
+- Objects in test are uploaded directly, not via multipart [#2557](https://github.com/dandi/dandi-archive/pull/2557) ([@brianhelba](https://github.com/brianhelba))
+- Inline production storage settings [#2553](https://github.com/dandi/dandi-archive/pull/2553) ([@brianhelba](https://github.com/brianhelba))
+- Don't retry _delete_zarr_object_tags [#2555](https://github.com/dandi/dandi-archive/pull/2555) ([@brianhelba](https://github.com/brianhelba))
+- Remove deprecated dandischema / Pydantic API usage [#2556](https://github.com/dandi/dandi-archive/pull/2556) ([@brianhelba](https://github.com/brianhelba))
+- Add rudimentary mailmap file [#2550](https://github.com/dandi/dandi-archive/pull/2550) ([@yarikoptic](https://github.com/yarikoptic))
+
+#### 🧪 Tests
+
+- Do not even bother specifying login/token for DOCKER while building/testing dandi-cli [#2558](https://github.com/dandi/dandi-archive/pull/2558) ([@yarikoptic](https://github.com/yarikoptic))
+- Improve Zarr upload tests [#2560](https://github.com/dandi/dandi-archive/pull/2560) ([@brianhelba](https://github.com/brianhelba))
+- Remove use of dandiset* test fixtures [#2559](https://github.com/dandi/dandi-archive/pull/2559) ([@brianhelba](https://github.com/brianhelba))
+- Clean up factories [#2545](https://github.com/dandi/dandi-archive/pull/2545) ([@brianhelba](https://github.com/brianhelba))
+
+#### Authors: 3
+
+- Brian Helba ([@brianhelba](https://github.com/brianhelba))
+- Jacob Nesbitt ([@jjnesbitt](https://github.com/jjnesbitt))
+- Yaroslav Halchenko ([@yarikoptic](https://github.com/yarikoptic))
+
+---
+
 # v0.15.4 (Wed Sep 24 2025)
 
 #### 🐛 Bug Fix
