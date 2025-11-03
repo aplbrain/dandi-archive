@@ -13,7 +13,7 @@
               Mark Dandiset Private
               <v-tooltip
                 location="right"
-                max-width="25%"
+                width="30vw"
               >
                 <template #activator="{ props }">
                   <div
