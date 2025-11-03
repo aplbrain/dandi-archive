@@ -19,6 +19,7 @@ from resonant_settings.oauth_toolkit import *
 from resonant_settings.rest_framework import *
 
 if TYPE_CHECKING:
+    from typing import Any
     from urllib.parse import ParseResult
 
 django_stubs_ext.monkeypatch()
@@ -31,7 +32,7 @@ ROOT_URLCONF = 'dandiapi.urls'
 
 INSTALLED_APPS = [
     # Install local apps first, to ensure any overridden resources are found first
-    'dandiapi.api.apps.PublishConfig',
+    'dandiapi.api.apps.ApiConfig',
     'dandiapi.search.apps.SearchConfig',
     'dandiapi.zarr.apps.ZarrConfig',
     # Apps with overrides
@@ -84,9 +85,6 @@ MIDDLEWARE = [
 
 # Internal datetimes are timezone-aware, so this only affects rendering and form input
 TIME_ZONE = 'UTC'
-# https://docs.djangoproject.com/en/4.2/ref/settings/#std-setting-USE_TZ
-# TODO: this defaults to True starting with Django 5. Remove this when we upgrade
-USE_TZ = True
 
 DATABASES = {
     'default': {
@@ -96,7 +94,7 @@ DATABASES = {
 }
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-STORAGES = {
+STORAGES: dict[str, dict[str, Any]] = {
     # Inject the "default" storage in particular run configurations
     'staticfiles': {
         # CompressedManifestStaticFilesStorage does not work properly with drf-
@@ -131,6 +129,11 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 # Don't require a POST request to initiate a GitHub login
 # https://github.com/pennersr/django-allauth/blob/HEAD/ChangeLog.rst#backwards-incompatible-changes-2
 SOCIALACCOUNT_LOGIN_ON_GET = True
+
+# Allow staging to support Netlify branch deploy previews
+OAUTH2_PROVIDER['ALLOW_URI_WILDCARDS'] = env.bool(
+    'DJANGO_OAUTH2_ALLOW_URI_WILDCARDS', default=False
+)
 
 AUTHENTICATION_BACKENDS += ['guardian.backends.ObjectPermissionBackend']
 
