@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-#import json
+import json
 import logging
 from typing import TYPE_CHECKING
 
@@ -119,7 +119,7 @@ def build_new_user_messsage(user: User, socialaccount: SocialAccount = None):#, 
     render_context = {
         **BASE_RENDER_CONTEXT,
         'username': user.username,
-        'questionnaire': 'test'#json.dumps(questionnaire_form)
+        #'questionnaire': 'test'#json.dumps(questionnaire_form)
     }
     # Email sent to the DANDI list when a new user logs in for the first time
     return build_message(
