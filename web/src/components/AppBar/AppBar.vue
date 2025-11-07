@@ -209,11 +209,11 @@ const navItems: NavigationItem[] = [
   //   to: dandiHelpUrl,
   //   external: true,
   // },
-  // {
-  //   text: 'DandiHub',
-  //   to: dandihubUrl,
-  //   external: true,
-  // },
+  {
+    text: 'DandiHub',
+    to: dandihubUrl,
+    external: true,
+  },
 ];
 
 function login() {
