@@ -14,6 +14,7 @@ def test_rest_info(api_client):
     # Get the expected schema URL
     schema_url = get_schema_url()
     print(resp.json())
+    print(f'schema_version: {settings.DANDI_SCHEMA_VERSION}, schema_url: {schema_url}, version: {Re(r'\d+\.\d+\.\d+(\.post1\.dev\d+\+g[0-9a-f]{7,}(\.d\d{8})?)?')}')
 
     assert resp.json() == {
         'schema_version': settings.DANDI_SCHEMA_VERSION,
