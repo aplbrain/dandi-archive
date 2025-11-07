@@ -157,7 +157,7 @@ import {
   user,
 } from '@/rest';
 import {
-  emberAboutUrl, emberDocumentationUrl,
+  emberAboutUrl, emberDocumentationUrl, dandihubUrl
 } from '@/utils/constants';
 import UserMenu from '@/components/AppBar/UserMenu.vue';
 import logo from '@/assets/ember-logo.png';
