@@ -113,7 +113,7 @@ def send_registered_notice_email(user: User, socialaccount: SocialAccount):
         connection.send_messages(messages)
 
 
-def build_new_user_messsage(user: User, socialaccount: SocialAccount = None, questionnaire_form: str = None):
+def build_new_user_message(user: User, socialaccount: SocialAccount = None, questionnaire_form: str = None):
     render_context = {
         **BASE_RENDER_CONTEXT,
         'username': user.username,
@@ -129,7 +129,7 @@ def build_new_user_messsage(user: User, socialaccount: SocialAccount = None, que
 
 def send_new_user_message_email(user: User, socialaccount: SocialAccount, questionnaire_form: str):
     logger.info('Sending new user message for %s to admins', user)
-    messages = [build_new_user_messsage(user, socialaccount, questionnaire_form)]
+    messages = [build_new_user_message(user, socialaccount, questionnaire_form)]
     with mail.get_connection() as connection:
         connection.send_messages(messages)
 

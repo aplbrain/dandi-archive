@@ -1,7 +1,7 @@
 {% autoescape off %}
 A new user ({{ username }}) has signed up for EMBER-DANDI. Below are their questionnaire answers:
 
-{{questionnaire}}
+{{ questionnaire }}
 
 Please proceed to the following URL to approve or reject their account:
 
