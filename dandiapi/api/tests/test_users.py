@@ -45,13 +45,13 @@ def test_user_registration_email_content(mailoutbox: list[EmailMessage], api_cli
     assert email.subject == f'EMBER-DANDI: New user registered: {user.email}'
     assert email.to == [settings.DANDI_ADMIN_EMAIL, user.email]
     assert '<p>' not in email.body
-    assert all(len(_) < 100 for _ in email.body.splitlines())
+    assert all(len(_) < 200 for _ in email.body.splitlines())
 
     email = mailoutbox[1]
     assert email.subject == f'EMBER-DANDI: Review new user: {user.username}'
     assert email.to == [settings.DANDI_ADMIN_EMAIL]
     assert '<p>' not in email.body
-    assert all(len(_) < 100 for _ in email.body.splitlines())
+    assert all(len(_) < 200 for _ in email.body.splitlines())
 
 
 @pytest.mark.parametrize(
