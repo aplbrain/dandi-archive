@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import json
 import logging
 from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.core import mail
-from django.db import models
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
@@ -115,7 +113,9 @@ def send_registered_notice_email(user: User, socialaccount: SocialAccount):
         connection.send_messages(messages)
 
 
-def build_new_user_messsage(user: User, socialaccount: SocialAccount = None):#, questionnaire_form: models.JSONField = None):
+def build_new_user_messsage(user: User,
+                            socialaccount: SocialAccount = None,
+                            questionnaire_form: str = ""):
     render_context = {
         **BASE_RENDER_CONTEXT,
         'username': user.username,
@@ -129,9 +129,11 @@ def build_new_user_messsage(user: User, socialaccount: SocialAccount = None):#, 
     )
 
 
-def send_new_user_message_email(user: User, socialaccount: SocialAccount):#, questionnaire_form: models.JSONField):
+def send_new_user_message_email(user: User,
+                                socialaccount: SocialAccount,
+                                questionnaire_form: str):
     logger.info('Sending new user message for %s to admins', user)
-    messages = [build_new_user_messsage(user, socialaccount)]#, questionnaire_form)]
+    messages = [build_new_user_messsage(user, socialaccount, questionnaire_form)]
     with mail.get_connection() as connection:
         connection.send_messages(messages)
 

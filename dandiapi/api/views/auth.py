@@ -152,8 +152,9 @@ def user_questionnaire_form_view(request: AuthenticatedRequest) -> HttpResponse:
                     send_approved_user_message(request.user, socialaccount)
                 # otherwise, send "awaiting approval" email
                 else:
+                    q_form_str = json.dumps(user_metadata.questionnaire_form)
                     send_registered_notice_email(request.user, socialaccount)
-                    send_new_user_message_email(request.user, socialaccount)#, user_metadata.questionnaire_form)
+                    send_new_user_message_email(request.user, socialaccount, q_form_str)
 
         # pass on OAuth query string params to auth endpoint
         return HttpResponseRedirect(
