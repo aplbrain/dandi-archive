@@ -22,10 +22,10 @@ Usage:
 from __future__ import annotations
 
 import click
+from dandiapi.api.storage import get_boto_client
 from django.db import transaction
 
 from dandiapi.api.models import AssetBlob, Dandiset
-from dandiapi.api.storage import get_boto_client
 
 # === CHANGE THIS SECTION ===
 # S3 Bucket Name (production vs. sandbox)
