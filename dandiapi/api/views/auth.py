@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import json
-import pprint
 from json.decoder import JSONDecodeError
+import pprint
 from typing import TYPE_CHECKING
 
 from django.conf import settings
@@ -154,10 +154,10 @@ def user_questionnaire_form_view(request: AuthenticatedRequest) -> HttpResponse:
                 # otherwise, send "awaiting approval" email
                 else:
                     q_form_str = pprint.pformat(user_metadata.questionnaire_form, indent=0)
-                    q_form_str = q_form_str.replace("\'", "")
-                    q_form_str = q_form_str.replace("{", "")
-                    q_form_str = q_form_str.replace("}", "")
-                    q_form_str = q_form_str.replace(",", "")
+                    q_form_str = q_form_str.replace("'", '')
+                    q_form_str = q_form_str.replace('{', '')
+                    q_form_str = q_form_str.replace('}', '')
+                    q_form_str = q_form_str.replace(',', '')
                     send_registered_notice_email(request.user, socialaccount)
                     send_new_user_message_email(request.user, socialaccount, q_form_str)
 

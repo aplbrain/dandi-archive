@@ -119,7 +119,7 @@ def build_new_user_messsage(
     render_context = {
         **BASE_RENDER_CONTEXT,
         'username': user.username,
-        'questionnaire': questionnaire_form
+        'questionnaire': questionnaire_form,
     }
     # Email sent to the DANDI list when a new user logs in for the first time
     return build_message(
