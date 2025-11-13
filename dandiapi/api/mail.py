@@ -113,10 +113,13 @@ def send_registered_notice_email(user: User, socialaccount: SocialAccount):
         connection.send_messages(messages)
 
 
-def build_new_user_messsage(user: User, socialaccount: SocialAccount = None):
+def build_new_user_messsage(
+    user: User, socialaccount: SocialAccount = None, questionnaire_form: str = ''
+):
     render_context = {
         **BASE_RENDER_CONTEXT,
         'username': user.username,
+        'questionnaire': questionnaire_form,
     }
     # Email sent to the DANDI list when a new user logs in for the first time
     return build_message(
@@ -126,9 +129,9 @@ def build_new_user_messsage(user: User, socialaccount: SocialAccount = None):
     )
 
 
-def send_new_user_message_email(user: User, socialaccount: SocialAccount):
+def send_new_user_message_email(user: User, socialaccount: SocialAccount, questionnaire_form: str):
     logger.info('Sending new user message for %s to admins', user)
-    messages = [build_new_user_messsage(user, socialaccount)]
+    messages = [build_new_user_messsage(user, socialaccount, questionnaire_form)]
     with mail.get_connection() as connection:
         connection.send_messages(messages)
 
