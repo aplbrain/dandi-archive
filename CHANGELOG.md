@@ -1,28 +1,3 @@
-# v0.19.0 (Thu Nov 13 2025)
-
-### Release Notes
-
-#### Expose allowed schema versions at `/info/` endpoint ([#2625](https://github.com/dandi/dandi-archive/pull/2625))
-
-The `/info/` endpoint now exposes the allowed list of DANDI schema version through `allowed_schema_versions` key value.
-
----
-
-#### 🐛 Bug Fix
-
-- Expose allowed schema versions at `/info/` endpoint [#2625](https://github.com/dandi/dandi-archive/pull/2625) ([@candleindark](https://github.com/candleindark))
-
-#### 📝 Documentation
-
-- Update devcontainer section in readme [#2639](https://github.com/dandi/dandi-archive/pull/2639) ([@mvandenburgh](https://github.com/mvandenburgh))
-
-#### Authors: 2
-
-- Isaac To ([@candleindark](https://github.com/candleindark))
-- Mike VanDenburgh ([@mvandenburgh](https://github.com/mvandenburgh))
-
----
-
 # v0.18.1 (Wed Nov 12 2025)
 
 #### 🐛 Bug Fix
