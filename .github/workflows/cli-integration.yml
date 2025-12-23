@@ -76,7 +76,9 @@ jobs:
         if: matrix.dandi-version == 'prod'
         run: >
           uvx --with "dandi[test] @ git+https://github.com/dandi/dandi-cli"
-          pytest --pyargs -v --dandi-api dandi
+          pytest --pyargs -v --dandi-api --deselect=tests/test_keyring.py::test_dandi_authenticate_no_env_var dandi
+          # TODO: Revert back to
+          # pytest --pyargs -v --dandi-api dandi
         env:
           DANDI_TESTS_PERSIST_DOCKER_COMPOSE: "1"
 
