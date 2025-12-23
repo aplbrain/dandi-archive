@@ -4,6 +4,8 @@ import datetime
 from time import sleep
 from typing import TYPE_CHECKING
 
+from dandischema.conf import get_instance_config
+from dandischema.consts import DANDI_SCHEMA_VERSION
 from dandischema.models import AccessType
 from django.conf import settings
 from freezegun import freeze_time
@@ -28,7 +30,16 @@ from dandiapi.api.models import Asset, Version
 from dandiapi.api.services.publish import _build_publishable_version_from_draft
 from dandiapi.zarr.tasks import ingest_zarr_archive
 
-from .fuzzy import HTTP_URL_RE, TIMESTAMP_RE, URN_RE, UTC_ISO_TIMESTAMP_RE, VERSION_ID_RE
+from .fuzzy import (
+    DEFAULT_WAS_ASSOCIATED_WITH,
+    HTTP_URL_RE,
+    TIMESTAMP_RE,
+    URN_RE,
+    UTC_ISO_TIMESTAMP_RE,
+    VERSION_ID_RE,
+)
+
+_SCHEMA_CONFIG = get_instance_config()
 
 
 @freeze_time()
@@ -58,7 +69,7 @@ def test_version_next_published_version_preexisting():
 @pytest.mark.django_db
 def test_draft_version_metadata_computed():
     draft_version = DraftVersionFactory.create()
-    original_metadata = {'schemaVersion': settings.DANDI_SCHEMA_VERSION}
+    original_metadata = {'schemaVersion': DANDI_SCHEMA_VERSION}
     draft_version.metadata = original_metadata
 
     # Save the version to add computed properties to the metadata
@@ -68,9 +79,12 @@ def test_draft_version_metadata_computed():
         **original_metadata,
         'manifestLocation': [HTTP_URL_RE],
         'name': draft_version.name,
-        'identifier': f'DANDI:{draft_version.dandiset.identifier}',
+        'identifier': f'{_SCHEMA_CONFIG.instance_name}:{draft_version.dandiset.identifier}',
         'version': draft_version.version,
-        'id': f'DANDI:{draft_version.dandiset.identifier}/{draft_version.version}',
+        'id': (
+            f'{_SCHEMA_CONFIG.instance_name}:'
+            f'{draft_version.dandiset.identifier}/{draft_version.version}'
+        ),
         'url': (
             f'{settings.DANDI_WEB_APP_URL}/dandiset/'
             f'{draft_version.dandiset.identifier}/{draft_version.version}'
@@ -78,7 +92,7 @@ def test_draft_version_metadata_computed():
         'repository': settings.DANDI_WEB_APP_URL,
         'dateCreated': draft_version.dandiset.created.isoformat(),
         'access': [{'schemaKey': 'AccessRequirements', 'status': AccessType.OpenAccess.value}],
-        '@context': f'https://raw.githubusercontent.com/dandi/schema/master/releases/{settings.DANDI_SCHEMA_VERSION}/context.json',
+        '@context': f'https://raw.githubusercontent.com/dandi/schema/master/releases/{DANDI_SCHEMA_VERSION}/context.json',
         'assetsSummary': {
             'numberOfBytes': 0,
             'numberOfFiles': 0,
@@ -93,7 +107,7 @@ def test_draft_version_metadata_computed():
 @pytest.mark.django_db
 def test_published_version_metadata_computed():
     published_version = PublishedVersionFactory.create()
-    original_metadata = {'schemaVersion': settings.DANDI_SCHEMA_VERSION}
+    original_metadata = {'schemaVersion': DANDI_SCHEMA_VERSION}
     published_version.metadata = original_metadata
 
     # Save the version to add computed properties to the metadata
@@ -103,11 +117,16 @@ def test_published_version_metadata_computed():
         **original_metadata,
         'manifestLocation': [HTTP_URL_RE],
         'name': published_version.name,
-        'identifier': f'DANDI:{published_version.dandiset.identifier}',
+        'identifier': f'{_SCHEMA_CONFIG.instance_name}:{published_version.dandiset.identifier}',
         'version': published_version.version,
-        'id': f'DANDI:{published_version.dandiset.identifier}/{published_version.version}',
+        'id': (
+            f'{_SCHEMA_CONFIG.instance_name}:'
+            f'{published_version.dandiset.identifier}/{published_version.version}'
+        ),
         'doi': (
-            f'10.80507/dandi.{published_version.dandiset.identifier}/{published_version.version}'
+            f'{settings.DANDI_DOI_API_PREFIX}/'
+            f'{_SCHEMA_CONFIG.instance_name}.'
+            f'{published_version.dandiset.identifier}/{published_version.version}'
         ),
         'url': (
             f'{settings.DANDI_WEB_APP_URL}/dandiset/'
@@ -116,7 +135,7 @@ def test_published_version_metadata_computed():
         'repository': settings.DANDI_WEB_APP_URL,
         'dateCreated': published_version.dandiset.created.isoformat(),
         'access': [{'schemaKey': 'AccessRequirements', 'status': AccessType.OpenAccess.value}],
-        '@context': f'https://raw.githubusercontent.com/dandi/schema/master/releases/{settings.DANDI_SCHEMA_VERSION}/context.json',
+        '@context': f'https://raw.githubusercontent.com/dandi/schema/master/releases/{DANDI_SCHEMA_VERSION}/context.json',
         'assetsSummary': {
             'numberOfBytes': 0,
             'numberOfFiles': 0,
@@ -308,24 +327,18 @@ def test_version_publish_version(asset):
             'name': 'DANDI publish',
             'startDate': UTC_ISO_TIMESTAMP_RE,
             'endDate': UTC_ISO_TIMESTAMP_RE,
-            'wasAssociatedWith': [
-                {
-                    'id': URN_RE,
-                    'identifier': 'RRID:SCR_017571',
-                    'name': 'DANDI API',
-                    # TODO: version the API
-                    'version': '0.1.0',
-                    'schemaKey': 'Software',
-                }
-            ],
+            'wasAssociatedWith': [DEFAULT_WAS_ASSOCIATED_WITH],
             'schemaKey': 'PublishActivity',
         },
         'dateCreated': UTC_ISO_TIMESTAMP_RE,
         'datePublished': UTC_ISO_TIMESTAMP_RE,
         'manifestLocation': [HTTP_URL_RE],
-        'identifier': f'DANDI:{publish_version.dandiset.identifier}',
+        'identifier': f'{_SCHEMA_CONFIG.instance_name}:{publish_version.dandiset.identifier}',
         'version': publish_version.version,
-        'id': f'DANDI:{publish_version.dandiset.identifier}/{publish_version.version}',
+        'id': (
+            f'{_SCHEMA_CONFIG.instance_name}:'
+            f'{publish_version.dandiset.identifier}/{publish_version.version}'
+        ),
         'url': (
             f'{settings.DANDI_WEB_APP_URL}/dandiset/{publish_version.dandiset.identifier}'
             f'/{publish_version.version}'
@@ -543,9 +556,9 @@ def test_version_rest_update(api_client):
     new_metadata = {
         '@context': (
             'https://raw.githubusercontent.com/dandi/schema/master/releases/'
-            f'{settings.DANDI_SCHEMA_VERSION}/context.json'
+            f'{DANDI_SCHEMA_VERSION}/context.json'
         ),
-        'schemaVersion': settings.DANDI_SCHEMA_VERSION,
+        'schemaVersion': DANDI_SCHEMA_VERSION,
         'foo': 'bar',
         'num': 123,
         'list': ['a', 'b', 'c'],
@@ -564,13 +577,13 @@ def test_version_rest_update(api_client):
     url = f'{settings.DANDI_WEB_APP_URL}/dandiset/{draft_version.dandiset.identifier}/draft'
     saved_metadata = {
         **new_metadata,
-        'schemaVersion': settings.DANDI_SCHEMA_VERSION,
+        'schemaVersion': DANDI_SCHEMA_VERSION,
         'manifestLocation': [
             f'{settings.DANDI_API_URL}/api/dandisets/{draft_version.dandiset.identifier}/versions/draft/assets/'
         ],
         'name': new_name,
-        'identifier': f'DANDI:{draft_version.dandiset.identifier}',
-        'id': f'DANDI:{draft_version.dandiset.identifier}/draft',
+        'identifier': f'{_SCHEMA_CONFIG.instance_name}:{draft_version.dandiset.identifier}',
+        'id': f'{_SCHEMA_CONFIG.instance_name}:{draft_version.dandiset.identifier}/draft',
         'version': 'draft',
         'url': url,
         'repository': settings.DANDI_WEB_APP_URL,
@@ -634,9 +647,9 @@ def test_version_rest_update_unembargo_in_progress(api_client):
     new_metadata = {
         '@context': (
             'https://raw.githubusercontent.com/dandi/schema/master/releases/'
-            f'{settings.DANDI_SCHEMA_VERSION}/context.json'
+            f'{DANDI_SCHEMA_VERSION}/context.json'
         ),
-        'schemaVersion': settings.DANDI_SCHEMA_VERSION,
+        'schemaVersion': DANDI_SCHEMA_VERSION,
         'num': 123,
     }
 

@@ -3,6 +3,8 @@ from __future__ import annotations
 import importlib.metadata
 from urllib.parse import ParseResult, urlencode, urlparse, urlunparse
 
+from dandischema.conf import get_instance_config
+from dandischema.consts import ALLOWED_INPUT_SCHEMAS, DANDI_SCHEMA_VERSION
 from django.conf import settings
 from django.urls import reverse
 from drf_yasg.utils import no_body, swagger_auto_schema
@@ -50,6 +52,9 @@ class ApiInfoSerializer(serializers.Serializer):
             }
         )
 
+    # Instance Configuration
+    instance_config = serializers.JSONField()
+
     # Schema
     schema_version = serializers.CharField()
     schema_url = serializers.URLField()
@@ -72,9 +77,12 @@ def info_view(request):
     api_url = f'{settings.DANDI_API_URL}/api'
     serializer = ApiInfoSerializer(
         data={
-            'schema_version': settings.DANDI_SCHEMA_VERSION,
+            # Set exclude_none=False to prevent any fields set to `None` from being set to a
+            # different default value when the JSON is de-serialized into a Pydantic model.
+            'instance_config': get_instance_config().model_dump(mode='json', exclude_none=False),
+            'schema_version': DANDI_SCHEMA_VERSION,
             'schema_url': get_schema_url(),
-            'allowed_schema_versions': settings.ALLOWED_DANDI_SCHEMA_VERSIONS,
+            'allowed_schema_versions': ALLOWED_INPUT_SCHEMAS,
             'version': importlib.metadata.version('dandiapi'),
             'cli-minimal-version': '0.60.0',
             'cli-bad-versions': [],

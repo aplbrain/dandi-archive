@@ -7,8 +7,6 @@ from typing import TYPE_CHECKING, cast
 from urllib.parse import urlunparse
 
 from corsheaders.defaults import default_headers
-from dandischema.consts import ALLOWED_INPUT_SCHEMAS
-from dandischema.consts import DANDI_SCHEMA_VERSION as _DEFAULT_DANDI_SCHEMA_VERSION
 import django_stubs_ext
 from environ import Env
 from resonant_settings.allauth import *
@@ -170,14 +168,6 @@ _dandi_log_level: str = env.str('DJANGO_DANDI_LOG_LEVEL', default='INFO')
 # Configure the logging level on all DANDI loggers.
 logging.getLogger('dandiapi').setLevel(_dandi_log_level)
 
-# This is where the schema version should be set.
-# It can optionally be overwritten with the environment variable, but that should only be
-# considered a temporary fix.
-DANDI_SCHEMA_VERSION: str = env.str(
-    'DJANGO_DANDI_SCHEMA_VERSION', default=_DEFAULT_DANDI_SCHEMA_VERSION
-)
-ALLOWED_DANDI_SCHEMA_VERSIONS: list[str] = ALLOWED_INPUT_SCHEMAS
-
 DANDI_ZARR_PREFIX_NAME: str = env.str('DJANGO_DANDI_ZARR_PREFIX_NAME', default='zarr')
 
 # Required environment variables
@@ -185,11 +175,19 @@ DANDI_WEB_APP_URL = urlunparse(cast('ParseResult', env.url('DJANGO_DANDI_WEB_APP
 DANDI_API_URL = urlunparse(cast('ParseResult', env.url('DJANGO_DANDI_API_URL')))
 DANDI_JUPYTERHUB_URL = urlunparse(cast('ParseResult', env.url('DJANGO_DANDI_JUPYTERHUB_URL')))
 
+# These are not used by us directly, but are used by dandi-schema. Not including them would modify
+# the archive's behavior, so we require they be set.
+DANDI_INSTANCE_NAME = env.str('DJANGO_DANDI_INSTANCE_NAME')
+DANDI_INSTANCE_IDENTIFIER = env.str('DJANGO_DANDI_INSTANCE_IDENTIFIER')
+DANDI_DOI_API_PREFIX = env.str(
+    'DJANGO_DANDI_DOI_API_PREFIX'
+)  # This is used by us directly, but not in all circumstances
+
+# Non-required environment variabless
 _dandi_doi_api_url = cast('ParseResult | None', env.url('DJANGO_DANDI_DOI_API_URL', default=None))
 DANDI_DOI_API_URL: str | None = urlunparse(_dandi_doi_api_url) if _dandi_doi_api_url else None
 DANDI_DOI_API_USER: str | None = env.str('DJANGO_DANDI_DOI_API_USER', default=None)
 DANDI_DOI_API_PASSWORD: str | None = env.str('DJANGO_DANDI_DOI_API_PASSWORD', default=None)
-DANDI_DOI_API_PREFIX: str | None = env.str('DJANGO_DANDI_DOI_API_PREFIX', default=None)
 DANDI_DOI_PUBLISH: bool = env.bool('DJANGO_DANDI_DOI_PUBLISH', default=False)
 
 DANDI_VALIDATION_JOB_INTERVAL: int = env.int('DJANGO_DANDI_VALIDATION_JOB_INTERVAL', default=60)
