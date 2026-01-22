@@ -57,7 +57,7 @@ jobs:
       DJANGO_DANDI_INSTANCE_IDENTIFIER: "RRID:SCR_026700"
       DJANGO_DANDI_DOI_API_PREFIX: "10.82754"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # fetch history for all branches and tags
           fetch-tags: true
