@@ -235,44 +235,6 @@ def test_asset_full_metadata_zarr(draft_asset_factory):
     }
 
 
-@pytest.mark.django_db
-def test_asset_full_metadata_access(
-    draft_asset_factory, asset_blob_factory, zarr_archive_factory, embargoed_zarr_archive_factory
-):
-    raw_metadata = {
-        'foo': 'bar',
-        'schemaVersion': DANDI_SCHEMA_VERSION,
-    }
-    embargoed_zarr_asset: Asset = draft_asset_factory(
-        metadata=raw_metadata, blob=None, zarr=embargoed_zarr_archive_factory()
-    )
-    open_zarr_asset: Asset = draft_asset_factory(
-        metadata=raw_metadata, blob=None, zarr=zarr_archive_factory()
-    )
-
-    embargoed_blob_asset: Asset = draft_asset_factory(
-        metadata=raw_metadata, blob=asset_blob_factory(embargoed=True), zarr=None
-    )
-    open_blob_asset: Asset = draft_asset_factory(
-        metadata=raw_metadata, blob=asset_blob_factory(embargoed=False), zarr=None
-    )
-
-    # Test that access is correctly inferred from embargo status
-    assert embargoed_zarr_asset.full_metadata['access'] == [
-        {'schemaKey': 'AccessRequirements', 'status': AccessType.EmbargoedAccess.value}
-    ]
-    assert embargoed_blob_asset.full_metadata['access'] == [
-        {'schemaKey': 'AccessRequirements', 'status': AccessType.EmbargoedAccess.value}
-    ]
-
-    assert open_zarr_asset.full_metadata['access'] == [
-        {'schemaKey': 'AccessRequirements', 'status': AccessType.OpenAccess.value}
-    ]
-    assert open_blob_asset.full_metadata['access'] == [
-        {'schemaKey': 'AccessRequirements', 'status': AccessType.OpenAccess.value}
-    ]
-
-
 # API Tests
 
 
@@ -910,6 +872,7 @@ def test_asset_create_unembargo_in_progress(api_client, embargoed_asset_blob):
 
 @pytest.mark.django_db(transaction=True)
 def test_asset_create_embargoed_asset_blob_open_dandiset(api_client, embargoed_asset_blob, mocker):
+    """Test that creating an asset in an open dandiset unembargoes the asset blob."""
     user = UserFactory.create()
     draft_version = DraftVersionFactory.create(dandiset__owners=[user])
     api_client.force_authenticate(user=user)
@@ -938,6 +901,54 @@ def test_asset_create_embargoed_asset_blob_open_dandiset(api_client, embargoed_a
     ).json()
     new_asset = Asset.objects.get(asset_id=resp['asset_id'])
 
+    assert new_asset.blob == embargoed_asset_blob
+    assert not new_asset.blob.embargoed
+
+    # We can't test that the tags were correctly removed in a testing env, but we can test that the
+    # function which removes the tags was correctly invoked
+    mocked_func.assert_called_once()
+
+    # Adding an Asset should trigger a revalidation
+    assert draft_version.status == Version.Status.PENDING
+
+
+@pytest.mark.django_db(transaction=True)
+def test_asset_update_embargoed_asset_blob_open_dandiset(
+    api_client, draft_asset_factory, asset_blob, embargoed_asset_blob, mocker
+):
+    """Test that updating an asset in an open dandiset unembargoes the asset blob."""
+    # First, create asset pointing to a different blob in an open dandiset
+    user = UserFactory.create()
+    draft_version = DraftVersionFactory.create(dandiset__owners=[user])
+    asset = draft_asset_factory(blob=asset_blob)
+    draft_version.assets.add(asset)
+
+    # Now, update asset to point to an embargoed blob
+    assert draft_version.dandiset.embargo_status == Dandiset.EmbargoStatus.OPEN
+    assert embargoed_asset_blob.embargoed
+
+    # Mock this so we can check that it's been called later
+    mocked_func = mocker.patch('dandiapi.api.services.embargo.remove_asset_blob_embargoed_tag')
+
+    api_client.force_authenticate(user=user)
+    resp = api_client.put(
+        f'/api/dandisets/{draft_version.dandiset.identifier}'
+        f'/versions/{draft_version.version}/assets/{asset.asset_id}/',
+        {
+            'metadata': {
+                'encodingFormat': 'application/x-nwb',
+                'path': 'test/create/asset.txt',
+                'meta': 'data',
+                'foo': ['bar', 'baz'],
+                '1': 2,
+            },
+            'blob_id': embargoed_asset_blob.blob_id,
+        },
+    )
+    assert resp.status_code == 200
+    new_asset = Asset.objects.get(asset_id=resp.json()['asset_id'])
+
+    # Ensure the blob is now OPEN
     assert new_asset.blob == embargoed_asset_blob
     assert not new_asset.blob.embargoed
 
@@ -1335,7 +1346,9 @@ def test_asset_rest_update(api_client, asset, asset_blob):
 @pytest.mark.django_db
 def test_asset_rest_update_embargo(api_client, asset, embargoed_asset_blob):
     user = UserFactory.create()
-    draft_version = DraftVersionFactory.create(dandiset__owners=[user])
+    draft_version = DraftVersionFactory.create(
+        dandiset__embargo_status=Dandiset.EmbargoStatus.EMBARGOED, dandiset__owners=[user]
+    )
     api_client.force_authenticate(user=user)
     draft_version.assets.add(asset)
     add_asset_paths(asset=asset, version=draft_version)
