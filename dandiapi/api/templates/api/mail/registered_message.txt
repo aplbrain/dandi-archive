@@ -18,9 +18,8 @@ Getting started: https://emberarchive.org/getting-started
 Various aspects might relate to the DANDI Archive infrastructure, for which there are
 
 DANDI Docs: https://docs.dandiarchive.org
-Discussions: https://github.com/dandi/helpdesk/discussions
-Issues: https://github.com/dandi/helpdesk/issues/new/choose
-DANDI YouTube: https://www.youtube.com/@dandiarchive
+Support: https://docs.dandiarchive.org/support/
+YouTube: https://www.youtube.com/@dandiarchive
 (please Subscribe)
 
 Thank you for choosing EMBER-DANDI for your neurophysiology data needs.
