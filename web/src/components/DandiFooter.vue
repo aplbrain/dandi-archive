@@ -4,8 +4,8 @@
       <CookieBanner />
       <v-row>
         <v-col offset="2">
-          &copy; 2019 - 2025 The DANDI Team<br>
-          &copy; 2024 - 2025 JHU/APL.<br>
+          &copy; 2019 - {{ currentYear }} The DANDI Team<br>
+          &copy; 2024 - {{ currentYear }} JHU/APL.<br>
           <a
             target="_blank"
             rel="noopener"
@@ -136,6 +136,7 @@ import { dandiUrl, dandiDocumentationUrl } from '@/utils/constants';
 
 const version = import.meta.env.VITE_APP_VERSION;
 const githubLink = import.meta.env.VITE_APP_GIT_REVISION ? `https://github.com/aplbrain/dandi-archive/commit/${import.meta.env.VITE_APP_GIT_REVISION}` : 'https://github.com/aplbrain/dandi-archive';
+const currentYear = new Date().getFullYear();
 </script>
 
 <style scoped>
