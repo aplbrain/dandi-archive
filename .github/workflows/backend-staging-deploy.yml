@@ -21,7 +21,7 @@ concurrency:
 jobs:
   deploy:
     name: Deploy to Heroku
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
         with:
@@ -34,7 +34,7 @@ jobs:
         run: curl https://cli-assets.heroku.com/install.sh | sh
 
       - name: Install builds plugin
-        run: heroku plugins:install heroku-builds
+        run: heroku plugins:install @heroku-cli/heroku-builds
 
       - name: Build app into tarball
         run: |

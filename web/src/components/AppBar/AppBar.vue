@@ -157,7 +157,7 @@ import {
   user,
 } from '@/rest';
 import {
-  emberAboutUrl, emberDocumentationUrl, dandihubUrl
+  emberAboutUrl, emberDocumentationUrl, dandiBlogUrl, dandihubUrl
 } from '@/utils/constants';
 import UserMenu from '@/components/AppBar/UserMenu.vue';
 import logo from '@/assets/ember-logo.png';
@@ -197,6 +197,11 @@ const navItems: NavigationItem[] = [
   {
     text: 'About',
     to: emberAboutUrl,
+    external: true,
+  },
+  {
+    text: 'Blog',
+    to: dandiBlogUrl,
     external: true,
   },
   {
