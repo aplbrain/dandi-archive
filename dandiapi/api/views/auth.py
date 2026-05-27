@@ -48,10 +48,14 @@ def auth_token_view(request: AuthenticatedRequest) -> HttpResponseBase:
 QUESTIONS = [
     {'question': 'First Name', 'max_length': 100},
     {'question': 'Last Name', 'max_length': 100},
-    {'question': 'Affiliation(s)', 'max_length': 1000},
+    {'question': 'Academic Affiliation(s)', 'max_length': 1000},
     {'question': 'Lab/project website', 'max_length': 1000},
     {
-        'question': 'Please describe how your research project will utilize DANDI resources.',
+        'question': 'Please describe how your research project will utilize EMBER-DANDI resources.',
+        'max_length': 1000,
+    },
+    {
+        'question': 'If your research is funded by NIH, NSF, or another U.S. institution, please provide the relevant funding identifier(s).',  # noqa: E501
         'max_length': 1000,
     },
 ]
