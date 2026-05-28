@@ -139,9 +139,9 @@ def user_questionnaire_form_view(request: AuthenticatedRequest) -> HttpResponse:
                     '@alleninstitute.org',
                     '@nih.gov',
                     '@janelia.hhmi.org',
-                    '@ccf.org',
-                    '.ac.uk',
-                    '.mcgill.ca',
+                    '@ccf.org',  # Cleveland Clinic
+                    # '.ac.uk',
+                    # '.mcgill.ca',
                 ]
             )
 
