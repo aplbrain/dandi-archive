@@ -9,7 +9,7 @@ const sandboxDocsUrl = `${dandiDocumentationUrl}/getting-started/creating-accoun
 const emberHomeUrl = 'https://emberarchive.org';
 const emberAboutUrl = 'https://emberarchive.org/about';
 const emberGitHubUrl = 'https://github.com/aplbrain/dandi-archive';
-const emberDocumentationUrl = 'https://emberarchive.org/documentation';
+const emberDocumentationUrl = 'https://docs.emberarchive.org';
 
 const draftVersion = 'draft';
 
