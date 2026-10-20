@@ -132,7 +132,7 @@
 
 <script setup lang="ts">
 import CookieBanner from './CookieBanner.vue';
-import { dandiUrl, dandiDocumentationUrl, emberHomeUrl } from '@/utils/constants';
+import { dandiUrl, emberHomeUrl } from '@/utils/constants';
 
 const version = import.meta.env.VITE_APP_VERSION;
 const githubLink = import.meta.env.VITE_APP_GIT_REVISION ? `https://github.com/aplbrain/dandi-archive/commit/${import.meta.env.VITE_APP_GIT_REVISION}` : 'https://github.com/aplbrain/dandi-archive';
