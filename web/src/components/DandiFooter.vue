@@ -9,7 +9,7 @@
           <a
             target="_blank"
             rel="noopener"
-            :href="`${dandiDocumentationUrl}/terms-policies/terms/`"
+            :href="`${emberHomeUrl}/tos`"
             class="text-primary"
           >Terms</a>
           <v-icon size="x-small">
@@ -17,7 +17,7 @@
           </v-icon> / <a
             target="_blank"
             rel="noopener"
-            :href="`${dandiDocumentationUrl}/terms-policies/policies/`"
+            :href="`${emberHomeUrl}/privacy`"
             class="text-primary"
           >Policies</a>
           <v-icon size="x-small">
@@ -132,7 +132,7 @@
 
 <script setup lang="ts">
 import CookieBanner from './CookieBanner.vue';
-import { dandiUrl, dandiDocumentationUrl } from '@/utils/constants';
+import { dandiUrl, emberHomeUrl } from '@/utils/constants';
 
 const version = import.meta.env.VITE_APP_VERSION;
 const githubLink = import.meta.env.VITE_APP_GIT_REVISION ? `https://github.com/aplbrain/dandi-archive/commit/${import.meta.env.VITE_APP_GIT_REVISION}` : 'https://github.com/aplbrain/dandi-archive';
