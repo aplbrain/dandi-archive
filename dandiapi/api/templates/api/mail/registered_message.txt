@@ -4,7 +4,7 @@ Dear {{ greeting_name }},
 Welcome to EMBER-DANDI.
 
 
-Thank you for registering on the EMBER-DANDI archive. Your account is now pending approval by
+Thank you for registering on the EMBER-DANDI Archive. Your account is now pending approval by
 an EMBER-DANDI admin. Once approved, you will be able to create Dandisets and upload data right
 away.
 

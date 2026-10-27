@@ -3,7 +3,6 @@ const dandiAboutUrl = 'https://about.dandiarchive.org/';
 const dandiBlogUrl = 'https://about.dandiarchive.org/blog/';
 const dandiDocumentationUrl = 'https://docs.dandiarchive.org';
 const dandiHelpUrl = 'https://docs.dandiarchive.org/support/';
-const dandihubUrl = 'https://hub.dandiarchive.org/';
 const sandboxDocsUrl = `${dandiDocumentationUrl}/getting-started/creating-account/`;
 
 const emberHomeUrl = 'https://emberarchive.org';
@@ -64,7 +63,6 @@ export {
   dandiAboutUrl,
   dandiBlogUrl,
   dandiDocumentationUrl,
-  dandihubUrl,
   sandboxDocsUrl,
   emberHomeUrl,
   emberAboutUrl,

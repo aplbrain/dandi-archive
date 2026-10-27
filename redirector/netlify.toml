@@ -1,14 +1,20 @@
-[[redirects]]
-from = "https://gui.dandiarchive.org/*"
-to = "https://dandiarchive.org/:splat"
-status = 301
+# EMBER-DANDI has not made use of these
+# [[redirects]]
+# from = "https://gui.dandiarchive.org/*"
+# to = "https://dandiarchive.org/:splat"
+# status = 301
 
-[[redirects]]
-from = "https://gui-staging.dandiarchive.org/*"
-to = "https://sandbox.dandiarchive.org/:splat"
-status = 301
+# [[redirects]]
+# from = "https://gui-staging.dandiarchive.org/*"
+# to = "https://sandbox.dandiarchive.org/:splat"
+# status = 301
 
-[[redirects]]
-from = "https://api-staging.dandiarchive.org/*"
-to = "https://api.sandbox.dandiarchive.org/:splat"
-status = 308
+# [[redirects]]
+# from = "https://api-staging.dandiarchive.org/*"
+# to = "https://api.sandbox.dandiarchive.org/:splat"
+# status = 308
+
+# [[redirects]]
+# from = "https://hub.dandiarchive.org/*"
+# to = "https://docs.dandiarchive.org/user-guide-using/dandi-hub/"
+# status = 302

@@ -3,11 +3,13 @@ on:
   pull_request:
     paths-ignore:
       - "web/**"
+      - "doc/**"
   push:
     branches:
       - prod
     paths-ignore:
       - "web/**"
+      - "doc/**"
 permissions:
   contents: read
 jobs:
@@ -57,12 +59,12 @@ jobs:
       DJANGO_DANDI_INSTANCE_IDENTIFIER: "RRID:SCR_026700"
       DJANGO_DANDI_DOI_API_PREFIX: "10.82754"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # fetch history for all branches and tags
           fetch-tags: true
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
       - name: Run pre-commit
         run: |
           uv run pre-commit run --all-files
